@@ -17,6 +17,7 @@ namespace TermiBot.Console.Configuration
             UsePlugin<JsonStoragePlugin>();
             UsePlugin<SchedulePlugin>();
             UsePlugin<KarmaRepositoryPlugin>();
+            UsePlugin<KarmaPlugin>();
         }
     }
 }

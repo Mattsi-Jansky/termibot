@@ -12,19 +12,19 @@ namespace TermiBot.Karma.Middleware
 {
         public class KarmaMiddleware : MiddlewareBase
     {
-        private string _incomingMessageRegex = @"([^\s]*)(--|\+\+)(?!\b)";
-        private string positiveKarmaOperator = "++";
 
         private KarmaRepositoryPlugin _karmaRepositoryPlugin;
+        private KarmaPlugin _karmaPlugin;
         
-        public KarmaMiddleware(IMiddleware next, KarmaRepositoryPlugin karmaRepositoryPlugin) : base(next)
+        public KarmaMiddleware(IMiddleware next, KarmaRepositoryPlugin karmaRepositoryPlugin, KarmaPlugin karmaPlugin) : base(next)
         {
             _karmaRepositoryPlugin = karmaRepositoryPlugin;
+            _karmaPlugin = karmaPlugin;
             HandlerMappings = new[]
             {
                 new HandlerMapping
                 {
-                    ValidHandles = RegexHandle.For(_incomingMessageRegex),
+                    ValidHandles = RegexHandle.For(KarmaPlugin.IncomingMessageRegex),
                     Description = "Allows upvoting and downvoting on things and people with `--` and `++`.",
                     EvaluatorFunc = KarmaHandler,
                     MessageShouldTargetBot = false,
@@ -35,37 +35,26 @@ namespace TermiBot.Karma.Middleware
         
         private IEnumerable<ResponseMessage> KarmaHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
-            var matches = Regex.Matches(message.FullText, _incomingMessageRegex);
+            var matches = _karmaPlugin.GetMessageMatches(message.FullText);
             
             foreach (Match match in matches)
             {
-                var changeRequest = ParseKarmaChange(match.Value);
+                var changeRequest = _karmaPlugin.ParseKarmaChange(match.Value);
                 yield return HandleKarmaChange(message, changeRequest);
             }
         }
-
-        private ChangeRequest ParseKarmaChange(string matchedText)
-        {
-            var matchedTextWithoutWhitespace = matchedText.Trim();
-            int itemLength = matchedTextWithoutWhitespace.Length - 2;
-            var matchedItem = matchedTextWithoutWhitespace.Substring(0, itemLength);
-            var karmaOperator = matchedTextWithoutWhitespace.Substring(itemLength, 2);
-            var changeAmount = karmaOperator.Equals(positiveKarmaOperator) ? 1 : -1;
-            
-            return new ChangeRequest(matchedItem, changeAmount);
-        }
-
+        
         private ResponseMessage HandleKarmaChange(IncomingMessage message, ChangeRequest changeRequest)
         {
             try
             {
                 _karmaRepositoryPlugin.Update(changeRequest);
-                return message.ReplyToChannel(
-                    $"{changeRequest.Name} updated, now has {_karmaRepositoryPlugin.Get(changeRequest.Name)}");
+                var currentKarma = _karmaRepositoryPlugin.Get(changeRequest.Name);
+                return _karmaPlugin.GenerateCurrentKarmaMessage(message, changeRequest, currentKarma);
             }
             catch (Exception e)
             {
-                return message.ReplyToChannel(e.Message + "\n" + e.StackTrace);
+                return ResponseMessage.ChannelMessage("bots",e.Message + "\n" + e.StackTrace,new List<Attachment>());
             }
         }
     }
