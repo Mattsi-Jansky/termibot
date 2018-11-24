@@ -19,11 +19,7 @@ namespace TermiBot.Console
         {
             Console.WriteLine(
                 $"Noobot.Core assembly version: {Assembly.GetAssembly(typeof(INoobotCore)).GetName().Version}");
-#if debug
             var host = new NoobotHost(JsonConfigReader.ForAbsolutePath($"{AppDomain.CurrentDomain.BaseDirectory}/Configuration/config.json"));
-#else
-            var host = new NoobotHost(JsonConfigReader.ForAbsolutePath($"/home/ubuntu/bot/config.json"));
-#endif
             
             host.Start();
             _quitEvent.WaitOne();
