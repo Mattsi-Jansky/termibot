@@ -7,7 +7,7 @@ using TermiBot.Karma.Persistence;
 
 namespace TermiBot.Karma.Plugins
 {
-    public class KarmaPlugin : IPlugin
+    public class KarmaRepositoryPlugin : IPlugin
     {
         private KarmaRepository _karmaRepository;
         private ReasonRepository _reasonRepository;

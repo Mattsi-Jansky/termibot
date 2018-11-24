@@ -15,11 +15,11 @@ namespace TermiBot.Karma.Middleware
         private string _incomingMessageRegex = @"([^\s]*)(--|\+\+)(?!\b)";
         private string positiveKarmaOperator = "++";
 
-        private KarmaPlugin _karmaPlugin;
+        private KarmaRepositoryPlugin _karmaRepositoryPlugin;
         
-        public KarmaMiddleware(IMiddleware next, KarmaPlugin karmaPlugin) : base(next)
+        public KarmaMiddleware(IMiddleware next, KarmaRepositoryPlugin karmaRepositoryPlugin) : base(next)
         {
-            _karmaPlugin = karmaPlugin;
+            _karmaRepositoryPlugin = karmaRepositoryPlugin;
             HandlerMappings = new[]
             {
                 new HandlerMapping
@@ -59,9 +59,9 @@ namespace TermiBot.Karma.Middleware
         {
             try
             {
-                _karmaPlugin.Update(changeRequest);
+                _karmaRepositoryPlugin.Update(changeRequest);
                 return message.ReplyToChannel(
-                    $"{changeRequest.Name} updated, now has {_karmaPlugin.Get(changeRequest.Name)}");
+                    $"{changeRequest.Name} updated, now has {_karmaRepositoryPlugin.Get(changeRequest.Name)}");
             }
             catch (Exception e)
             {
