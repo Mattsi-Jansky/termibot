@@ -39,10 +39,10 @@ namespace TermiBot.Karma.Plugins
             return Regex.Matches(message, IncomingMessageRegex);
         }
         
-        public ResponseMessage GenerateCurrentKarmaMessage(IncomingMessage message, ChangeRequest changeRequest,
+        public string GenerateCurrentKarmaMessage(ChangeRequest changeRequest,
             int currentKarma)
         {
-            return message.ReplyToChannel($"{changeRequest.Name} updated, now has {currentKarma}");
+            return $":upboat: {changeRequest.Name}: {currentKarma}";
         }
     }
 }

@@ -50,7 +50,7 @@ namespace TermiBot.Karma.Middleware
             {
                 _karmaRepositoryPlugin.Update(changeRequest);
                 var currentKarma = _karmaRepositoryPlugin.Get(changeRequest.Name);
-                return _karmaPlugin.GenerateCurrentKarmaMessage(message, changeRequest, currentKarma);
+                return message.ReplyToChannel(_karmaPlugin.GenerateCurrentKarmaMessage(changeRequest, currentKarma));
             }
             catch (Exception e)
             {
