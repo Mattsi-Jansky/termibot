@@ -57,6 +57,7 @@ namespace TermiBot.Karma.Tests.Plugins
                 "`preformatted++`",
                 "`so preformatted++`",
                 "`preformatted++ to the max`",
+                "`preformatted`++"
                 "`this doesn't++ have any preformatted tags itself but is inside preformatted tags`"
             );
         }
