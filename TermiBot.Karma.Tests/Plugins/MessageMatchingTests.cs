@@ -132,6 +132,20 @@ namespace TermiBot.Karma.Tests.Plugins
             Assert.Equal(expectedMatchvalueTwo, matches[3].Value);
         }
 
+        [Fact]
+        public void GivenWhitespace_ShouldOnlyMatchCharacters()
+        {
+            int expectedCount = 1;
+            var expectedMatchvalue = "test++";
+            var plugin = new KarmaPlugin();
+            
+            var matches = plugin.GetMessageMatches(" test++ ");
+            int numberOfMatches = matches.Count;
+            
+            Assert.Equal(expectedCount, numberOfMatches);
+            Assert.Equal(expectedMatchvalue, matches[0].Value);
+        }
+
         private static object[] GenerateArgumentsFromInput(string input) { return new object[] { input };}
 
         private static IEnumerable<object[]> GenerateArgumentsFromInputs(params string[] inputs)
