@@ -114,6 +114,24 @@ namespace TermiBot.Karma.Tests.Plugins
             Assert.Equal(expectedMatchvalueTwo, matches[1].Value);
         }
 
+        [Fact]
+        public void GivenAdditionalPlusesOrMinnuses_ShouldMatchOnlyTwo()
+        {
+            int expectedCount = 4;
+            var expectedMatchvalueOne = "test++";
+            var expectedMatchvalueTwo = "test--";
+            var plugin = new KarmaPlugin();
+            
+            var matches = plugin.GetMessageMatches("test+++ test++++++++++ test--- test----------");
+            int numberOfMatches = matches.Count;
+            
+            Assert.Equal(expectedCount, numberOfMatches);
+            Assert.Equal(expectedMatchvalueOne, matches[0].Value);
+            Assert.Equal(expectedMatchvalueOne, matches[1].Value);
+            Assert.Equal(expectedMatchvalueTwo, matches[2].Value);
+            Assert.Equal(expectedMatchvalueTwo, matches[3].Value);
+        }
+
         private static object[] GenerateArgumentsFromInput(string input) { return new object[] { input };}
 
         private static IEnumerable<object[]> GenerateArgumentsFromInputs(params string[] inputs)
