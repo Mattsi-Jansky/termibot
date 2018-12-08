@@ -1,10 +1,8 @@
-using System;
-using System.Linq;
 using TermiBot.Karma.Models;
 using TermiBot.Karma.Persistence;
 using Xunit;
 
-namespace TermiBot.Karma.Tests
+namespace TermiBot.Karma.Tests.Persistence
 {
     public class ReasonRepositoryTests : BaseKarmaContextTests
     {

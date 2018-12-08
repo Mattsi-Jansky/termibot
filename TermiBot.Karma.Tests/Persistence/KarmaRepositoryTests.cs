@@ -1,11 +1,7 @@
-using System;
-using System.IO;
-using Microsoft.EntityFrameworkCore;
-using TermiBot.Karma.Models;
 using TermiBot.Karma.Persistence;
 using Xunit;
 
-namespace TermiBot.Karma.Tests
+namespace TermiBot.Karma.Tests.Persistence
 {
     public class KarmaRepositoryTests : BaseKarmaContextTests
     {

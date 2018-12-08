@@ -3,7 +3,7 @@ using System.IO;
 using Microsoft.EntityFrameworkCore;
 using TermiBot.Karma.Persistence;
 
-namespace TermiBot.Karma.Tests
+namespace TermiBot.Karma.Tests.Persistence
 {
     public class BaseKarmaContextTests : IDisposable
     {

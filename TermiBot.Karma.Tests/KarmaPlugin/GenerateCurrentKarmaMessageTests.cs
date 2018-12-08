@@ -1,11 +1,7 @@
-using Moq;
-using Noobot.Core.MessagingPipeline.Request;
-using Noobot.Core.MessagingPipeline.Response;
 using TermiBot.Karma.Models;
-using TermiBot.Karma.Plugins;
 using Xunit;
 
-namespace TermiBot.Karma.Tests
+namespace TermiBot.Karma.Tests.KarmaPlugin
 {
     public class GenerateCurrentKarmaMessageTests
     {
@@ -15,7 +11,7 @@ namespace TermiBot.Karma.Tests
         public void WhenPositiveChange_ShouldGenerateUpboatMessage()
         {
             string expected = $":upboat: {_testName}: 1";
-            KarmaPlugin plugin = new KarmaPlugin();
+            Plugins.KarmaPlugin plugin = new Plugins.KarmaPlugin();
             
             ChangeRequest testChangeRequest = new ChangeRequest(_testName, 1);
             var result = plugin.GenerateCurrentKarmaMessage(testChangeRequest, 1);
@@ -27,7 +23,7 @@ namespace TermiBot.Karma.Tests
         public void WhenNegativeChange_ShouldgenerateDownboatMessage()
         {
             string expected = $":downboat: {_testName}: -1";
-            KarmaPlugin plugin = new KarmaPlugin();
+            Plugins.KarmaPlugin plugin = new Plugins.KarmaPlugin();
             
             ChangeRequest testChangeRequest = new ChangeRequest(_testName, -1);
             var result = plugin.GenerateCurrentKarmaMessage(testChangeRequest, -1);
