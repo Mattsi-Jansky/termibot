@@ -28,10 +28,9 @@ namespace TermiBot.Karma.Plugins
         
         public ChangeRequest ParseKarmaChange(string matchedText)
         {
-            var matchedTextWithoutWhitespace = matchedText.Trim();
-            int itemLength = matchedTextWithoutWhitespace.Length - 2;
-            var matchedItem = matchedTextWithoutWhitespace.Substring(0, itemLength);
-            var karmaOperator = matchedTextWithoutWhitespace.Substring(itemLength, 2);
+            int itemLength = matchedText.Length - 2;
+            var matchedItem = matchedText.Substring(0, itemLength);
+            var karmaOperator = matchedText.Substring(itemLength, 2);
             var changeAmount = karmaOperator.Equals(positiveKarmaOperator) ? 1 : -1;
             
             return new ChangeRequest(matchedItem, changeAmount);
