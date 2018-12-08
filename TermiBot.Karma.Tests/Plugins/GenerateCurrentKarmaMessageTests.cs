@@ -31,5 +31,17 @@ namespace TermiBot.Karma.Tests.Plugins
             
             Assert.Equal(expected, result);
         }
+
+        [Fact]
+        public void WhenNameIncludesUnderscore_ShouldDisplaySpaceInPlaceOfUnderscore()
+        {
+            string expected = ":downboat: Bob Ross: -1";
+            KarmaPlugin plugin = new KarmaPlugin();
+            
+            ChangeRequest testChangeRequest = new ChangeRequest("Bob_Ross", -1);
+            var result = plugin.GenerateCurrentKarmaMessage(testChangeRequest, -1);
+            
+            Assert.Equal(expected, result);
+        }
     }
 }
