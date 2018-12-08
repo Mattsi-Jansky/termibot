@@ -1,12 +1,21 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TermiBot.Karma.Plugins;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace TermiBot.Karma.Tests.Plugins
 {
     public class MessageMatchingTests
     {
+        private readonly ITestOutputHelper output;
+
+        public MessageMatchingTests(ITestOutputHelper output)
+        {
+            this.output = output;
+        }
+
         public static IEnumerable<object[]> GetValidInputs()
         {
             return GenerateArgumentsFromInputs(
@@ -26,7 +35,7 @@ namespace TermiBot.Karma.Tests.Plugins
                 " :emoji:--",
                 ":emoji:-- ",
                 " :emoji:-- ",
-                "Test---", //In this case, expected behaviour is to match "Test-".
+                "Test---", //In this case, expected behaviour is to match "Test".
                 "Test+++",
                 "this++ is a matching phrase",
                 "this is a matching phrase++"
@@ -73,6 +82,7 @@ namespace TermiBot.Karma.Tests.Plugins
             int numberOfMatches = matches.Count;
             
             Assert.Equal(expected, numberOfMatches);
+            output.WriteLine($"Matched {matches[0].Value}");
         }
 
         [Theory]
