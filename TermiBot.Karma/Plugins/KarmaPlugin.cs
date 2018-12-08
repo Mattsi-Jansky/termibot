@@ -10,7 +10,7 @@ namespace TermiBot.Karma.Plugins
 {
     public class KarmaPlugin : IPlugin
     {
-        public static string IncomingMessageRegex = @"([^\s]*)(--|\+\+)(?!\b)";
+        public static string IncomingMessageRegex = @"([^\`\s\+-]{3,})(--|\+\+)(?!\b)";
         private string positiveKarmaOperator = "++";
         
         public void Start()
