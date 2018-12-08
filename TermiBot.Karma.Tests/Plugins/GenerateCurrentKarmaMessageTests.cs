@@ -1,7 +1,8 @@
 using TermiBot.Karma.Models;
+using TermiBot.Karma.Plugins;
 using Xunit;
 
-namespace TermiBot.Karma.Tests.KarmaPlugin
+namespace TermiBot.Karma.Tests.Plugins
 {
     public class GenerateCurrentKarmaMessageTests
     {
@@ -11,7 +12,7 @@ namespace TermiBot.Karma.Tests.KarmaPlugin
         public void WhenPositiveChange_ShouldGenerateUpboatMessage()
         {
             string expected = $":upboat: {_testName}: 1";
-            Plugins.KarmaPlugin plugin = new Plugins.KarmaPlugin();
+            KarmaPlugin plugin = new KarmaPlugin();
             
             ChangeRequest testChangeRequest = new ChangeRequest(_testName, 1);
             var result = plugin.GenerateCurrentKarmaMessage(testChangeRequest, 1);
@@ -23,7 +24,7 @@ namespace TermiBot.Karma.Tests.KarmaPlugin
         public void WhenNegativeChange_ShouldgenerateDownboatMessage()
         {
             string expected = $":downboat: {_testName}: -1";
-            Plugins.KarmaPlugin plugin = new Plugins.KarmaPlugin();
+            KarmaPlugin plugin = new KarmaPlugin();
             
             ChangeRequest testChangeRequest = new ChangeRequest(_testName, -1);
             var result = plugin.GenerateCurrentKarmaMessage(testChangeRequest, -1);
