@@ -35,7 +35,7 @@ namespace TermiBot.Karma.Tests.Plugins
                 " :emoji:--",
                 ":emoji:-- ",
                 " :emoji:-- ",
-                "Test---", //In this case, expected behaviour is to match "Test".
+                "Test---", //In this case, expected behaviour is to match "Test--".
                 "Test+++",
                 "this++ is a matching phrase",
                 "this is a matching phrase++"
@@ -96,6 +96,22 @@ namespace TermiBot.Karma.Tests.Plugins
             int numberOfMatches = matches.Count;
             
             Assert.Equal(expected, numberOfMatches);
+        }
+        
+        [Fact]
+        public void GivenHyphenatedPhrase_ShouldTreatNormally()
+        {
+            int expectedCount = 2;
+            var expectedMatchvalueOne = "hyphenated-word--";
+            var expectedMatchvalueTwo = "part-time-teachers++";
+            var plugin = new KarmaPlugin();
+            
+            var matches = plugin.GetMessageMatches("hyphenated-word-- part-time-teachers++");
+            int numberOfMatches = matches.Count;
+            
+            Assert.Equal(expectedCount, numberOfMatches);
+            Assert.Equal(expectedMatchvalueOne, matches[0].Value);
+            Assert.Equal(expectedMatchvalueTwo, matches[1].Value);
         }
 
         private static object[] GenerateArgumentsFromInput(string input) { return new object[] { input };}

@@ -12,7 +12,7 @@ namespace TermiBot.Karma.Plugins
 {
     public class KarmaPlugin : IPlugin
     {
-        public static string IncomingMessageRegex = @"([^\`\s\+-]{3,})(--|\+\+)(?!\b)";
+        public static string IncomingMessageRegex = @"([^\`\s]{2,})[^\`\s-\+](--|\+\+)(?!\b)";
         private const string BacktickQuoteRegex = @"\`.*\`";
         private string positiveKarmaOperator = "++";
         
