@@ -11,11 +11,8 @@ namespace TermiBot.Console.Configuration
     {
         public TermibotConfiguration()
         {
-            UseMiddleware<ScheduleMiddleware>();
             UseMiddleware<KarmaMiddleware>();
-
-            UsePlugin<JsonStoragePlugin>();
-            UsePlugin<SchedulePlugin>();
+            
             UsePlugin<KarmaRepositoryPlugin>();
             UsePlugin<KarmaPlugin>();
         }

@@ -3,6 +3,9 @@
 #secrets
 config.json
 
+#noobot
+data/
+
 #sqlite
 *.db
 
