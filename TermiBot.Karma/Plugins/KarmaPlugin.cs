@@ -55,14 +55,14 @@ namespace TermiBot.Karma.Plugins
         {
             foreach (Match inlineCodeMatch in inlineCodeMatches)
             {
-                if (RangeContainsRange(inlineCodeMatch.Index, inlineCodeMatch.Length,
+                if (RangesIntersect(inlineCodeMatch.Index, inlineCodeMatch.Length,
                     match.Index, match.Length)) return true;
             }
 
             return false;
         }
 
-        private bool RangeContainsRange(int aIndex, int aLength, int bIndex, int bLength)
+        private bool RangesIntersect(int aIndex, int aLength, int bIndex, int bLength)
         {
             int aEnd = aIndex + aLength;
             int bEnd = bIndex + bLength;
