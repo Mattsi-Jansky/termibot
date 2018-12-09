@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Flurl.Util;
 using TermiBot.Karma.Plugins;
 using Xunit;
 using Xunit.Abstractions;
@@ -19,83 +20,111 @@ namespace TermiBot.Karma.Tests.Plugins
         public static IEnumerable<object[]> GetValidInputs()
         {
             return GenerateArgumentsFromInputs(
-                "Test++",
-                "Test--",
-                " Test-- ",
-                " Test++ ",
-                " Test++ words words",
-                "words words Test++ ",
-                "I hate microsoft-- for doing bad things",
-                "I love microsoft++ because they do good things",
-                ":emoji:++",
-                " :emoji:++",
-                ":emoji:++ ",
-                " :emoji:++ ",
-                ":emoji:--",
-                " :emoji:--",
-                ":emoji:-- ",
-                " :emoji:-- ",
-                "Test---", //In this case, expected behaviour is to match "Test--".
-                "Test+++",
-                "this++ is a matching phrase",
-                "this is a matching phrase++"
+                ("Test++", "Test++"),
+                ("Test--", "Test--"),
+                (" Test-- ", "Test--"),
+                (" Test++ ", "Test++"),
+                (" Test++ words words", "Test++"),
+                ("words words Test++ ", "Test++"),
+                ("I hate microsoft-- for doing bad things", "microsoft--"),
+                ("I love microsoft++ because they do good things", "microsoft++"),
+                (":emoji:++", ":emoji:++"),
+                (" :emoji:++", ":emoji:++"),
+                (":emoji:++ ", ":emoji:++"),
+                (" :emoji:++ ", ":emoji:++"),
+                (":emoji:--", ":emoji:--"),
+                (" :emoji:--", ":emoji:--"),
+                (":emoji:-- ", ":emoji:--"),
+                (" :emoji:-- ", ":emoji:--"),
+                ("Test---", "Test--"),
+                ("Test+++", "Test++"),
+                ("this++ is a matching phrase", "this++"),
+                ("this is a matching phrase++", "phrase++")
             );
         }
 
         public static IEnumerable<object[]> GetInvalidInputs()
         {
             return GenerateArgumentsFromInputs(
-                "Test",
-                " Test ",
-                "TestPlusPlus",
-                "TestMinusMinus",
-                "I hate microsoft for doing bad things",
-                "I love microsoft because they do good things",
-                "++",
-                "--",
-                "+++",
-                "---",
-                "--+",
-                "++-",
-                "this ++is not a matching phrase",
-                "this++is not a matchin phrase",
-                "++this is not a matching phrase",
-                "-++-",
-                "+--+",
-                "I think C++ is an okay language",
-                "`preformatted++`",
-                "`so preformatted++`",
-                "`preformatted++ to the max`",
-                "`preformatted`++",
-                "`this doesn't++ have any preformatted tags itself but is inside preformatted tags`"
+                ("Test", ""),
+                (" Test ", ""),
+                ("TestPlusPlus", ""),
+                ("TestMinusMinus", ""),
+                ("I hate microsoft for doing bad things", ""),
+                ("I love microsoft because they do good things", ""),
+                ("++", ""),
+                ("--", ""),
+                ("+++", ""),
+                ("---", ""),
+                ("--+", ""),
+                ("++-", ""),
+                ("this ++is not a matching phrase", ""),
+                ("this++is not a matchin phrase", ""),
+                ("++this is not a matching phrase", ""),
+                ("-++-", ""),
+                ("+--+", ""),
+                ("I think C++ is an okay language", ""),
+                ("`preformatted++`", ""),
+                ("`so preformatted++`", ""),
+                ("`preformatted++ to the max`", ""),
+                ("`preformatted`++", ""),
+                ("`this doesn't++ have any preformatted tags itself but is inside preformatted tags`", "")
             );
         }
-        
+
+        public static IEnumerable<object[]> GetValidReasonInputs()
+        {
+            return GenerateArgumentsFromInputs(
+                ("test++ for test", "test++ for test"),
+                ("test-- because test", "test-- because test"),
+                ("test++ because test", "test++ because test"),
+                ("test++ thanks to test", "test++ thanks to test"),
+                ("test-- considering test", "test-- considering test"),
+                (" test++ for words", "test++ for words"),
+                ("test++ for words ", "test++ for words "), //In this case we don't care about trailing spaces
+                ("test++ test++ for words", "test++ for words")
+            );
+        }
+
         [Theory]
         [MemberData(nameof(GetValidInputs))]
-        public void ShouldMatchValidInputs(string input)
+        public void ShouldMatchValidInputs(string input, string expectedMatch)
         {
             int expected = 1;
             var plugin = new KarmaPlugin();
             
-            var matches = plugin.GetMessageMatches(input);
+            var matches = plugin.GetOperatorMatchesInMessage(input);
             int numberOfMatches = matches.Count;
             
             Assert.Equal(expected, numberOfMatches);
-            output.WriteLine($"Matched {matches[0].Value}");
+            Assert.Equal(expectedMatch, matches[0].Value);
         }
 
         [Theory]
         [MemberData(nameof(GetInvalidInputs))]
-        public void ShouldNotMatchInvalidInputs(string input)
+        public void ShouldNotMatchInvalidInputs(string input, string expectedMatch)
         {
             int expected = 0;
             var plugin = new KarmaPlugin();
             
-            var matches = plugin.GetMessageMatches(input);
+            var matches = plugin.GetOperatorMatchesInMessage(input);
             int numberOfMatches = matches.Count;
             
             Assert.Equal(expected, numberOfMatches);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetValidReasonInputs))]
+        public void ShouldMatchValidReasonInputs(string input, string expectedMatch)
+        {
+            int expected = 1;
+            var plugin = new KarmaPlugin();
+            
+            var matches = plugin.GetReasonMatchesInMessage(input);
+            int numberOfMatches = matches.Count;
+            
+            Assert.Equal(expected, numberOfMatches);
+            Assert.Equal(expectedMatch, matches[0].Value);
         }
         
         [Fact]
@@ -106,7 +135,7 @@ namespace TermiBot.Karma.Tests.Plugins
             var expectedMatchvalueTwo = "part-time-teachers++";
             var plugin = new KarmaPlugin();
             
-            var matches = plugin.GetMessageMatches("hyphenated-word-- part-time-teachers++");
+            var matches = plugin.GetOperatorMatchesInMessage("hyphenated-word-- part-time-teachers++");
             int numberOfMatches = matches.Count;
             
             Assert.Equal(expectedCount, numberOfMatches);
@@ -122,7 +151,7 @@ namespace TermiBot.Karma.Tests.Plugins
             var expectedMatchvalueTwo = "test--";
             var plugin = new KarmaPlugin();
             
-            var matches = plugin.GetMessageMatches("test+++ test++++++++++ test--- test----------");
+            var matches = plugin.GetOperatorMatchesInMessage("test+++ test++++++++++ test--- test----------");
             int numberOfMatches = matches.Count;
             
             Assert.Equal(expectedCount, numberOfMatches);
@@ -139,16 +168,16 @@ namespace TermiBot.Karma.Tests.Plugins
             var expectedMatchvalue = "test++";
             var plugin = new KarmaPlugin();
             
-            var matches = plugin.GetMessageMatches(" test++ ");
+            var matches = plugin.GetOperatorMatchesInMessage(" test++ ");
             int numberOfMatches = matches.Count;
             
             Assert.Equal(expectedCount, numberOfMatches);
             Assert.Equal(expectedMatchvalue, matches[0].Value);
         }
 
-        private static object[] GenerateArgumentsFromInput(string input) { return new object[] { input };}
+        private static object[] GenerateArgumentsFromInput((string, string) input) { return new object[] { input.Item1, input.Item2 };}
 
-        private static IEnumerable<object[]> GenerateArgumentsFromInputs(params string[] inputs)
+        private static IEnumerable<object[]> GenerateArgumentsFromInputs(params (string, string)[] inputs)
         {
             return inputs.Select(GenerateArgumentsFromInput);
         }

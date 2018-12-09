@@ -24,7 +24,7 @@ namespace TermiBot.Karma.Middleware
             {
                 new HandlerMapping
                 {
-                    ValidHandles = RegexHandle.For(KarmaPlugin.IncomingMessageRegex),
+                    ValidHandles = RegexHandle.For(KarmaPlugin.OperatorRegex),
                     Description = "Allows upvoting and downvoting on things and people with `--` and `++`.",
                     EvaluatorFunc = KarmaHandler,
                     MessageShouldTargetBot = false,
@@ -35,7 +35,7 @@ namespace TermiBot.Karma.Middleware
         
         private IEnumerable<ResponseMessage> KarmaHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
-            var matches = _karmaPlugin.GetMessageMatches(message.FullText);
+            var matches = _karmaPlugin.GetOperatorMatchesInMessage(message.FullText);
             
             foreach (Match match in matches)
             {

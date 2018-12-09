@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -12,7 +13,9 @@ namespace TermiBot.Karma.Plugins
 {
     public class KarmaPlugin : IPlugin
     {
-        public static string IncomingMessageRegex = @"([^\`\s]{2,})[^\`\s-\+](--|\+\+)(?!\b)";
+        public static string OperatorRegex = @"([^\`\s]{2,})[^\`\s-\+](--|\+\+)(?!\b)";
+        private static string ReasonRegex = OperatorRegex +
+                                            @"\s(for|because|due to|over|thanks to|since|considering).*$";
         private const string BacktickQuoteRegex = @"\`.*\`";
         private string positiveKarmaOperator = "++";
         
@@ -36,11 +39,16 @@ namespace TermiBot.Karma.Plugins
             return new ChangeRequest(matchedItem, changeAmount);
         }
 
-        public IList<Match> GetMessageMatches(string message)
+        public IList<Match> GetOperatorMatchesInMessage(string message)
         {
             var inlineCodeMatches = Regex.Matches(message, BacktickQuoteRegex);
-            var karmaPhraseMatches = Regex.Matches(message, IncomingMessageRegex);
+            var karmaPhraseMatches = Regex.Matches(message, OperatorRegex);
             return karmaPhraseMatches.Where(x => !IsInsideInlineCode(x, inlineCodeMatches)).ToList();
+        }
+
+        public MatchCollection GetReasonMatchesInMessage(string message)
+        {
+            return Regex.Matches(message, ReasonRegex);
         }
 
         private bool IsInsideInlineCode(Match match, MatchCollection inlineCodeMatches)
