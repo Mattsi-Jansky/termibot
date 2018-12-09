@@ -5,7 +5,6 @@ namespace TermiBot.Karma.Models
 {
     public class Reason
     {
-        public static string[] Conjunctions = {"for", "because", "due to", "over", "thanks to", "since", "considering"};
         
         [Key]
         public Guid Id { get; set; }
