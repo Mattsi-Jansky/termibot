@@ -43,7 +43,7 @@ namespace TermiBot.Karma.Plugins
         {
             var inlineCodeMatches = Regex.Matches(message, BacktickQuoteRegex);
             var karmaPhraseMatches = Regex.Matches(message, OperatorRegex);
-            return karmaPhraseMatches.Where(x => !IsInsideInlineCode(x, inlineCodeMatches)).ToList();
+            return karmaPhraseMatches.Where(x => !IsIntersectingMatchInOtherCollection(x, inlineCodeMatches)).ToList();
         }
 
         public MatchCollection GetReasonMatchesInMessage(string message)
@@ -51,18 +51,18 @@ namespace TermiBot.Karma.Plugins
             return Regex.Matches(message, ReasonRegex);
         }
 
-        private bool IsInsideInlineCode(Match match, MatchCollection inlineCodeMatches)
+        private bool IsIntersectingMatchInOtherCollection(Match match, MatchCollection inlineCodeMatches)
         {
             foreach (Match inlineCodeMatch in inlineCodeMatches)
             {
-                if (RangesIntersect(inlineCodeMatch.Index, inlineCodeMatch.Length,
+                if (IsIntersectingRange(inlineCodeMatch.Index, inlineCodeMatch.Length,
                     match.Index, match.Length)) return true;
             }
 
             return false;
         }
 
-        private bool RangesIntersect(int aIndex, int aLength, int bIndex, int bLength)
+        private bool IsIntersectingRange(int aIndex, int aLength, int bIndex, int bLength)
         {
             int aEnd = aIndex + aLength;
             int bEnd = bIndex + bLength;
