@@ -82,7 +82,9 @@ namespace TermiBot.Karma.Tests.Plugins
                 ("test-- considering test", "test-- considering test"),
                 (" test++ for words", "test++ for words"),
                 ("test++ for words ", "test++ for words "), //In this case we don't care about trailing spaces
-                ("test++ test++ for words", "test++ for words")
+                ("test++ test++ for words", "test++ for words"),
+                ("test++ for test++ for test++ for test++", "test++ for test++ for test++ for test++"),
+                ("test++ for reasons" + '\n' + "also something else", "test++ for reasons")
             );
         }
 
@@ -104,26 +106,26 @@ namespace TermiBot.Karma.Tests.Plugins
         [MemberData(nameof(GetInvalidInputs))]
         public void ShouldNotMatchInvalidInputs(string input, string expectedMatch)
         {
-            int expected = 0;
+            int expectedCount = 0;
             var plugin = new KarmaPlugin();
             
             var matches = plugin.GetOperatorMatchesInMessage(input);
             int numberOfMatches = matches.Count;
             
-            Assert.Equal(expected, numberOfMatches);
+            Assert.Equal(expectedCount, numberOfMatches);
         }
 
         [Theory]
         [MemberData(nameof(GetValidReasonInputs))]
         public void ShouldMatchValidReasonInputs(string input, string expectedMatch)
         {
-            int expected = 1;
+            int expectedCount = 1;
             var plugin = new KarmaPlugin();
             
             var matches = plugin.GetReasonMatchesInMessage(input);
             int numberOfMatches = matches.Count;
             
-            Assert.Equal(expected, numberOfMatches);
+            Assert.Equal(expectedCount, numberOfMatches);
             Assert.Equal(expectedMatch, matches[0].Value);
         }
         

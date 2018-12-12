@@ -41,14 +41,14 @@ namespace TermiBot.Karma.Plugins
 
         public IList<Match> GetOperatorMatchesInMessage(string message)
         {
-            var inlineCodeMatches = Regex.Matches(message, BacktickQuoteRegex);
-            var karmaPhraseMatches = Regex.Matches(message, OperatorRegex);
+            var inlineCodeMatches = Regex.Matches(message, BacktickQuoteRegex, RegexOptions.IgnoreCase | RegexOptions.Multiline);
+            var karmaPhraseMatches = Regex.Matches(message, OperatorRegex, RegexOptions.IgnoreCase | RegexOptions.Multiline);
             return karmaPhraseMatches.Where(x => !IsIntersectingMatchInOtherCollection(x, inlineCodeMatches)).ToList();
         }
 
         public MatchCollection GetReasonMatchesInMessage(string message)
         {
-            return Regex.Matches(message, ReasonRegex);
+            return Regex.Matches(message, ReasonRegex, RegexOptions.IgnoreCase | RegexOptions.Multiline);
         }
 
         private bool IsIntersectingMatchInOtherCollection(Match match, MatchCollection inlineCodeMatches)
