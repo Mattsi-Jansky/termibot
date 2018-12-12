@@ -1,3 +1,5 @@
+using Flurl.Http;
+
 namespace TermiBot.Karma.Models
 {
     public class ChangeRequest
@@ -12,10 +14,10 @@ namespace TermiBot.Karma.Models
             Amount = amount;
         }
 
-        public ChangeRequest(string name, int amount, string reason)
+        public ChangeRequest(ChangeRequest request, string reason)
         {
-            Name = name;
-            Amount = amount;
+            Name = request.Name;
+            Amount = request.Amount;
             Reason = reason;
         }
     }

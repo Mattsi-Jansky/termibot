@@ -38,6 +38,16 @@ namespace TermiBot.Karma.Plugins
             
             return new ChangeRequest(matchedItem, changeAmount);
         }
+        
+        public ChangeRequest ParseKarmaChangeWithReason(string matchedText)
+        {
+            var operatorMatch = GetOperatorMatchesInMessage(matchedText).First();
+            var changeRequest = ParseKarmaChange(operatorMatch.Value);
+            var reason = matchedText.Substring(operatorMatch.Length + 1);
+            changeRequest = new ChangeRequest(changeRequest, reason);
+            
+            return changeRequest;
+        }
 
         public IList<Match> GetOperatorMatchesInMessage(string message)
         {
