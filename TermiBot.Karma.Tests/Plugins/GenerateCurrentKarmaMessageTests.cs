@@ -43,5 +43,17 @@ namespace TermiBot.Karma.Tests.Plugins
             
             Assert.Equal(expected, result);
         }
+
+        [Fact]
+        public void WhenReasonIncludedShouldAddReasonTomessage()
+        {
+            string expected = ":upboat: BobRoss: 1 for test";
+            var plugin = new KarmaPlugin();
+            
+            ChangeRequest testChangeRequest = new ChangeRequest("BobRoss", 1, "for test");
+            var result = plugin.GenerateCurrentKarmaMessage(testChangeRequest, 1);
+
+            Assert.Equal(expected, result);
+        }
     }
 }

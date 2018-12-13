@@ -87,8 +87,9 @@ namespace TermiBot.Karma.Plugins
         {
             string emoji = changeRequest.Amount > 0 ? ":upboat:" : ":downboat:";
             var karmaItemName = changeRequest.Name.Replace("_"," ");
+            var reason = changeRequest.Reason ?? changeRequest.Reason;
             
-            return $"{emoji} {karmaItemName}: {currentKarma}";
+            return $"{emoji} {karmaItemName}: {currentKarma} {reason}";
         }
     }
 }

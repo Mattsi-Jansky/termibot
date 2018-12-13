@@ -20,5 +20,12 @@ namespace TermiBot.Karma.Models
             Amount = request.Amount;
             Reason = reason;
         }
+
+        public ChangeRequest(string name, int amount, string reason)
+        {
+            Name = name;
+            Amount = amount;
+            Reason = reason;
+        }
     }
 }
