@@ -31,6 +31,12 @@ namespace TermiBot.Karma.Plugins
         {
             var newKarma = _karmaRepository.KarmaFor(request.Name) + request.Amount;
             _karmaRepository.UpdateOrAdd(request.Name, newKarma);
+            if (!String.IsNullOrEmpty(request.Reason)) AddReason(request);
+        }
+
+        private void AddReason(ChangeRequest request)
+        {
+            _reasonRepository.Add(Reason.FromChangeRequest(request));
         }
 
         public int Get(string name)

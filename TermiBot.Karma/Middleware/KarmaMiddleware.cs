@@ -1,6 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Flurl.Util;
+using Microsoft.EntityFrameworkCore.Internal;
 using Noobot.Core.MessagingPipeline.Middleware;
 using Noobot.Core.MessagingPipeline.Middleware.ValidHandles;
 using Noobot.Core.MessagingPipeline.Request;
@@ -35,11 +39,19 @@ namespace TermiBot.Karma.Middleware
         
         private IEnumerable<ResponseMessage> KarmaHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
-            var matches = _karmaPlugin.GetOperatorMatchesInMessage(message.FullText);
+            var operatorMatches = _karmaPlugin.GetOperatorMatchesInMessage(message.FullText);
+            var reasonMatches = _karmaPlugin.GetReasonMatchesInMessage(message.FullText);
+
+            operatorMatches = operatorMatches.Where(x => !reasonMatches.Any(y => y.Index == x.Index)).ToList();
             
-            foreach (Match match in matches)
+            foreach (Match match in operatorMatches)
             {
                 var changeRequest = _karmaPlugin.ParseKarmaChange(match.Value);
+                yield return HandleKarmaChange(message, changeRequest);
+            }
+            foreach(Match match in reasonMatches)
+            {
+                var changeRequest = _karmaPlugin.ParseKarmaChangeWithReason(match.Value);
                 yield return HandleKarmaChange(message, changeRequest);
             }
         }

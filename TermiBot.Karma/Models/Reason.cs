@@ -18,5 +18,10 @@ namespace TermiBot.Karma.Models
             Change = change;
             Value = value;
         }
+
+        public static Reason FromChangeRequest(ChangeRequest request)
+        {
+            return new Reason(request.Name, request.Amount, request.Reason);
+        }
     }
 }
