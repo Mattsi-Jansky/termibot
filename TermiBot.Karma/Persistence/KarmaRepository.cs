@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Flurl.Util;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using TermiBot.Karma.Models;
@@ -46,6 +47,12 @@ namespace TermiBot.Karma.Persistence
             var idName = name.ToLower();
             RefreshLocalEntriesFor(idName);
             return _entries.ContainsKey(idName);
+        }
+
+        public IEnumerable<Entry> GetTop(int? n)
+        {
+            var result = _context.Entries.OrderByDescending(x => x.Karma);
+            return n.HasValue ? result.Take(n.Value) : result;
         }
         
         private void RefreshLocalEntriesFor(string name)

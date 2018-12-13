@@ -1,3 +1,4 @@
+using System.Linq;
 using TermiBot.Karma.Persistence;
 using Xunit;
 
@@ -7,6 +8,21 @@ namespace TermiBot.Karma.Tests.Persistence
     {
         private string _testName = "testName";
         private string _testNameWeirdlyCapitalised = "TeSTnAmE";
+
+        private string[] _testNames =
+        {
+            "testName1",
+            "testName2",
+            "testName3",
+            "testName4",
+            "testName5",
+            "testName6",
+            "testName7",
+            "testName8",
+            "testName9",
+            "testName10",
+            "testName11",
+        };
 
         [Fact]
         public void ShouldAddEntry()
@@ -65,6 +81,68 @@ namespace TermiBot.Karma.Tests.Persistence
             repository.UpdateOrAdd(_testName, 999);
             
             Assert.Equal(999, repository.KarmaFor(_testNameWeirdlyCapitalised));
+        }
+
+        [Fact]
+        public void GivenLowerNumberAddedFirst_WhenGettingTopEntries_ShouldOrderByDescendingValue()
+        {
+            KarmaRepository repository = CreateRepository();
+            
+            repository.UpdateOrAdd(_testNames[1], 0);
+            repository.UpdateOrAdd(_testNames[0], 999);
+            var result = repository.GetTop(2).ToList();
+            
+            Assert.Equal(999, result[0].Karma);
+            Assert.Equal(0, result[1].Karma);
+        }
+
+        [Fact]
+        public void GivenAGreaterNumberParameterThanEntriesExist_WhenGettingTopEntries_ShouldReturnAll()
+        {
+            KarmaRepository repository = CreateRepository();
+            
+            repository.UpdateOrAdd(_testNames[1], 0);
+            repository.UpdateOrAdd(_testNames[0], 999);
+            var result = repository.GetTop(200).Count();
+            
+            Assert.Equal(2, result);
+        }
+
+        [Fact]
+        public void WhenGettingTopEntries_ShouldReturnNumberRequested()
+        {
+            KarmaRepository repository = CreateRepository();
+            
+            repository.UpdateOrAdd(_testNames[0], 0);
+            repository.UpdateOrAdd(_testNames[1], 999);
+            repository.UpdateOrAdd(_testNames[2], 999);
+            repository.UpdateOrAdd(_testNames[3], 999);
+            repository.UpdateOrAdd(_testNames[4], 999);
+            repository.UpdateOrAdd(_testNames[5], 999);
+            repository.UpdateOrAdd(_testNames[6], 999);
+            repository.UpdateOrAdd(_testNames[7], 999);
+            repository.UpdateOrAdd(_testNames[8], 999);
+            repository.UpdateOrAdd(_testNames[9], 999);
+            repository.UpdateOrAdd(_testNames[10], 999);
+            
+            var result = repository.GetTop(2).Count();
+            
+            Assert.Equal(2, result);
+        }
+
+        [Fact]
+        public void GivenNullInput_WhenGettingTopEntries_ShouldReturnAll()
+        {
+            KarmaRepository repository = CreateRepository();
+            
+            repository.UpdateOrAdd(_testNames[0], 0);
+            repository.UpdateOrAdd(_testNames[1], 999);
+            repository.UpdateOrAdd(_testNames[2], 999);
+            repository.UpdateOrAdd(_testNames[3], 999);
+            repository.UpdateOrAdd(_testNames[4], 999);
+            var result = repository.GetTop(null).Count();
+            
+            Assert.Equal(5, result);
         }
         
         private KarmaRepository CreateRepository()
