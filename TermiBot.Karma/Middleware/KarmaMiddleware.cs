@@ -33,6 +33,14 @@ namespace TermiBot.Karma.Middleware
                     EvaluatorFunc = KarmaHandler,
                     MessageShouldTargetBot = false,
                     VisibleInHelp = false
+                },
+                new HandlerMapping
+                {
+                    ValidHandles = RegexHandle.For("karma list"),
+                    Description = "List recorded karma",
+                    EvaluatorFunc = ListHandler,
+                    MessageShouldTargetBot = true,
+                    VisibleInHelp = true
                 }
             };
         }
@@ -53,6 +61,14 @@ namespace TermiBot.Karma.Middleware
             {
                 var changeRequest = _karmaPlugin.ParseKarmaChangeWithReason(match.Value);
                 yield return HandleKarmaChange(message, changeRequest);
+            }
+        }
+
+        private IEnumerable<ResponseMessage> ListHandler(IncomingMessage message, IValidHandle matchedHandle)
+        {
+            foreach (var entry in _karmaRepositoryPlugin.GetTop(10))
+            {
+                yield return message.ReplyToChannel($"{entry.DisplayName}: {entry.Karma}");
             }
         }
         

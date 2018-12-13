@@ -43,5 +43,10 @@ namespace TermiBot.Karma.Plugins
         {
             return _karmaRepository.KarmaFor(name);
         }
+
+        public IEnumerable<Entry> GetTop(int? n)
+        {
+            return _karmaRepository.GetTop(n);
+        }
     }
 }
