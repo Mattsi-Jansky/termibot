@@ -68,7 +68,7 @@ namespace TermiBot.Karma.Middleware
         {
             foreach (var entry in _karmaRepositoryPlugin.GetTop(10))
             {
-                yield return message.ReplyToChannel($"{entry.DisplayName}: {entry.Karma}");
+                yield return message.ReplyToChannel(_karmaPlugin.GenerateCurrentKarmaMessage(entry));
             }
         }
         

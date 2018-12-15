@@ -86,10 +86,16 @@ namespace TermiBot.Karma.Plugins
             int currentKarma)
         {
             string emoji = changeRequest.Amount > 0 ? ":upboat:" : ":downboat:";
-            var karmaItemName = changeRequest.Name.Replace("_"," ");
+            var karmaEntryName = changeRequest.Name.Replace("_"," ");
             var reason = !string.IsNullOrEmpty(changeRequest.Reason) ? $" {changeRequest.Reason}" : string.Empty;
             
-            return $"{emoji} {karmaItemName}: {currentKarma}{reason}";
+            return $"{emoji} {karmaEntryName}: {currentKarma}{reason}";
+        }
+
+        public string GenerateCurrentKarmaMessage(Entry entry)
+        {
+            var karmaEntryName = entry.DisplayName.Replace("_"," ");
+            return $"{karmaEntryName}: {entry.Karma}";
         }
     }
 }
