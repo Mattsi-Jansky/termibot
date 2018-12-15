@@ -36,7 +36,7 @@ namespace TermiBot.Karma.Middleware
                 },
                 new HandlerMapping
                 {
-                    ValidHandles = RegexHandle.For("karma list"),
+                    ValidHandles = RegexHandle.For(KarmaPlugin.ListKarmaRegex),
                     Description = "List recorded karma",
                     EvaluatorFunc = ListHandler,
                     MessageShouldTargetBot = true,

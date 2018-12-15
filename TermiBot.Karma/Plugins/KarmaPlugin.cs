@@ -13,11 +13,13 @@ namespace TermiBot.Karma.Plugins
 {
     public class KarmaPlugin : IPlugin
     {
-        public static string OperatorRegex = @"([^\`\s]{2,})[^\`\s-\+](--|\+\+)(?!\b)";
-        private static string ReasonRegex = OperatorRegex +
+        public const string OperatorRegex = @"([^\`\s]{2,})[^\`\s-\+](--|\+\+)(?!\b)";
+        private const string ReasonRegex = OperatorRegex +
                                             @"\s(for|because|due to|over|thanks to|since|considering).*$";
         private const string BacktickQuoteRegex = @"\`.*\`";
-        private string positiveKarmaOperator = "++";
+        private const string PositiveKarmaOperator = "++";
+        
+        public const string ListKarmaRegex = @"karma list(( \d\d)|( \d))?";
         
         public void Start()
         {
@@ -34,7 +36,7 @@ namespace TermiBot.Karma.Plugins
             int itemLength = matchedText.Length - 2;
             var matchedItem = matchedText.Substring(0, itemLength);
             var karmaOperator = matchedText.Substring(itemLength, 2);
-            var changeAmount = karmaOperator.Equals(positiveKarmaOperator) ? 1 : -1;
+            var changeAmount = karmaOperator.Equals(PositiveKarmaOperator) ? 1 : -1;
             
             return new ChangeRequest(matchedItem, changeAmount);
         }
