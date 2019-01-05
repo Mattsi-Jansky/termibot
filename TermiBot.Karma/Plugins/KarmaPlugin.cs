@@ -40,6 +40,15 @@ namespace TermiBot.Karma.Plugins
             
             return new ChangeRequest(matchedItem, changeAmount);
         }
+
+        public int ParseKarmaListRequest(string matchedText)
+        {
+            var numberRegex = Regex.Match(matchedText, @"\d+$");
+            if (!numberRegex.Success) return 10;
+            
+            var result = Int32.Parse(numberRegex.Value);
+            return result == 0 ? 10 : result;
+        }
         
         public ChangeRequest ParseKarmaChangeWithReason(string matchedText)
         {
