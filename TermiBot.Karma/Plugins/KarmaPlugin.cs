@@ -114,5 +114,11 @@ namespace TermiBot.Karma.Plugins
             var karmaEntryName = entry.DisplayName.Replace("_"," ");
             return $"{karmaEntryName}: {entry.Karma}";
         }
+
+        public string GenerateReasonMessage(Reason reason)
+        {
+            var emoji = reason.Change > 0 ? ":upboat:" : ":downboat:";
+            return $"{emoji} {reason.Name} {reason.Value}";
+        }
     }
 }
