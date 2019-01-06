@@ -20,6 +20,11 @@ namespace TermiBot.Karma.Persistence
             return _context.Reasons.Where(x => x.Name == name);
         }
 
+        public IEnumerable<Reason> Get(string name, int maxResults)
+        {
+            return Get(name).Take(maxResults);
+        }
+
         public void Add(Reason reason)
         {
             _context.Reasons.Add(reason);

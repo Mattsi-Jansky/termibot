@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Noobot.Core.Plugins;
 using TermiBot.Karma.Models;
@@ -39,9 +40,15 @@ namespace TermiBot.Karma.Plugins
             _reasonRepository.Add(Reason.FromChangeRequest(request));
         }
 
-        public int Get(string name)
+        public int GetKarma(string name)
         {
             return _karmaRepository.KarmaFor(name);
+        }
+
+        public IList<Reason> GetReasons(string name, int? maxResults = null)
+        {
+            return maxResults.HasValue ? _reasonRepository.Get(name, maxResults.Value).ToList() 
+                : _reasonRepository.Get(name).ToList();
         }
 
         public IEnumerable<Entry> GetTop(int? n)

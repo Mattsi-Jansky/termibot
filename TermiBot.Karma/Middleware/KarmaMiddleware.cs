@@ -77,7 +77,7 @@ namespace TermiBot.Karma.Middleware
             try
             {
                 _karmaRepositoryPlugin.Update(changeRequest);
-                var currentKarma = _karmaRepositoryPlugin.Get(changeRequest.Name);
+                var currentKarma = _karmaRepositoryPlugin.GetKarma(changeRequest.Name);
                 return message.ReplyToChannel(_karmaPlugin.GenerateCurrentKarmaMessage(changeRequest, currentKarma));
             }
             catch (Exception e)
