@@ -3,7 +3,7 @@ using Xunit;
 
 namespace TermiBot.Karma.Tests.Plugins
 {
-    public class ParseKarmaListRequestTests
+    public class ParseNumberFromEndOfRequestTests
     {
         [Fact]
         public void WhenNoNumberGiven_ShouldDefaultToTen()
@@ -11,7 +11,7 @@ namespace TermiBot.Karma.Tests.Plugins
             var input = "@termibot karma list";
 
             var plugin = new KarmaPlugin();
-            int result =  plugin.ParseKarmaListRequest(input);
+            int result =  plugin.ParseNumberFromEndOfRequest(input);
             
             Assert.Equal(10, result);
         }
@@ -27,7 +27,21 @@ namespace TermiBot.Karma.Tests.Plugins
             var input = $"@termibot karma list {inputNumber}";
             
             var plugin = new KarmaPlugin();
-            var result =  plugin.ParseKarmaListRequest(input);
+            var result =  plugin.ParseNumberFromEndOfRequest(input);
+            
+            Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [InlineData("@termibot karma reason test 10", 10)]
+        [InlineData("@termibot karma reason test2 10", 10)]
+        [InlineData("@termibot karma reason test_2 10", 10)]
+        [InlineData("@termibot karma reason test2 10 ", 10)]
+        public void GivenReasonRequest_ShouldReturnNumber(string input, int expected)
+        {
+            var plugin = new KarmaPlugin();
+            
+            var result =  plugin.ParseNumberFromEndOfRequest(input);
             
             Assert.Equal(expected, result);
         }
@@ -38,7 +52,7 @@ namespace TermiBot.Karma.Tests.Plugins
             var input = "@termibot karma list 0";
 
             var plugin = new KarmaPlugin();
-            int result =  plugin.ParseKarmaListRequest(input);
+            int result =  plugin.ParseNumberFromEndOfRequest(input);
             
             Assert.Equal(10, result);
         }

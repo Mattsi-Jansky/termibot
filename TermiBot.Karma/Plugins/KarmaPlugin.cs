@@ -41,13 +41,19 @@ namespace TermiBot.Karma.Plugins
             return new ChangeRequest(matchedItem, changeAmount);
         }
 
-        public int ParseKarmaListRequest(string matchedText)
+        public int ParseNumberFromEndOfRequest(string matchedText)
         {
             var numberRegex = Regex.Match(matchedText, @"\d+$");
             if (!numberRegex.Success) return 10;
             
             var result = Int32.Parse(numberRegex.Value);
             return result == 0 ? 10 : result;
+        }
+
+        public String ParseNameFromReasonRequest(string matchedText)
+        {
+            var subMatch = matchedText.Substring(13);
+            return subMatch.Contains(" ") ? subMatch.Substring(0, subMatch.IndexOf(" ")) : subMatch;
         }
         
         public ChangeRequest ParseKarmaChangeWithReason(string matchedText)
