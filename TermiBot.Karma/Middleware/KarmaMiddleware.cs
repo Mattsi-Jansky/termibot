@@ -66,7 +66,7 @@ namespace TermiBot.Karma.Middleware
 
         private IEnumerable<ResponseMessage> ListHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
-            foreach (var entry in _karmaRepositoryPlugin.GetTop(_karmaPlugin.ParseKarmaListRequest(message.FullText)))
+            foreach (var entry in _karmaRepositoryPlugin.GetTop(_karmaPlugin.ParseNumberFromEndOfRequest(message.FullText)))
             {
                 yield return message.ReplyToChannel(_karmaPlugin.GenerateCurrentKarmaMessage(entry));
             }
