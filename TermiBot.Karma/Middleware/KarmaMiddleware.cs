@@ -84,10 +84,15 @@ namespace TermiBot.Karma.Middleware
         {
             var karmaEntryName = _karmaPlugin.ParseNameFromReasonRequest(message.FullText);
             var numberRequested = _karmaPlugin.ParseNumberFromEndOfRequest(message.FullText);
+
+            int reasonsCount = 0;
             foreach (var entry in _karmaRepositoryPlugin.GetReasons(karmaEntryName, numberRequested))
             {
                 yield return message.ReplyToChannel(_karmaPlugin.GenerateReasonMessage(entry));
+                reasonsCount++;
             }
+
+            if (reasonsCount == 0) yield return message.ReplyToChannel($"No reasons found for {karmaEntryName}");
         }
         
         private ResponseMessage HandleKarmaChange(IncomingMessage message, ChangeRequest changeRequest)
