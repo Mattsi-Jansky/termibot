@@ -25,9 +25,10 @@ namespace TermiBot.Karma.Tests.Plugins
         [InlineData("@bot11 karma reason test_2 22", "test_2")]
         [InlineData("@bot32 karma reason test_2 22 ", "test_2")]
         [InlineData("@bot_999 karma reason test_22 ", "test_22")]
+        [InlineData("@noobot-test2 karma reason time", "time")]
+        [InlineData("<@UCLJPMP9A> karma reason time", "time")]
         public void ShouldGetKarmaEntryNameFromReasonRequest(string request, string expected)
         {
-            
             var plugin = new KarmaPlugin();
             string result = plugin.ParseNameFromReasonRequest(request);
 

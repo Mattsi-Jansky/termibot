@@ -52,7 +52,7 @@ namespace TermiBot.Karma.Plugins
 
         public String ParseNameFromReasonRequest(string matchedText)
         {
-            var beginningOfNameMatch = Regex.Match(matchedText, @"@[^ ]+ karma reason ");
+            var beginningOfNameMatch = Regex.Match(matchedText, @"(<)?@[^ ]+ karma reason ");
             var indexOfBeginningOfName = beginningOfNameMatch.Length;
             
             var nameToEnd = matchedText.Substring(indexOfBeginningOfName);
