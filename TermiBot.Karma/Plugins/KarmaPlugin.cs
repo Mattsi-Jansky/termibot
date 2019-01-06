@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Schema;
+using Microsoft.EntityFrameworkCore.Internal;
 using Noobot.Core.MessagingPipeline.Request;
 using Noobot.Core.MessagingPipeline.Response;
 using Noobot.Core.Plugins;
@@ -20,7 +21,8 @@ namespace TermiBot.Karma.Plugins
         private const string PositiveKarmaOperator = "++";
         
         public const string ListKarmaRegex = @"karma list(( \d\d)|( \d))?";
-        
+        public const string ListReasonRegex = @"karma reason (.*)(( \d\d)|( \d))?$";
+ 
         public void Start()
         {
             

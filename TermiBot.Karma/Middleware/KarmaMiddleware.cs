@@ -41,6 +41,14 @@ namespace TermiBot.Karma.Middleware
                     EvaluatorFunc = ListHandler,
                     MessageShouldTargetBot = true,
                     VisibleInHelp = true
+                },
+                new HandlerMapping
+                {
+                    ValidHandles = RegexHandle.For(KarmaPlugin.ListReasonRegex),
+                    Description = "List reasons for a karma entry",
+                    EvaluatorFunc = ReasonHandler,
+                    MessageShouldTargetBot = true,
+                    VisibleInHelp = true
                 }
             };
         }
@@ -69,6 +77,16 @@ namespace TermiBot.Karma.Middleware
             foreach (var entry in _karmaRepositoryPlugin.GetTop(_karmaPlugin.ParseNumberFromEndOfRequest(message.FullText)))
             {
                 yield return message.ReplyToChannel(_karmaPlugin.GenerateCurrentKarmaMessage(entry));
+            }
+        }
+
+        private IEnumerable<ResponseMessage> ReasonHandler(IncomingMessage message, IValidHandle matchedHandle)
+        {
+            var karmaEntryName = _karmaPlugin.ParseNameFromReasonRequest(message.FullText);
+            var numberRequested = _karmaPlugin.ParseNumberFromEndOfRequest(message.FullText);
+            foreach (var entry in _karmaRepositoryPlugin.GetReasons(karmaEntryName, numberRequested))
+            {
+                yield return message.ReplyToChannel(_karmaPlugin.GenerateReasonMessage(entry));
             }
         }
         
