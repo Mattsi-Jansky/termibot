@@ -52,8 +52,11 @@ namespace TermiBot.Karma.Plugins
 
         public String ParseNameFromReasonRequest(string matchedText)
         {
-            var subMatch = matchedText.Substring(13);
-            return subMatch.Contains(" ") ? subMatch.Substring(0, subMatch.IndexOf(" ")) : subMatch;
+            var beginningOfNameMatch = Regex.Match(matchedText, @"@[^ ]+ karma reason ");
+            var indexOfBeginningOfName = beginningOfNameMatch.Length;
+            
+            var nameToEnd = matchedText.Substring(indexOfBeginningOfName);
+            return nameToEnd.Contains(" ") ? nameToEnd.Substring(0, nameToEnd.IndexOf(" ")) : nameToEnd;
         }
         
         public ChangeRequest ParseKarmaChangeWithReason(string matchedText)

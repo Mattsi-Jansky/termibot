@@ -7,15 +7,24 @@ namespace TermiBot.Karma.Tests.Plugins
     public class ParseNameFromReasonRequestTests
     {
         [Theory]
-        [InlineData("karma reason test", "test")]
-        [InlineData("karma reason test 10", "test")]
-        [InlineData("karma reason test 1000", "test")]
-        [InlineData("karma reason test 1000 ", "test")]
-        [InlineData("karma reason test    ", "test")]
-        [InlineData("karma reason test_2", "test_2")]
-        [InlineData("karma reason test_2 22", "test_2")]
-        [InlineData("karma reason test_2 22 ", "test_2")]
-        [InlineData("karma reason test_22 ", "test_22")]
+        [InlineData("@bot karma reason test", "test")]
+        [InlineData("@bot karma reason test 10", "test")]
+        [InlineData("@bot karma reason test 1000", "test")]
+        [InlineData("@bot karma reason test 1000 ", "test")]
+        [InlineData("@bot karma reason test    ", "test")]
+        [InlineData("@bot karma reason test_2", "test_2")]
+        [InlineData("@bot karma reason test_2 22", "test_2")]
+        [InlineData("@bot karma reason test_2 22 ", "test_2")]
+        [InlineData("@bot karma reason test_22 ", "test_22")]
+        [InlineData("@bot123 karma reason test", "test")]
+        [InlineData("@bot123 karma reason test 10", "test")]
+        [InlineData("@bot321 karma reason test 1000", "test")]
+        [InlineData("@bot32 karma reason test 1000 ", "test")]
+        [InlineData("@bot1 karma reason test    ", "test")]
+        [InlineData("@bot22 karma reason test_2", "test_2")]
+        [InlineData("@bot11 karma reason test_2 22", "test_2")]
+        [InlineData("@bot32 karma reason test_2 22 ", "test_2")]
+        [InlineData("@bot_999 karma reason test_22 ", "test_22")]
         public void ShouldGetKarmaEntryNameFromReasonRequest(string request, string expected)
         {
             
