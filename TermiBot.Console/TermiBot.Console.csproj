@@ -8,8 +8,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Noobot.Console" Version="3.2.76" />
-      <PackageReference Include="Noobot.Core" Version="3.2.76" />
+      <PackageReference Include="Noobot.Console" Version="5.0.5" />
+      <PackageReference Include="Noobot.Core" Version="5.0.5" />
       <PackageReference Include="Noobot.Toolbox" Version="3.1.6" />
     </ItemGroup>
 

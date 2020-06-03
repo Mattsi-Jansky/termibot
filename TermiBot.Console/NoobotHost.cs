@@ -1,5 +1,5 @@
-﻿using System;
-using Common.Logging;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using Noobot.Core;
 using Noobot.Core.Configuration;
 using Noobot.Core.DependencyResolution;
@@ -23,7 +23,14 @@ namespace Noobot.Examples.ConsoleService
 
         public void Start()
         {
-            IContainerFactory containerFactory = new ContainerFactory(_configuration, _configReader, LogManager.GetLogger(GetType()));
+            var loggerFactory = LoggerFactory.Create(builder => {
+                    builder.AddFilter("Microsoft", LogLevel.Warning)
+                        .AddFilter("System", LogLevel.Warning)
+                        .AddFilter("SampleApp.Program", LogLevel.Debug)
+                        .AddConsole();
+                }
+            );
+            IContainerFactory containerFactory = new ContainerFactory(_configuration, _configReader, loggerFactory.CreateLogger<string>());
             INoobotContainer container = containerFactory.CreateContainer();
             _noobotCore = container.GetNoobotCore();
 

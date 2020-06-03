@@ -53,7 +53,7 @@ namespace TermiBot.Karma.Middleware
             };
         }
         
-        private IEnumerable<ResponseMessage> KarmaHandler(IncomingMessage message, IValidHandle matchedHandle)
+        private async IAsyncEnumerable<ResponseMessage> KarmaHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
             var operatorMatches = _karmaPlugin.GetOperatorMatchesInMessage(message.FullText);
             var reasonMatches = _karmaPlugin.GetReasonMatchesInMessage(message.FullText);
@@ -72,7 +72,7 @@ namespace TermiBot.Karma.Middleware
             }
         }
 
-        private IEnumerable<ResponseMessage> ListHandler(IncomingMessage message, IValidHandle matchedHandle)
+        private async IAsyncEnumerable<ResponseMessage> ListHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
             foreach (var entry in _karmaRepositoryPlugin.GetTop(_karmaPlugin.ParseNumberFromEndOfRequest(message.FullText)))
             {
@@ -80,7 +80,7 @@ namespace TermiBot.Karma.Middleware
             }
         }
 
-        private IEnumerable<ResponseMessage> ReasonHandler(IncomingMessage message, IValidHandle matchedHandle)
+        private async IAsyncEnumerable<ResponseMessage> ReasonHandler(IncomingMessage message, IValidHandle matchedHandle)
         {
             var karmaEntryName = _karmaPlugin.ParseNameFromReasonRequest(message.FullText);
             var numberRequested = _karmaPlugin.ParseNumberFromEndOfRequest(message.FullText);
