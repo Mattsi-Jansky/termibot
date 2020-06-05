@@ -58,7 +58,7 @@ namespace TermiBot.Karma.Middleware
             var operatorMatches = _karmaPlugin.GetOperatorMatchesInMessage(message.FullText);
             var reasonMatches = _karmaPlugin.GetReasonMatchesInMessage(message.FullText);
 
-            operatorMatches = operatorMatches.Where(x => !reasonMatches.Any(y => y.Index == x.Index)).ToList();
+            operatorMatches = operatorMatches.Where(x => reasonMatches.All(y => y.Index != x.Index)).ToList();
             
             foreach (Match match in operatorMatches)
             {
