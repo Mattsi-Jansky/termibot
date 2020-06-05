@@ -133,7 +133,8 @@ namespace TermiBot.Karma.Tests.Plugins
         {
             return new List<string[]>
             {
-                new[] {"test++for test"}
+                new[] {"test++for test"},
+                new[] {"`test++ for test`"}
             };
         }
         

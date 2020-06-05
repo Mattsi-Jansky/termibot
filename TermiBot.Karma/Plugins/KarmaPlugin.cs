@@ -78,9 +78,11 @@ namespace TermiBot.Karma.Plugins
             return karmaPhraseMatches.Where(x => !IsIntersectingMatchInOtherCollection(x, inlineCodeMatches)).ToList();
         }
 
-        public MatchCollection GetReasonMatchesInMessage(string message)
+        public IList<Match> GetReasonMatchesInMessage(string message)
         {
-            return Regex.Matches(message, ReasonRegex, RegexOptions.IgnoreCase | RegexOptions.Multiline);
+            var inlineCodeMatches = Regex.Matches(message, BacktickQuoteRegex, RegexOptions.IgnoreCase | RegexOptions.Multiline);
+            var karmaPhraseMatches = Regex.Matches(message, ReasonRegex, RegexOptions.IgnoreCase | RegexOptions.Multiline);
+            return karmaPhraseMatches.Where(x => !IsIntersectingMatchInOtherCollection(x, inlineCodeMatches)).ToList();
         }
 
         private bool IsIntersectingMatchInOtherCollection(Match match, MatchCollection inlineCodeMatches)
