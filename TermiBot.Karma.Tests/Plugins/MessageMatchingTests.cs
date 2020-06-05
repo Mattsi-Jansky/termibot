@@ -88,13 +88,6 @@ namespace TermiBot.Karma.Tests.Plugins
             );
         }
 
-        public static IEnumerable<object[]> GetInvalidReasonInputs()
-        {
-            return GenerateArgumentsFromInputs(
-                ("test++for test", "test++for test")
-            );
-        }
-
         [Theory]
         [MemberData(nameof(GetValidInputs))]
         public void ShouldMatchValidInputs(string input, string expectedMatch)
@@ -136,9 +129,17 @@ namespace TermiBot.Karma.Tests.Plugins
             Assert.Equal(expectedMatch, matches[0].Value);
         }
 
+        public static IEnumerable<object[]> GetInvalidReasonInputs()
+        {
+            return new List<string[]>
+            {
+                new[] {"test++for test"}
+            };
+        }
+        
         [Theory]
         [MemberData(nameof(GetInvalidReasonInputs))]
-        public void ShouldNotMatchInvalidReasonInputs(string input, string expectedMatch)
+        public void ShouldNotMatchInvalidReasonInputs(string input)
         {
             int expectedCount = 0;
             var plugin = new KarmaPlugin();
