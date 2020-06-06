@@ -11,6 +11,7 @@
       <PackageReference Include="Noobot.Console" Version="5.0.5" />
       <PackageReference Include="Noobot.Core" Version="5.0.5" />
       <PackageReference Include="Noobot.Toolbox" Version="3.1.6" />
+      <PackageReference Include="nookarma" Version="1.0.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -21,11 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\TermiBot.Karma\TermiBot.Karma.csproj" />
-    </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Middleware" />
     </ItemGroup>
 
 </Project>

@@ -2,10 +2,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TermiBot.Console", "TermiBot.Console\TermiBot.Console.csproj", "{C2B77B7A-B213-4689-A940-3642142AE9BB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TermiBot.Karma", "TermiBot.Karma\TermiBot.Karma.csproj", "{CCCBD0DD-4B2D-4DDE-A6C0-241530F19582}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TermiBot.Karma.Tests", "TermiBot.Karma.Tests\TermiBot.Karma.Tests.csproj", "{C8C5D331-C991-4533-8B20-6B137830E156}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -16,13 +12,5 @@ Global
 		{C2B77B7A-B213-4689-A940-3642142AE9BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2B77B7A-B213-4689-A940-3642142AE9BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C2B77B7A-B213-4689-A940-3642142AE9BB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CCCBD0DD-4B2D-4DDE-A6C0-241530F19582}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CCCBD0DD-4B2D-4DDE-A6C0-241530F19582}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CCCBD0DD-4B2D-4DDE-A6C0-241530F19582}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CCCBD0DD-4B2D-4DDE-A6C0-241530F19582}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C8C5D331-C991-4533-8B20-6B137830E156}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C8C5D331-C991-4533-8B20-6B137830E156}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C8C5D331-C991-4533-8B20-6B137830E156}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C8C5D331-C991-4533-8B20-6B137830E156}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

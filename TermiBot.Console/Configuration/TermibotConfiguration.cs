@@ -1,8 +1,6 @@
 using Noobot.Core.Configuration;
-using Noobot.Toolbox.Middleware;
-using Noobot.Toolbox.Plugins;
-using TermiBot.Karma.Middleware;
-using TermiBot.Karma.Plugins;
+using Jansk.Karma.Middleware;
+using Jansk.Karma.Plugins;
 
 namespace TermiBot.Console.Configuration
 {
