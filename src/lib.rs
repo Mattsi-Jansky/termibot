@@ -10,9 +10,9 @@ use std::sync::Arc;
 
 mod config;
 mod core;
+mod extensions;
 mod on_command;
 pub mod plugins;
-mod extensions;
 
 pub struct SlackBot {
     pub plugins: Vec<Box<dyn Plugin + Send + Sync>>,

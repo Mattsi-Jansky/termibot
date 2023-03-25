@@ -1,19 +1,20 @@
-use std::error::Error;
 use slack_morphism::prelude::*;
+use std::error::Error;
 
 use crate::config::CONFIG;
+use crate::extensions::client::MessageSender;
 use crate::plugins::Plugin;
 use async_trait::async_trait;
+use lazy_static::lazy_static;
 use message_template::SongLinkMessageTemplate;
 use regex::Regex;
 use std::sync::Arc;
-use lazy_static::lazy_static;
-use crate::extensions::client::MessageSender;
 
 mod message_template;
 
 lazy_static! {
-    static ref SPOTIFY_MATCHER: Regex = Regex::new(r"https://open.spotify.com([-a-zA-Z0-9()@:%_\+.~#?&//=]*)*").unwrap();
+    static ref SPOTIFY_MATCHER: Regex =
+        Regex::new(r"https://open.spotify.com([-a-zA-Z0-9()@:%_\+.~#?&//=]*)*").unwrap();
 }
 const SONG_LINK_BASE_URL: &'static str = "https://song.link/s/";
 
@@ -40,7 +41,11 @@ impl Plugin for SongLinkPlugin {
                 let captures = SPOTIFY_MATCHER.captures(&content);
 
                 if captures.is_some() {
-                    let content = captures.unwrap().get(0).expect("regex capture should be present").as_str();
+                    let content = captures
+                        .unwrap()
+                        .get(0)
+                        .expect("regex capture should be present")
+                        .as_str();
                     let mut new_link = String::from(SONG_LINK_BASE_URL);
                     new_link.push_str(&content[31..]);
 
