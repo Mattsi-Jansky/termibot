@@ -34,7 +34,7 @@ impl Plugin for SongLinkPlugin {
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         match event.event {
             SlackEventCallbackBody::Message(msg) => {
-                let content = msg.content.unwrap().text.unwrap();
+                let content = msg.content.as_ref().unwrap().text.as_ref().unwrap();
                 let captures = SPOTIFY_MATCHER.captures(&content);
 
                 if captures.is_some() {
@@ -43,10 +43,7 @@ impl Plugin for SongLinkPlugin {
                     new_link.push_str(&content[31..]);
 
                     let message = SongLinkMessageTemplate { url: new_link };
-                    let ts = msg.origin.ts;
-                    let channel = msg.origin.channel.unwrap();
-
-                    Self::reply_to_thread(client, message, ts, channel).await?;
+                    Self::reply_to_thread(client, message, &msg).await?;
                 }
             }
             _ => {}
@@ -60,9 +57,10 @@ impl SongLinkPlugin {
     async fn reply_to_thread(
         client: Arc<SlackHyperClient>,
         message: SongLinkMessageTemplate,
-        ts: SlackTs,
-        channel: SlackChannelId,
+        event: &SlackMessageEvent,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        let ts = event.origin.ts.clone();
+        let channel = event.origin.channel.clone().unwrap();
         let token: SlackApiToken = SlackApiToken::new(CONFIG.bot_token.clone());
 
         // Sessions are lightweight and basically just a reference to client and token
