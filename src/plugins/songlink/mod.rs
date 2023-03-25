@@ -3,9 +3,9 @@ use slack_morphism::prelude::*;
 use crate::config::CONFIG;
 use crate::plugins::Plugin;
 use async_trait::async_trait;
+use message_template::SongLinkMessageTemplate;
 use regex::Regex;
 use std::sync::Arc;
-use message_template::SongLinkMessageTemplate;
 
 mod message_template;
 
@@ -13,7 +13,10 @@ pub struct SongLinkPlugin {}
 
 #[async_trait]
 impl Plugin for SongLinkPlugin {
-    fn new() -> Self where Self: Sized {
+    fn new() -> Self
+    where
+        Self: Sized,
+    {
         SongLinkPlugin {}
     }
 
@@ -56,8 +59,12 @@ impl Plugin for SongLinkPlugin {
 }
 
 impl SongLinkPlugin {
-    async fn reply_to_thread(client: Arc<SlackHyperClient>, message: SongLinkMessageTemplate, ts: SlackTs, channel: SlackChannelId)
-        -> Result<(), Box<dyn std::error::Error + Send + Sync>>{
+    async fn reply_to_thread(
+        client: Arc<SlackHyperClient>,
+        message: SongLinkMessageTemplate,
+        ts: SlackTs,
+        channel: SlackChannelId,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let token_value: SlackApiTokenValue = CONFIG.bot_token.clone().into();
         let token: SlackApiToken = SlackApiToken::new(token_value);
 

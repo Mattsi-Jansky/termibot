@@ -8,8 +8,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .finish();
     tracing::subscriber::set_global_default(subscriber)?;
 
-    let bot = SlackBot::new()
-        .with::<SongLinkPlugin>();
+    let bot = SlackBot::new().with::<SongLinkPlugin>();
     bot.run().await?;
 
     Ok(())

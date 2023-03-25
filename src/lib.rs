@@ -3,10 +3,10 @@ use slack_morphism::prelude::*;
 use self::core::{on_interaction, on_push};
 use crate::config::CONFIG;
 use crate::core::on_error::on_error;
-use hyper_rustls::HttpsConnector;
 use crate::plugins::Plugin;
-use std::sync::Arc;
 use hyper::client::HttpConnector;
+use hyper_rustls::HttpsConnector;
+use std::sync::Arc;
 
 mod config;
 mod core;
@@ -18,7 +18,6 @@ pub struct SlackBot {
 }
 
 impl SlackBot {
-
     pub fn new() -> Self {
         SlackBot { plugins: vec![] }
     }
@@ -44,7 +43,14 @@ impl SlackBot {
         app_token
     }
 
-    fn build_listener(listener_environment: Arc<SlackClientEventsListenerEnvironment<SlackClientHyperConnector<HttpsConnector<HttpConnector>>>>) -> SlackClientSocketModeListener<SlackClientHyperConnector<HttpsConnector<HttpConnector>>> {
+    fn build_listener(
+        listener_environment: Arc<
+            SlackClientEventsListenerEnvironment<
+                SlackClientHyperConnector<HttpsConnector<HttpConnector>>,
+            >,
+        >,
+    ) -> SlackClientSocketModeListener<SlackClientHyperConnector<HttpsConnector<HttpConnector>>>
+    {
         SlackClientSocketModeListener::new(
             &SlackClientSocketModeConfig::new(),
             listener_environment,
@@ -52,9 +58,14 @@ impl SlackBot {
         )
     }
 
-    fn build_listener_environment(self, client: Arc<SlackClient<SlackClientHyperConnector<HttpsConnector<HttpConnector>>>>)
-        -> Arc<SlackClientEventsListenerEnvironment<SlackClientHyperConnector<HttpsConnector<HttpConnector>>>>
-    {
+    fn build_listener_environment(
+        self,
+        client: Arc<SlackClient<SlackClientHyperConnector<HttpsConnector<HttpConnector>>>>,
+    ) -> Arc<
+        SlackClientEventsListenerEnvironment<
+            SlackClientHyperConnector<HttpsConnector<HttpConnector>>,
+        >,
+    > {
         Arc::new(
             SlackClientEventsListenerEnvironment::new(client.clone())
                 .with_error_handler(on_error)
