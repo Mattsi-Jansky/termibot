@@ -14,9 +14,10 @@ pub async fn on_push_event(
     let inner_state = states.read().await;
     let bot = inner_state.get_user_state::<SlackBot>().unwrap();
 
-    bot.module
-        .push_event(event.clone(), client.clone(), states.clone())
-        .await?;
+    for plugin in bot.plugins.iter() {
+        plugin.push_event(event.clone(), client.clone(), states.clone())
+            .await?;
+    }
 
     Ok(())
 }
