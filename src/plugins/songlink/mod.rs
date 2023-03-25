@@ -39,35 +39,11 @@ impl Plugin for SongLinkPlugin {
                     println!(
                         "================= I HEARD SPOTIFY! NEW LINK: {new_link} ================="
                     );
-
-                    let token_value: SlackApiTokenValue = CONFIG.bot_token.clone().into();
-                    let token: SlackApiToken = SlackApiToken::new(token_value);
-
-                    // Sessions are lightweight and basically just a reference to client and token
-                    let session = client.open_session(&token);
                     let message = SongLinkMessageTemplate { url: new_link };
-                    let channel = msg.origin.channel.unwrap();
                     let ts = msg.origin.ts;
+                    let channel = msg.origin.channel.unwrap();
 
-                    let request = SlackApiChatPostMessageRequest {
-                        channel,
-                        content: message.render_template(),
-                        as_user: None,
-                        icon_emoji: None,
-                        icon_url: None,
-                        link_names: None,
-                        parse: None,
-                        thread_ts: Some(ts),
-                        username: None,
-                        reply_broadcast: None,
-                        unfurl_links: None,
-                        unfurl_media: None,
-                    };
-
-                    // let request = SlackApiChatPostMessageRequest::new(channel, message.render_template(), ts);
-                    // SlackApiChatPostMessageResponse::new("wat")
-
-                    session.chat_post_message(&request).await?;
+                    Self::reply_to_thread(client, message, ts, channel).await?;
                 } else {
                     println!("================= DID NOT REACT TO {content} =================")
                 }
@@ -75,6 +51,35 @@ impl Plugin for SongLinkPlugin {
             _ => {}
         }
 
+        Ok(())
+    }
+}
+
+impl SongLinkPlugin {
+    async fn reply_to_thread(client: Arc<SlackHyperClient>, message: SongLinkMessageTemplate, ts: SlackTs, channel: SlackChannelId)
+        -> Result<(), Box<dyn std::error::Error + Send + Sync>>{
+        let token_value: SlackApiTokenValue = CONFIG.bot_token.clone().into();
+        let token: SlackApiToken = SlackApiToken::new(token_value);
+
+        // Sessions are lightweight and basically just a reference to client and token
+        let session = client.open_session(&token);
+
+        let request = SlackApiChatPostMessageRequest {
+            channel,
+            content: message.render_template(),
+            as_user: None,
+            icon_emoji: None,
+            icon_url: None,
+            link_names: None,
+            parse: None,
+            thread_ts: Some(ts),
+            username: None,
+            reply_broadcast: None,
+            unfurl_links: None,
+            unfurl_media: None,
+        };
+
+        session.chat_post_message(&request).await?;
         Ok(())
     }
 }
