@@ -32,13 +32,16 @@ impl SlackBot {
         let client = Arc::new(SlackClient::new(SlackClientHyperConnector::new()));
         let listener = Self::build_listener(self.build_listener_environment(client));
 
-        let app_token_value: SlackApiTokenValue = CONFIG.app_token.clone().into();
-        let app_token: SlackApiToken = SlackApiToken::new(app_token_value);
-
-        listener.listen_for(&app_token).await?;
+        listener.listen_for(&Self::get_app_token()).await?;
         listener.serve().await;
 
         Ok(())
+    }
+
+    fn get_app_token() -> SlackApiToken {
+        let app_token_value: SlackApiTokenValue = CONFIG.app_token.clone().into();
+        let app_token: SlackApiToken = SlackApiToken::new(app_token_value);
+        app_token
     }
 
     fn build_listener(listener_environment: Arc<SlackClientEventsListenerEnvironment<SlackClientHyperConnector<HttpsConnector<HttpConnector>>>>) -> SlackClientSocketModeListener<SlackClientHyperConnector<HttpsConnector<HttpConnector>>> {

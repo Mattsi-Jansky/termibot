@@ -5,6 +5,9 @@ use crate::plugins::Plugin;
 use async_trait::async_trait;
 use regex::Regex;
 use std::sync::Arc;
+use message_template::SongLinkMessageTemplate;
+
+mod message_template;
 
 pub struct SongLinkPlugin {}
 
@@ -69,32 +72,9 @@ impl Plugin for SongLinkPlugin {
                     println!("================= DID NOT REACT TO {content} =================")
                 }
             }
-            SlackEventCallbackBody::AppHomeOpened(_) => {}
-            SlackEventCallbackBody::AppMention(_) => {}
-            SlackEventCallbackBody::AppUninstalled(_) => {}
-            SlackEventCallbackBody::LinkShared(_) => {}
-            SlackEventCallbackBody::EmojiChanged(_) => {}
-            SlackEventCallbackBody::MemberJoinedChannel(_) => {}
-            SlackEventCallbackBody::MemberLeftChannel(_) => {}
-            SlackEventCallbackBody::ChannelCreated(_) => {}
-            SlackEventCallbackBody::ChannelDeleted(_) => {}
-            SlackEventCallbackBody::ChannelArchive(_) => {}
-            SlackEventCallbackBody::ChannelRename(_) => {}
-            SlackEventCallbackBody::ChannelUnarchive(_) => {}
-            SlackEventCallbackBody::TeamJoin(_) => {}
+            _ => {}
         }
 
         Ok(())
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct SongLinkMessageTemplate {
-    pub url: String,
-}
-
-impl SlackMessageTemplate for SongLinkMessageTemplate {
-    fn render_template(&self) -> SlackMessageContent {
-        SlackMessageContent::new().with_text(format!("{}", self.url))
     }
 }
