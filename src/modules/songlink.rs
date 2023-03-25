@@ -12,7 +12,6 @@ impl SongLinkModule {
         client: Arc<SlackHyperClient>,
         _states: SlackClientEventsUserState,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        println!("In songlink ------------------- :)");
         match event.event {
             SlackEventCallbackBody::Message(msg) => {
                 let content = msg.content.unwrap().text.unwrap();
@@ -88,6 +87,6 @@ pub struct SongLinkMessageTemplate {
 
 impl SlackMessageTemplate for SongLinkMessageTemplate {
     fn render_template(&self) -> SlackMessageContent {
-        SlackMessageContent::new().with_text(format!("/songlink {}", self.url))
+        SlackMessageContent::new().with_text(format!("{}", self.url))
     }
 }

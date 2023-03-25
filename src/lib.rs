@@ -5,7 +5,7 @@ use crate::modules::songlink::SongLinkModule;
 use std::sync::Arc;
 
 mod config;
-mod modules;
+pub mod modules;
 
 async fn test_interaction_events_function(
     event: SlackInteractionEvent,
@@ -64,16 +64,16 @@ async fn test_command_events_function(
 async fn test_push_events_sm_function(
     event: SlackPushEventCallback,
     client: Arc<SlackHyperClient>,
-    _states: SlackClientEventsUserState,
+    states: SlackClientEventsUserState,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     #[cfg(debug_assertions)]
     println!("PUSH: {:#?}", event);
-    let result = Ok(());
+    let inner_state = states.read().await;
+    let bot = inner_state.get_user_state::<SlackBot>().unwrap();
 
-    let module = SongLinkModule {};
-    module.push_event(event, client, _states).await;
+    bot.module.push_event(event.clone(), client.clone(), states.clone()).await?;
 
-    result
+    Ok(())
 }
 
 fn test_error_handler(
@@ -89,30 +89,37 @@ fn test_error_handler(
     http::StatusCode::OK
 }
 
-pub async fn start_bot() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let client = Arc::new(SlackClient::new(SlackClientHyperConnector::new()));
+pub struct SlackBot {
+    pub module: SongLinkModule
+}
 
-    let socket_mode_callbacks = SlackSocketModeListenerCallbacks::new()
-        .with_command_events(test_command_events_function)
-        .with_interaction_events(test_interaction_events_function)
-        .with_push_events(test_push_events_sm_function);
+impl SlackBot {
+    pub async fn run(self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        let client = Arc::new(SlackClient::new(SlackClientHyperConnector::new()));
 
-    let listener_environment = Arc::new(
-        SlackClientEventsListenerEnvironment::new(client.clone())
-            .with_error_handler(test_error_handler),
-    );
+        let socket_mode_callbacks = SlackSocketModeListenerCallbacks::new()
+            .with_command_events(test_command_events_function)
+            .with_interaction_events(test_interaction_events_function)
+            .with_push_events(test_push_events_sm_function);
 
-    let socket_mode_listener = SlackClientSocketModeListener::new(
-        &SlackClientSocketModeConfig::new(),
-        listener_environment.clone(),
-        socket_mode_callbacks,
-    );
+        let listener_environment = Arc::new(
+            SlackClientEventsListenerEnvironment::new(client.clone())
+                .with_error_handler(test_error_handler)
+                .with_user_state(self),
+        );
 
-    let app_token_value: SlackApiTokenValue = CONFIG.app_token.clone().into();
-    let app_token: SlackApiToken = SlackApiToken::new(app_token_value);
+        let socket_mode_listener = SlackClientSocketModeListener::new(
+            &SlackClientSocketModeConfig::new(),
+            listener_environment.clone(),
+            socket_mode_callbacks,
+        );
 
-    socket_mode_listener.listen_for(&app_token).await?;
-    socket_mode_listener.serve().await;
+        let app_token_value: SlackApiTokenValue = CONFIG.app_token.clone().into();
+        let app_token: SlackApiToken = SlackApiToken::new(app_token_value);
 
-    Ok(())
+        socket_mode_listener.listen_for(&app_token).await?;
+        socket_mode_listener.serve().await;
+
+        Ok(())
+    }
 }
