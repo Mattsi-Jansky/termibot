@@ -7,6 +7,6 @@ pub struct SongLinkMessageTemplate {
 
 impl SlackMessageTemplate for SongLinkMessageTemplate {
     fn render_template(&self) -> SlackMessageContent {
-        SlackMessageContent::new().with_text(format!("{}", self.url))
+        SlackMessageContent::new().with_text(self.url.to_string())
     }
 }

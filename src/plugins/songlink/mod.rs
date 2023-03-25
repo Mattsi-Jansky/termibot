@@ -14,7 +14,7 @@ lazy_static! {
     static ref SPOTIFY_MATCHER: Regex =
         Regex::new(r"https://open.spotify.com([-a-zA-Z0-9()@:%_\+.~#?&//=]*)*").unwrap();
 }
-const SONG_LINK_BASE_URL: &'static str = "https://song.link/s/";
+const SONG_LINK_BASE_URL: &str = "https://song.link/s/";
 
 pub struct SongLinkPlugin {}
 
@@ -33,25 +33,21 @@ impl Plugin for SongLinkPlugin {
         client: Arc<SlackHyperClient>,
         _states: SlackClientEventsUserState,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        match event.event {
-            SlackEventCallbackBody::Message(msg) => {
-                let content = msg.content.as_ref().unwrap().text.as_ref().unwrap();
-                let captures = SPOTIFY_MATCHER.captures(&content);
+        if let SlackEventCallbackBody::Message(msg) = event.event {
+            let content = msg.content.as_ref().unwrap().text.as_ref().unwrap();
+            let captures = SPOTIFY_MATCHER.captures(content);
 
-                if captures.is_some() {
-                    let content = captures
-                        .unwrap()
-                        .get(0)
-                        .expect("regex capture should be present")
-                        .as_str();
-                    let mut new_link = String::from(SONG_LINK_BASE_URL);
-                    new_link.push_str(&content[31..]);
+            if let Some(matches) = captures {
+                let content = matches
+                    .get(0)
+                    .expect("regex capture should be present")
+                    .as_str();
+                let mut new_link = String::from(SONG_LINK_BASE_URL);
+                new_link.push_str(&content[31..]);
 
-                    let message = SongLinkMessageTemplate { url: new_link };
-                    client.reply_to_thread(message, &msg).await?;
-                }
+                let message = SongLinkMessageTemplate { url: new_link };
+                client.reply_to_thread(message, &msg).await?;
             }
-            _ => {}
         }
 
         Ok(())

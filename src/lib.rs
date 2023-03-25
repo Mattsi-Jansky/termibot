@@ -14,14 +14,12 @@ mod extensions;
 mod on_command;
 pub mod plugins;
 
+#[derive(Default)]
 pub struct SlackBot {
     pub plugins: Vec<Box<dyn Plugin + Send + Sync>>,
 }
 
 impl SlackBot {
-    pub fn new() -> Self {
-        SlackBot { plugins: vec![] }
-    }
 
     pub fn with<T: Plugin + Send + Sync + 'static>(mut self) -> Self {
         self.plugins.push(Box::new(T::new()));
@@ -68,7 +66,7 @@ impl SlackBot {
         >,
     > {
         Arc::new(
-            SlackClientEventsListenerEnvironment::new(client.clone())
+            SlackClientEventsListenerEnvironment::new(client)
                 .with_error_handler(on_error)
                 .with_user_state(self),
         )
