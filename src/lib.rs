@@ -71,7 +71,9 @@ async fn test_push_events_sm_function(
     let inner_state = states.read().await;
     let bot = inner_state.get_user_state::<SlackBot>().unwrap();
 
-    bot.module.push_event(event.clone(), client.clone(), states.clone()).await?;
+    bot.module
+        .push_event(event.clone(), client.clone(), states.clone())
+        .await?;
 
     Ok(())
 }
@@ -90,7 +92,7 @@ fn test_error_handler(
 }
 
 pub struct SlackBot {
-    pub module: SongLinkModule
+    pub module: SongLinkModule,
 }
 
 impl SlackBot {
