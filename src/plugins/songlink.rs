@@ -3,11 +3,14 @@ use slack_morphism::prelude::*;
 use crate::config::CONFIG;
 use regex::Regex;
 use std::sync::Arc;
+use async_trait::async_trait;
+use crate::plugins::Plugin;
 
 pub struct SongLinkPlugin {}
 
-impl SongLinkPlugin {
-    pub async fn push_event(
+#[async_trait]
+impl Plugin for SongLinkPlugin {
+    async fn push_event(
         &self,
         event: SlackPushEventCallback,
         client: Arc<SlackHyperClient>,

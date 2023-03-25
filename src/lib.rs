@@ -4,6 +4,7 @@ use crate::config::CONFIG;
 use crate::plugins::songlink::SongLinkPlugin;
 use std::sync::Arc;
 use crate::core::on_error::on_error;
+use crate::plugins::Plugin;
 use self::core::{on_interaction, on_push};
 
 mod config;
@@ -12,7 +13,7 @@ mod core;
 mod on_command;
 
 pub struct SlackBot {
-    pub module: SongLinkPlugin,
+    pub module: Box<dyn Plugin  + Send + Sync>,
 }
 
 impl SlackBot {
