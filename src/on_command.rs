@@ -1,7 +1,7 @@
 use slack_morphism::prelude::*;
 
-use std::sync::Arc;
 use crate::config::CONFIG;
+use std::sync::Arc;
 
 pub async fn on_command_event(
     event: SlackCommandEvent,
@@ -12,7 +12,6 @@ pub async fn on_command_event(
     println!("COMMAND: {:#?}", event);
 
     Ok(SlackCommandEventResponse::new(
-        SlackMessageContent::new()
-            .with_text("ERROR: Not implemented yet".into())
+        SlackMessageContent::new().with_text("ERROR: Not implemented yet".into()),
     ))
 }

@@ -1,10 +1,10 @@
 use slack_morphism::prelude::*;
 
 use crate::config::CONFIG;
+use crate::plugins::Plugin;
+use async_trait::async_trait;
 use regex::Regex;
 use std::sync::Arc;
-use async_trait::async_trait;
-use crate::plugins::Plugin;
 
 pub struct SongLinkPlugin {}
 

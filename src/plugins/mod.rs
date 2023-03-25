@@ -1,7 +1,7 @@
 use slack_morphism::prelude::*;
 
-use std::sync::Arc;
 use async_trait::async_trait;
+use std::sync::Arc;
 
 pub mod songlink;
 

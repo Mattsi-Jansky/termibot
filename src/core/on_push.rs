@@ -1,8 +1,8 @@
+use crate::SlackBot;
 use slack_morphism::events::SlackPushEventCallback;
-use std::sync::Arc;
 use slack_morphism::hyper_tokio::SlackHyperClient;
 use slack_morphism::listener::SlackClientEventsUserState;
-use crate::SlackBot;
+use std::sync::Arc;
 
 pub async fn on_push_event(
     event: SlackPushEventCallback,

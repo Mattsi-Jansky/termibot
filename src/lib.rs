@@ -1,19 +1,19 @@
 use slack_morphism::prelude::*;
 
-use crate::config::CONFIG;
-use crate::plugins::songlink::SongLinkPlugin;
-use std::sync::Arc;
-use crate::core::on_error::on_error;
-use crate::plugins::Plugin;
 use self::core::{on_interaction, on_push};
+use crate::config::CONFIG;
+use crate::core::on_error::on_error;
+use crate::plugins::songlink::SongLinkPlugin;
+use crate::plugins::Plugin;
+use std::sync::Arc;
 
 mod config;
-pub mod plugins;
 mod core;
 mod on_command;
+pub mod plugins;
 
 pub struct SlackBot {
-    pub module: Box<dyn Plugin  + Send + Sync>,
+    pub module: Box<dyn Plugin + Send + Sync>,
 }
 
 impl SlackBot {

@@ -1,7 +1,7 @@
 use slack_morphism::events::SlackInteractionEvent;
-use std::sync::Arc;
 use slack_morphism::hyper_tokio::SlackHyperClient;
 use slack_morphism::listener::SlackClientEventsUserState;
+use std::sync::Arc;
 
 pub async fn on_interaction_event(
     event: SlackInteractionEvent,

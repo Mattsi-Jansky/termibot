@@ -1,6 +1,6 @@
-use std::sync::Arc;
 use slack_morphism::hyper_tokio::SlackHyperClient;
 use slack_morphism::listener::SlackClientEventsUserState;
+use std::sync::Arc;
 
 pub fn on_error(
     err: Box<dyn std::error::Error + Send + Sync>,
