@@ -38,7 +38,7 @@ impl SlackBot {
     }
 
     fn get_app_token() -> SlackApiToken {
-        let app_token_value: SlackApiTokenValue = CONFIG.app_token.clone().into();
+        let app_token_value: SlackApiTokenValue = CONFIG.app_token.clone();
         let app_token: SlackApiToken = SlackApiToken::new(app_token_value);
         app_token
     }

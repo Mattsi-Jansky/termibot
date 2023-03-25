@@ -65,8 +65,7 @@ impl SongLinkPlugin {
         ts: SlackTs,
         channel: SlackChannelId,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        let token_value: SlackApiTokenValue = CONFIG.bot_token.clone().into();
-        let token: SlackApiToken = SlackApiToken::new(token_value);
+        let token: SlackApiToken = SlackApiToken::new(CONFIG.bot_token.clone());
 
         // Sessions are lightweight and basically just a reference to client and token
         let session = client.open_session(&token);
