@@ -1308,6 +1308,7 @@ dependencies = [
  "config-file",
  "http",
  "hyper",
+ "hyper-rustls",
  "lazy_static",
  "regex",
  "serde",
