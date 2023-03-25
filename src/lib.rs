@@ -30,11 +30,6 @@ impl SlackBot {
     pub async fn run(self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let client = Arc::new(SlackClient::new(SlackClientHyperConnector::new()));
 
-        let socket_mode_callbacks = SlackSocketModeListenerCallbacks::new()
-            .with_command_events(on_command::on_command_event)
-            .with_interaction_events(on_interaction::on_interaction_event)
-            .with_push_events(on_push::on_push_event);
-
         let listener_environment = Arc::new(
             SlackClientEventsListenerEnvironment::new(client.clone())
                 .with_error_handler(on_error)
@@ -44,7 +39,7 @@ impl SlackBot {
         let socket_mode_listener = SlackClientSocketModeListener::new(
             &SlackClientSocketModeConfig::new(),
             listener_environment,
-            socket_mode_callbacks,
+            Self::build_callbacks(),
         );
 
         let app_token_value: SlackApiTokenValue = CONFIG.app_token.clone().into();
@@ -54,5 +49,12 @@ impl SlackBot {
         socket_mode_listener.serve().await;
 
         Ok(())
+    }
+
+    fn build_callbacks() -> SlackSocketModeListenerCallbacks<SlackClientHyperHttpsConnector> {
+        SlackSocketModeListenerCallbacks::new()
+            .with_command_events(on_command::on_command_event)
+            .with_interaction_events(on_interaction::on_interaction_event)
+            .with_push_events(on_push::on_push_event)
     }
 }
