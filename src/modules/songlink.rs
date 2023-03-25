@@ -1,6 +1,7 @@
+use slack_morphism::prelude::*;
+
 use crate::config::CONFIG;
 use regex::Regex;
-use slack_morphism::prelude::*;
 use std::sync::Arc;
 
 pub struct SongLinkModule {}
