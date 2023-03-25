@@ -1,0 +1,16 @@
+[package]
+name = "termibot"
+version = "3.0.0"
+edition = "2021"
+
+[dependencies]
+http = "0.2.9"
+hyper = { version = "0.14.25", features = ["full"] }
+serde = { version = "1.0.152", features = ["derive"] }
+slack-morphism = { version = "1.8.0", features = ["axum", "hyper"] }
+tokio = { version = "1.25.0", features = ["full"] }
+tracing = "0.1.37"
+tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
+regex = "1.7.2"
+config-file = "0.2.3"
+lazy_static = "1.4.0"
