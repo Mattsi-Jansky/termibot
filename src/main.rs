@@ -11,6 +11,7 @@ async fn test_interaction_events_function(
     _client: Arc<SlackHyperClient>,
     _states: SlackClientEventsUserState,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    #[cfg(debug_assertions)]
     println!("INTERACTION: {:#?}", event);
     Ok(())
 }
@@ -20,6 +21,7 @@ async fn test_command_events_function(
     client: Arc<SlackHyperClient>,
     _states: SlackClientEventsUserState,
 ) -> Result<SlackCommandEventResponse, Box<dyn std::error::Error + Send + Sync>> {
+    #[cfg(debug_assertions)]
     println!("COMMAND: {:#?}", event);
 
     let token_value: SlackApiTokenValue = CONFIG.bot_token.clone().into();
@@ -62,6 +64,7 @@ async fn test_push_events_sm_function(
     client: Arc<SlackHyperClient>,
     _states: SlackClientEventsUserState,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    #[cfg(debug_assertions)]
     println!("PUSH: {:#?}", event);
     let result = Ok(());
 
@@ -136,7 +139,7 @@ fn test_error_handler(
     _client: Arc<SlackHyperClient>,
     _states: SlackClientEventsUserState,
 ) -> http::StatusCode {
-    println!("{:#?}", err);
+    eprintln!("ERROR: {:#?}", err);
 
     // This return value should be OK if we want to return successful ack to the Slack server using Web-sockets
     // https://api.slack.com/apis/connections/socket-implement#acknowledge
