@@ -1,22 +1,10 @@
 use slack_morphism::prelude::*;
 
-#[macro_use]
-extern crate lazy_static;
+mod config;
 
 use std::sync::Arc;
 use regex::Regex;
-use serde::Deserialize;
-use config_file::FromConfigFile;
-
-#[derive(Deserialize)]
-struct Config {
-    app_token: String,
-    bot_token: String
-}
-
-lazy_static! {
-    static ref CONFIG: Config = Config::from_config_file("config/config.toml").unwrap();
-}
+use crate::config::CONFIG;
 
 async fn test_interaction_events_function(
     event: SlackInteractionEvent,
