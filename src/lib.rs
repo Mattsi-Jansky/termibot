@@ -1,18 +1,18 @@
 use slack_morphism::prelude::*;
 
 use crate::config::CONFIG;
-use crate::modules::songlink::SongLinkModule;
+use crate::plugins::songlink::SongLinkPlugin;
 use std::sync::Arc;
 use crate::core::on_error::on_error;
 use self::core::{on_interaction, on_push};
 
 mod config;
-pub mod modules;
+pub mod plugins;
 mod core;
 mod on_command;
 
 pub struct SlackBot {
-    pub module: SongLinkModule,
+    pub module: SongLinkPlugin,
 }
 
 impl SlackBot {

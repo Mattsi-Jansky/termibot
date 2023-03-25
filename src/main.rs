@@ -1,4 +1,4 @@
-use termibot::modules::songlink::SongLinkModule;
+use termibot::plugins::songlink::SongLinkPlugin;
 use termibot::SlackBot;
 
 #[tokio::main]
@@ -9,7 +9,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     tracing::subscriber::set_global_default(subscriber)?;
 
     let bot = SlackBot {
-        module: SongLinkModule {},
+        module: SongLinkPlugin {},
     };
     bot.run().await?;
 

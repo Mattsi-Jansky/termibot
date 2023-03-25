@@ -4,9 +4,9 @@ use crate::config::CONFIG;
 use regex::Regex;
 use std::sync::Arc;
 
-pub struct SongLinkModule {}
+pub struct SongLinkPlugin {}
 
-impl SongLinkModule {
+impl SongLinkPlugin {
     pub async fn push_event(
         &self,
         event: SlackPushEventCallback,
