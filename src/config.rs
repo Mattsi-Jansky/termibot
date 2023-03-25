@@ -6,7 +6,7 @@ use serde::Deserialize;
 #[derive(Deserialize)]
 pub struct Config {
     pub app_token: String,
-    pub bot_token: String
+    pub bot_token: String,
 }
 
 lazy_static! {

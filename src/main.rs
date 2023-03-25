@@ -2,9 +2,9 @@ use slack_morphism::prelude::*;
 
 mod config;
 
-use std::sync::Arc;
-use regex::Regex;
 use crate::config::CONFIG;
+use regex::Regex;
+use std::sync::Arc;
 
 async fn test_interaction_events_function(
     event: SlackInteractionEvent,
@@ -75,14 +75,17 @@ async fn test_push_events_sm_function(
             let content = msg.content.unwrap().text.unwrap();
             // msg.content.unwrap().blocks.
 
-            let spotify_matcher = Regex::new(r"https://open.spotify.com([-a-zA-Z0-9()@:%_\+.~#?&//=]*)*").unwrap();
+            let spotify_matcher =
+                Regex::new(r"https://open.spotify.com([-a-zA-Z0-9()@:%_\+.~#?&//=]*)*").unwrap();
             let captures = spotify_matcher.captures(&content);
 
             if captures.is_some() {
                 let content = captures.unwrap().get(0).unwrap().as_str();
                 let mut new_link = String::from("https://song.link/s/");
                 new_link.push_str(&content[31..]);
-                println!("================= I HEARD SPOTIFY! NEW LINK: {new_link} =================");
+                println!(
+                    "================= I HEARD SPOTIFY! NEW LINK: {new_link} ================="
+                );
 
                 let token_value: SlackApiTokenValue = CONFIG.bot_token.clone().into();
                 let token: SlackApiToken = SlackApiToken::new(token_value);
@@ -194,7 +197,6 @@ pub struct TestMessageTemplate {
 
 impl SlackMessageTemplate for TestMessageTemplate {
     fn render_template(&self) -> SlackMessageContent {
-        SlackMessageContent::new()
-            .with_text(format!("/songlink {}", self.url))
+        SlackMessageContent::new().with_text(format!("/songlink {}", self.url))
     }
 }
