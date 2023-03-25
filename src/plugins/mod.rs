@@ -7,6 +7,8 @@ pub mod songlink;
 
 #[async_trait]
 pub trait Plugin {
+    fn new() -> Self where Self: Sized;
+
     async fn push_event(
         &self,
         event: SlackPushEventCallback,

@@ -22,8 +22,8 @@ impl SlackBot {
         SlackBot { plugins: vec![] }
     }
 
-    pub fn with<T: Plugin + Send + Sync + 'static>(mut self, plugin: T) -> Self {
-        self.plugins.push(Box::new(plugin));
+    pub fn with<T: Plugin + Send + Sync + 'static>(mut self) -> Self {
+        self.plugins.push(Box::new(T::new()));
         self
     }
 

@@ -10,6 +10,10 @@ pub struct SongLinkPlugin {}
 
 #[async_trait]
 impl Plugin for SongLinkPlugin {
+    fn new() -> Self where Self: Sized {
+        SongLinkPlugin {}
+    }
+
     async fn push_event(
         &self,
         event: SlackPushEventCallback,
