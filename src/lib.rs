@@ -20,19 +20,27 @@ pub struct SlackBot {
 }
 
 impl SlackBot {
-
     pub fn with<T: Plugin + Send + Sync + 'static>(mut self) -> Self {
         self.plugins.push(Box::new(T::new()));
         self
     }
 
     pub async fn run(self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        Self::activate_logging()?;
         let client = Arc::new(SlackClient::new(SlackClientHyperConnector::new()));
         let listener = Self::build_listener(self.build_listener_environment(client));
 
         listener.listen_for(&Self::get_app_token()).await?;
         listener.serve().await;
 
+        Ok(())
+    }
+
+    fn activate_logging() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        let subscriber = tracing_subscriber::fmt()
+            .with_env_filter("slack_morphism=debug")
+            .finish();
+        tracing::subscriber::set_global_default(subscriber)?;
         Ok(())
     }
 
