@@ -1,7 +1,5 @@
 use slack_morphism::prelude::*;
-use std::error::Error;
 
-use crate::config::CONFIG;
 use crate::extensions::client::MessageSender;
 use crate::plugins::Plugin;
 use async_trait::async_trait;
