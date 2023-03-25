@@ -1,3 +1,4 @@
+use std::error::Error;
 use slack_morphism::prelude::*;
 
 use crate::config::CONFIG;
@@ -7,6 +8,7 @@ use message_template::SongLinkMessageTemplate;
 use regex::Regex;
 use std::sync::Arc;
 use lazy_static::lazy_static;
+use crate::extensions::client::MessageSender;
 
 mod message_template;
 
@@ -43,45 +45,12 @@ impl Plugin for SongLinkPlugin {
                     new_link.push_str(&content[31..]);
 
                     let message = SongLinkMessageTemplate { url: new_link };
-                    Self::reply_to_thread(client, message, &msg).await?;
+                    client.reply_to_thread(message, &msg).await?;
                 }
             }
             _ => {}
         }
 
-        Ok(())
-    }
-}
-
-impl SongLinkPlugin {
-    async fn reply_to_thread(
-        client: Arc<SlackHyperClient>,
-        message: SongLinkMessageTemplate,
-        event: &SlackMessageEvent,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        let ts = event.origin.ts.clone();
-        let channel = event.origin.channel.clone().unwrap();
-        let token: SlackApiToken = SlackApiToken::new(CONFIG.bot_token.clone());
-
-        // Sessions are lightweight and basically just a reference to client and token
-        let session = client.open_session(&token);
-
-        let request = SlackApiChatPostMessageRequest {
-            channel,
-            content: message.render_template(),
-            as_user: None,
-            icon_emoji: None,
-            icon_url: None,
-            link_names: None,
-            parse: None,
-            thread_ts: Some(ts),
-            username: None,
-            reply_broadcast: None,
-            unfurl_links: None,
-            unfurl_media: None,
-        };
-
-        session.chat_post_message(&request).await?;
         Ok(())
     }
 }

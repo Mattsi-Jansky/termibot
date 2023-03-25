@@ -12,6 +12,7 @@ mod config;
 mod core;
 mod on_command;
 pub mod plugins;
+mod extensions;
 
 pub struct SlackBot {
     pub plugins: Vec<Box<dyn Plugin + Send + Sync>>,
