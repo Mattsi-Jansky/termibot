@@ -1,5 +1,5 @@
-use slack_morphism::prelude::*;
 use crate::core::client::SlackBotClient;
+use slack_morphism::prelude::*;
 
 pub async fn reply_to_thread(
     client: &Box<dyn SlackBotClient + Send + Sync>,
@@ -30,9 +30,9 @@ pub async fn reply_to_thread(
 
 #[cfg(test)]
 mod tests {
-    use mockall::mock;
     use super::*;
     use async_trait::async_trait;
+    use mockall::mock;
 
     #[tokio::test]
     async fn wow() {
@@ -72,14 +72,14 @@ mod tests {
             deleted_ts: None,
         };
         let mut outgoing_message = MockMessageTemplate::new();
-        outgoing_message.expect_render_template()
+        outgoing_message
+            .expect_render_template()
             .times(1)
             .returning(|| SlackMessageContent::new());
         let outgoing_message = Box::new(outgoing_message);
         let mut client = MockClient::new();
-        client.expect_post_message()
-            .times(1)
-            .returning(|_| Ok(SlackApiChatPostMessageResponse {
+        client.expect_post_message().times(1).returning(|_| {
+            Ok(SlackApiChatPostMessageResponse {
                 channel: SlackChannelId::from("S0M3L0NG1D"),
                 ts: SlackTs::from("123"),
                 message: SlackMessage {
@@ -88,7 +88,8 @@ mod tests {
                     sender: SlackMessageSender::new(),
                     parent: SlackParentMessageParams::new(),
                 },
-            }));
+            })
+        });
         let client = Box::new(client) as Box<dyn SlackBotClient + Send + Sync>;
 
         let result = reply_to_thread(&client, incoming_message_event, outgoing_message).await;

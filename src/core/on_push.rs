@@ -1,10 +1,10 @@
 use crate::actions::resolve_action;
+use crate::core::client::{SlackBotClient, SlackBotHyperClient};
 use crate::SlackBot;
 use slack_morphism::events::SlackPushEventCallback;
 use slack_morphism::hyper_tokio::SlackHyperClient;
 use slack_morphism::listener::SlackClientEventsUserState;
 use std::sync::Arc;
-use crate::core::client::{SlackBotClient, SlackBotHyperClient};
 
 pub async fn on_push_event(
     event: SlackPushEventCallback,
@@ -16,12 +16,11 @@ pub async fn on_push_event(
     let inner_state = states.read().await;
     let bot = inner_state.get_user_state::<SlackBot>().unwrap();
     let mut errors = vec![];
-    let client = Box::new(SlackBotHyperClient::new(client)) as Box<dyn SlackBotClient + Send + Sync>;
+    let client =
+        Box::new(SlackBotHyperClient::new(client)) as Box<dyn SlackBotClient + Send + Sync>;
 
     for plugin in bot.plugins.iter() {
-        let result = plugin
-            .push_event(event.clone(), states.clone())
-            .await;
+        let result = plugin.push_event(event.clone(), states.clone()).await;
 
         resolve_action(result, &client, &mut errors).await;
     }
