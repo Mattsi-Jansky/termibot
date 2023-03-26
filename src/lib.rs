@@ -12,6 +12,7 @@ mod config;
 mod core;
 mod on_command;
 pub mod plugins;
+mod actions;
 
 #[derive(Default)]
 pub struct SlackBot {

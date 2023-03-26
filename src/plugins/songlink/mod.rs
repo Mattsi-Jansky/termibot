@@ -1,12 +1,13 @@
 use slack_morphism::prelude::*;
 
-use crate::plugins::EventResponse::{DoNothing, ReplyToThread};
-use crate::plugins::{EventResponse, Plugin};
+use crate::plugins::Plugin;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 use message_template::SongLinkMessageTemplate;
 use regex::Regex;
 use std::sync::Arc;
+use crate::actions::Action;
+use crate::actions::Action::*;
 
 mod message_template;
 
@@ -32,7 +33,7 @@ impl Plugin for SongLinkPlugin {
         event: SlackPushEventCallback,
         _client: Arc<SlackHyperClient>,
         _states: SlackClientEventsUserState,
-    ) -> EventResponse {
+    ) -> Action {
         if let SlackEventCallbackBody::Message(msg) = event.event {
             let content = msg.content.as_ref().unwrap().text.as_ref().unwrap();
             let captures = SPOTIFY_MATCHER.captures(content);

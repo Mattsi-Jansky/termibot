@@ -2,6 +2,7 @@ use slack_morphism::prelude::*;
 
 use async_trait::async_trait;
 use std::sync::Arc;
+use crate::actions::Action;
 
 pub mod songlink;
 
@@ -16,11 +17,5 @@ pub trait Plugin {
         event: SlackPushEventCallback,
         client: Arc<SlackHyperClient>,
         _states: SlackClientEventsUserState,
-    ) -> EventResponse;
-}
-
-pub enum EventResponse {
-    DoNothing,
-    ReplyToThread(SlackMessageEvent, Box<dyn SlackMessageTemplate + Send + Sync>),
-    Error(Box<dyn std::error::Error + Send + Sync>),
+    ) -> Action;
 }

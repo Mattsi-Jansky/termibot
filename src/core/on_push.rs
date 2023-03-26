@@ -1,12 +1,10 @@
-use crate::plugins::EventResponse;
 use crate::SlackBot;
 use slack_morphism::events::SlackPushEventCallback;
 use slack_morphism::hyper_tokio::SlackHyperClient;
 use slack_morphism::listener::SlackClientEventsUserState;
 use std::sync::Arc;
-use slack_morphism::prelude::SlackApiChatPostMessageRequest;
-use slack_morphism::SlackApiToken;
-use crate::config::CONFIG;
+use crate::actions::Action;
+use crate::actions::handlers::reply_thread::reply_to_thread;
 
 pub async fn on_push_event(
     event: SlackPushEventCallback,
@@ -25,32 +23,14 @@ pub async fn on_push_event(
             .await;
 
         match result {
-            EventResponse::DoNothing => {}
-            EventResponse::ReplyToThread(incoming_message_event, outgoing_message) => {
-                // client.reply_to_thread(outgoing_message., &incoming_message).await?;
-                let ts = incoming_message_event.origin.ts.clone();
-                let channel = incoming_message_event.origin.channel.clone().unwrap();
-                let token: SlackApiToken = SlackApiToken::new(CONFIG.bot_token.clone());
-                let session = client.open_session(&token);
-
-                let request = SlackApiChatPostMessageRequest {
-                    channel,
-                    content: outgoing_message.render_template(),
-                    as_user: None,
-                    icon_emoji: None,
-                    icon_url: None,
-                    link_names: None,
-                    parse: None,
-                    thread_ts: Some(ts),
-                    username: None,
-                    reply_broadcast: None,
-                    unfurl_links: None,
-                    unfurl_media: None,
-                };
-
-                session.chat_post_message(&request).await?;
+            Action::DoNothing => {}
+            Action::ReplyToThread(incoming_message_event, outgoing_message) => {
+                let result = reply_to_thread(&client, incoming_message_event, outgoing_message).await;
+                if let Err(error) = result {
+                    errors.push(error);
+                }
             }
-            EventResponse::Error(error) => errors.push(error),
+            Action::Error(error) => errors.push(error),
         }
     }
 
