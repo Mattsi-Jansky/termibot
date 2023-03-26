@@ -1,8 +1,7 @@
 use slack_morphism::prelude::*;
 
-use self::core::{on_interaction, on_push};
+use self::core::*;
 use crate::config::CONFIG;
-use crate::core::on_error::on_error;
 use crate::plugins::Plugin;
 use hyper::client::HttpConnector;
 use hyper_rustls::HttpsConnector;
@@ -11,7 +10,6 @@ use std::sync::Arc;
 mod actions;
 mod config;
 mod core;
-mod on_command;
 pub mod plugins;
 
 #[derive(Default)]
@@ -75,7 +73,7 @@ impl SlackBot {
     > {
         Arc::new(
             SlackClientEventsListenerEnvironment::new(client)
-                .with_error_handler(on_error)
+                .with_error_handler(on_error::on_error)
                 .with_user_state(self),
         )
     }
