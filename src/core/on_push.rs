@@ -1,5 +1,5 @@
 use crate::actions::resolve_action;
-use crate::core::client::{SlackBotClient, SlackBotHyperClient};
+use crate::core::client::SlackBotHyperClient;
 use crate::SlackBot;
 use slack_morphism::events::SlackPushEventCallback;
 use slack_morphism::hyper_tokio::SlackHyperClient;
@@ -17,7 +17,7 @@ pub async fn on_push_event(
     let bot = inner_state.get_user_state::<SlackBot>().unwrap();
     let mut errors = vec![];
     let client =
-        Box::new(SlackBotHyperClient::new(client)) as Box<dyn SlackBotClient + Send + Sync>;
+        SlackBotHyperClient::new(client);
 
     for plugin in bot.plugins.iter() {
         let result = plugin.push_event(event.clone(), states.clone()).await;

@@ -15,7 +15,7 @@ pub enum Action {
 
 pub async fn resolve_action(
     action: Action,
-    client: &Box<dyn SlackBotClient + Send + Sync>,
+    client: &(dyn SlackBotClient + Send + Sync),
     errors: &mut Vec<Box<dyn std::error::Error + Send + Sync>>,
 ) {
     match action {

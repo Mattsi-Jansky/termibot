@@ -2,7 +2,7 @@ use crate::core::client::SlackBotClient;
 use slack_morphism::prelude::*;
 
 pub async fn reply_to_thread(
-    client: &Box<dyn SlackBotClient + Send + Sync>,
+    client: &(dyn SlackBotClient + Send + Sync),
     message_to_reply_to: SlackMessageEvent,
     outgoing_message: Box<dyn SlackMessageTemplate + Send + Sync>,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
@@ -90,7 +90,6 @@ mod tests {
                 },
             })
         });
-        let client = Box::new(client) as Box<dyn SlackBotClient + Send + Sync>;
 
         let result = reply_to_thread(&client, incoming_message_event, outgoing_message).await;
         assert!(matches!(result, Ok(_)));
