@@ -16,3 +16,6 @@ config-file = "0.2.3"
 lazy_static = "1.4.0"
 async-trait = "0.1.68"
 hyper-rustls = "0.23.2"
+
+[dev-dependencies]
+mockall = "0.11.3"

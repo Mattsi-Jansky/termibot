@@ -1,6 +1,7 @@
 use crate::actions::handlers::reply_thread::reply_to_thread;
 use slack_morphism::prelude::{SlackHyperClient, SlackMessageEvent, SlackMessageTemplate};
 use std::sync::Arc;
+use crate::core::client::SlackBotClient;
 
 pub(crate) mod handlers;
 
@@ -15,7 +16,7 @@ pub enum Action {
 
 pub async fn resolve_action(
     action: Action,
-    client: &Arc<SlackHyperClient>,
+    client: &Box<dyn SlackBotClient + Send + Sync>,
     errors: &mut Vec<Box<dyn std::error::Error + Send + Sync>>,
 ) {
     match action {

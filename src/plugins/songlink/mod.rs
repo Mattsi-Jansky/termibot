@@ -31,7 +31,6 @@ impl Plugin for SongLinkPlugin {
     async fn push_event(
         &self,
         event: SlackPushEventCallback,
-        _client: Arc<SlackHyperClient>,
         _states: SlackClientEventsUserState,
     ) -> Action {
         if let SlackEventCallbackBody::Message(msg) = event.event {
