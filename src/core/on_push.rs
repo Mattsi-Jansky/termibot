@@ -35,7 +35,7 @@ pub async fn on_push_event(
         }
     }
 
-    if errors.len() > 0 {
+    if !errors.is_empty() {
         Err(errors.pop().unwrap())
     } else {
         Ok(())
