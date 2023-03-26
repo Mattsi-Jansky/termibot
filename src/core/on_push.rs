@@ -1,4 +1,4 @@
-use crate::actions::resolve_action;
+use crate::actions::handlers::resolve_action;
 use crate::core::client::SlackBotHyperClient;
 use crate::SlackBot;
 use slack_morphism::events::SlackPushEventCallback;
