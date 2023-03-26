@@ -1,13 +1,13 @@
 use slack_morphism::prelude::*;
 
+use crate::actions::Action;
+use crate::actions::Action::*;
 use crate::plugins::Plugin;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 use message_template::SongLinkMessageTemplate;
 use regex::Regex;
 use std::sync::Arc;
-use crate::actions::Action;
-use crate::actions::Action::*;
 
 mod message_template;
 

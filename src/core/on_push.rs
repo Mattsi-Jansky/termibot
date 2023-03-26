@@ -1,10 +1,10 @@
+use crate::actions::handlers::reply_thread::reply_to_thread;
+use crate::actions::Action;
 use crate::SlackBot;
 use slack_morphism::events::SlackPushEventCallback;
 use slack_morphism::hyper_tokio::SlackHyperClient;
 use slack_morphism::listener::SlackClientEventsUserState;
 use std::sync::Arc;
-use crate::actions::Action;
-use crate::actions::handlers::reply_thread::reply_to_thread;
 
 pub async fn on_push_event(
     event: SlackPushEventCallback,
@@ -25,7 +25,8 @@ pub async fn on_push_event(
         match result {
             Action::DoNothing => {}
             Action::ReplyToThread(incoming_message_event, outgoing_message) => {
-                let result = reply_to_thread(&client, incoming_message_event, outgoing_message).await;
+                let result =
+                    reply_to_thread(&client, incoming_message_event, outgoing_message).await;
                 if let Err(error) = result {
                     errors.push(error);
                 }
