@@ -1,7 +1,6 @@
 use crate::actions::handlers::reply_thread::reply_to_thread;
 use crate::core::client::SlackBotClient;
-use slack_morphism::prelude::{SlackHyperClient, SlackMessageEvent, SlackMessageTemplate};
-use std::sync::Arc;
+use slack_morphism::prelude::{SlackMessageEvent, SlackMessageTemplate};
 
 pub(crate) mod handlers;
 

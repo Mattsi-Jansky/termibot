@@ -7,7 +7,6 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 use message_template::SongLinkMessageTemplate;
 use regex::Regex;
-use std::sync::Arc;
 
 mod message_template;
 

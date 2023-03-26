@@ -34,6 +34,6 @@ impl SlackBotClient for SlackBotHyperClient {
         request: &SlackApiChatPostMessageRequest,
     ) -> ClientResult<SlackApiChatPostMessageResponse> {
         let session = self.hyper_client.open_session(&self.token);
-        session.chat_post_message(&request).await
+        session.chat_post_message(request).await
     }
 }
