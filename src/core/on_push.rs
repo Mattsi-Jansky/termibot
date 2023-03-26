@@ -1,5 +1,4 @@
-use crate::actions::handlers::reply_thread::reply_to_thread;
-use crate::actions::Action;
+use crate::actions::resolve_action;
 use crate::SlackBot;
 use slack_morphism::events::SlackPushEventCallback;
 use slack_morphism::hyper_tokio::SlackHyperClient;
@@ -22,17 +21,7 @@ pub async fn on_push_event(
             .push_event(event.clone(), client.clone(), states.clone())
             .await;
 
-        match result {
-            Action::DoNothing => {}
-            Action::ReplyToThread(incoming_message_event, outgoing_message) => {
-                let result =
-                    reply_to_thread(&client, incoming_message_event, outgoing_message).await;
-                if let Err(error) = result {
-                    errors.push(error);
-                }
-            }
-            Action::Error(error) => errors.push(error),
-        }
+        resolve_action(result, &client, &mut errors).await;
     }
 
     if !errors.is_empty() {
