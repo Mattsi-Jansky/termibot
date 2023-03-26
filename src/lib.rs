@@ -10,7 +10,6 @@ use std::sync::Arc;
 
 mod config;
 mod core;
-mod extensions;
 mod on_command;
 pub mod plugins;
 

@@ -1,7 +1,7 @@
 use slack_morphism::prelude::*;
 
-use crate::extensions::client::MessageSender;
-use crate::plugins::Plugin;
+use crate::plugins::EventResponse::{DoNothing, ReplyToThread};
+use crate::plugins::{EventResponse, Plugin};
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 use message_template::SongLinkMessageTemplate;
@@ -30,9 +30,9 @@ impl Plugin for SongLinkPlugin {
     async fn push_event(
         &self,
         event: SlackPushEventCallback,
-        client: Arc<SlackHyperClient>,
+        _client: Arc<SlackHyperClient>,
         _states: SlackClientEventsUserState,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    ) -> EventResponse {
         if let SlackEventCallbackBody::Message(msg) = event.event {
             let content = msg.content.as_ref().unwrap().text.as_ref().unwrap();
             let captures = SPOTIFY_MATCHER.captures(content);
@@ -46,10 +46,12 @@ impl Plugin for SongLinkPlugin {
                 new_link.push_str(&content[31..]);
 
                 let message = SongLinkMessageTemplate { url: new_link };
-                client.reply_to_thread(message, &msg).await?;
+                ReplyToThread(msg, Box::new(message))
+            } else {
+                DoNothing
             }
+        } else {
+            DoNothing
         }
-
-        Ok(())
     }
 }

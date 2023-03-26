@@ -16,5 +16,11 @@ pub trait Plugin {
         event: SlackPushEventCallback,
         client: Arc<SlackHyperClient>,
         _states: SlackClientEventsUserState,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
+    ) -> EventResponse;
+}
+
+pub enum EventResponse {
+    DoNothing,
+    ReplyToThread(SlackMessageEvent, Box<dyn SlackMessageTemplate + Send + Sync>),
+    Error(Box<dyn std::error::Error + Send + Sync>),
 }
