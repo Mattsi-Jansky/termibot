@@ -33,7 +33,7 @@ mod tests {
     use super::*;
     use async_trait::async_trait;
     use lazy_static::lazy_static;
-    use mockall::mock;
+    use mockall::{mock, predicate};
 
     mock! {
         #[async_trait]
@@ -74,16 +74,26 @@ mod tests {
         };
     }
 
+    fn test_message_content() -> SlackMessageContent {
+        SlackMessageContent::new()
+            .with_text(String::from("my test message"))
+    }
+
     #[tokio::test]
     async fn should_extract_origin_details_and_send_message_replying_to_thread() {
         let mut outgoing_message = MockMessageTemplate::new();
         outgoing_message
             .expect_render_template()
             .times(1)
-            .returning(|| SlackMessageContent::new());
+            .returning(|| test_message_content());
         let outgoing_message = Box::new(outgoing_message);
         let mut client = MockClient::new();
         client.expect_post_message()
+            .with(predicate::function(|request: &SlackApiChatPostMessageRequest|
+                request.thread_ts.as_ref().unwrap().0 == "123"
+                && request.channel.0 == "S0M3L0NG1D"
+                && request.content.eq(&test_message_content())
+            ))
             .times(1)
             .returning(|_| {
             Ok(SlackApiChatPostMessageResponse {
@@ -99,7 +109,7 @@ mod tests {
         });
 
         let result = reply_to_thread(&client, TEST_MESSAGE_EVENT.clone(), outgoing_message).await;
-        
+
         assert!(matches!(result, Ok(_)));
     }
 }
