@@ -75,8 +75,7 @@ mod tests {
     }
 
     fn test_message_content() -> SlackMessageContent {
-        SlackMessageContent::new()
-            .with_text(String::from("my test message"))
+        SlackMessageContent::new().with_text(String::from("my test message"))
     }
 
     #[tokio::test]
@@ -88,25 +87,28 @@ mod tests {
             .returning(|| test_message_content());
         let outgoing_message = Box::new(outgoing_message);
         let mut client = MockClient::new();
-        client.expect_post_message()
-            .with(predicate::function(|request: &SlackApiChatPostMessageRequest|
-                request.thread_ts.as_ref().unwrap().0 == "123"
-                && request.channel.0 == "S0M3L0NG1D"
-                && request.content.eq(&test_message_content())
+        client
+            .expect_post_message()
+            .with(predicate::function(
+                |request: &SlackApiChatPostMessageRequest| {
+                    request.thread_ts.as_ref().unwrap().0 == "123"
+                        && request.channel.0 == "S0M3L0NG1D"
+                        && request.content.eq(&test_message_content())
+                },
             ))
             .times(1)
             .returning(|_| {
-            Ok(SlackApiChatPostMessageResponse {
-                channel: SlackChannelId::from("S0M3L0NG1D"),
-                ts: SlackTs::from("123"),
-                message: SlackMessage {
-                    origin: SlackMessageOrigin::new(SlackTs::from("123")),
-                    content: SlackMessageContent::new(),
-                    sender: SlackMessageSender::new(),
-                    parent: SlackParentMessageParams::new(),
-                },
-            })
-        });
+                Ok(SlackApiChatPostMessageResponse {
+                    channel: SlackChannelId::from("S0M3L0NG1D"),
+                    ts: SlackTs::from("123"),
+                    message: SlackMessage {
+                        origin: SlackMessageOrigin::new(SlackTs::from("123")),
+                        content: SlackMessageContent::new(),
+                        sender: SlackMessageSender::new(),
+                        parent: SlackParentMessageParams::new(),
+                    },
+                })
+            });
 
         let result = reply_to_thread(&client, TEST_MESSAGE_EVENT.clone(), outgoing_message).await;
 
