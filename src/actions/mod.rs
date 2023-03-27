@@ -1,4 +1,3 @@
-use crate::core::client::SlackBotClient;
 use slack_morphism::prelude::{SlackMessageEvent, SlackMessageTemplate};
 
 pub(crate) mod handlers;
