@@ -1,12 +1,12 @@
 use slack_morphism::prelude::*;
 
 use self::core::*;
+use crate::actions::handlers::{ActionHandler, DefaultActionHandler};
 use crate::config::CONFIG;
 use crate::plugins::Plugin;
 use hyper::client::HttpConnector;
 use hyper_rustls::HttpsConnector;
 use std::sync::Arc;
-use crate::actions::handlers::{ActionHandler, DefaultActionHandler};
 
 mod actions;
 mod config;
@@ -15,14 +15,14 @@ pub mod plugins;
 
 pub struct SlackBot {
     pub plugins: Vec<Box<dyn Plugin + Send + Sync>>,
-    pub action_handler: Box<dyn ActionHandler + Send + Sync>
+    pub action_handler: Box<dyn ActionHandler + Send + Sync>,
 }
 
 impl Default for SlackBot {
     fn default() -> Self {
         Self {
             plugins: vec![],
-            action_handler: Box::new(DefaultActionHandler::new())
+            action_handler: Box::new(DefaultActionHandler::new()),
         }
     }
 }

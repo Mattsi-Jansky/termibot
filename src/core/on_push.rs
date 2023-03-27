@@ -20,7 +20,9 @@ pub async fn on_push_event(
     for plugin in bot.plugins.iter() {
         let result = plugin.push_event(event.clone(), states.clone()).await;
 
-        bot.action_handler.resolve_action(result, &client, &mut errors).await;
+        bot.action_handler
+            .resolve_action(result, &client, &mut errors)
+            .await;
     }
 
     if !errors.is_empty() {

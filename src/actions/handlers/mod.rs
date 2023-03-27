@@ -1,7 +1,7 @@
-use async_trait::async_trait;
-use crate::actions::Action;
 use crate::actions::handlers::reply_thread::reply_to_thread;
+use crate::actions::Action;
 use crate::core::client::SlackBotClient;
+use async_trait::async_trait;
 
 pub(crate) mod reply_thread;
 
@@ -18,7 +18,9 @@ pub trait ActionHandler {
 pub struct DefaultActionHandler {}
 
 impl DefaultActionHandler {
-    pub fn new() -> DefaultActionHandler { DefaultActionHandler {} }
+    pub fn new() -> DefaultActionHandler {
+        DefaultActionHandler {}
+    }
 }
 
 #[async_trait]
@@ -32,7 +34,8 @@ impl ActionHandler for DefaultActionHandler {
         match action {
             Action::DoNothing => {}
             Action::ReplyToThread(incoming_message_event, outgoing_message) => {
-                let result = reply_to_thread(client, incoming_message_event, outgoing_message).await;
+                let result =
+                    reply_to_thread(client, incoming_message_event, outgoing_message).await;
                 if let Err(error) = result {
                     errors.push(error);
                 }
