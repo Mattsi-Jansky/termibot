@@ -1,4 +1,3 @@
-use crate::actions::handlers::resolve_action;
 use crate::core::client::SlackBotHyperClient;
 use crate::SlackBot;
 use slack_morphism::events::SlackPushEventCallback;
@@ -21,7 +20,7 @@ pub async fn on_push_event(
     for plugin in bot.plugins.iter() {
         let result = plugin.push_event(event.clone(), states.clone()).await;
 
-        resolve_action(result, &client, &mut errors).await;
+        bot.action_handler.resolve_action(result, &client, &mut errors).await;
     }
 
     if !errors.is_empty() {

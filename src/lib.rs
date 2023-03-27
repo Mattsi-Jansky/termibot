@@ -6,15 +6,25 @@ use crate::plugins::Plugin;
 use hyper::client::HttpConnector;
 use hyper_rustls::HttpsConnector;
 use std::sync::Arc;
+use crate::actions::handlers::{ActionHandler, DefaultActionHandler};
 
 mod actions;
 mod config;
 mod core;
 pub mod plugins;
 
-#[derive(Default)]
 pub struct SlackBot {
     pub plugins: Vec<Box<dyn Plugin + Send + Sync>>,
+    pub action_handler: Box<dyn ActionHandler + Send + Sync>
+}
+
+impl Default for SlackBot {
+    fn default() -> Self {
+        Self {
+            plugins: vec![],
+            action_handler: Box::new(DefaultActionHandler::new())
+        }
+    }
 }
 
 impl SlackBot {
@@ -74,7 +84,8 @@ impl SlackBot {
         Arc::new(
             SlackClientEventsListenerEnvironment::new(client)
                 .with_error_handler(on_error::on_error)
-                .with_user_state(self),
+                .with_user_state(self)
+                .with_user_state(DefaultActionHandler::new()),
         )
     }
 
