@@ -18,4 +18,6 @@ async-trait = "0.1.68"
 hyper-rustls = "0.23.2"
 
 [dev-dependencies]
+chrono = "0.4.24"
+futures-locks = "0.7.1"
 mockall = "0.11.3"

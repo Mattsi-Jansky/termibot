@@ -54,3 +54,83 @@ impl Plugin for SongLinkPlugin {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use futures_locks::RwLock;
+    use super::*;
+
+    #[test]
+    fn given_event_not_message_do_nothing() {
+        let plugin = SongLinkPlugin::new();
+        let event = SlackPushEventCallback {
+            team_id: SlackTeamId(String::from("teamid")),
+            api_app_id: SlackAppId(String::from("appId")),
+            event: SlackEventCallbackBody::EmojiChanged(SlackEmojiChangedEvent {
+                subtype: SlackEmojiEventType::EmojiRemoved,
+                name: None,
+                names: None,
+                old_name: None,
+                new_name: None,
+                value: None,
+                event_ts: SlackTs(String::from("3M0J1")),
+            }),
+            event_id: SlackEventId(String::from("event_id")),
+            event_time: SlackDateTime(Default::default()),
+            event_context: None,
+            authed_users: None,
+            authorizations: None,
+        };
+        let states = RwLock::new(SlackClientEventsUserStateStorage::new());
+
+        let result = plugin.push_event(event, states);
+
+        assert!(matches!(DoNothing, result));
+    }
+
+    #[test]
+    fn given_message_that_does_not_match_known_music_streaming_service_do_nothing() {
+        let plugin = SongLinkPlugin::new();
+        let event = SlackPushEventCallback {
+            team_id: SlackTeamId(String::from("teamid")),
+            api_app_id: SlackAppId(String::from("appId")),
+            event: SlackEventCallbackBody::Message(SlackMessageEvent {
+                origin: SlackMessageOrigin {
+                    ts: SlackTs(String::from("M3554G3")),
+                    channel: None,
+                    channel_type: None,
+                    thread_ts: None,
+                    client_msg_id: None,
+                },
+                content: Some(SlackMessageContent {
+                    text: Some(String::from("https://termisoc.org/")),
+                    blocks: None,
+                    attachments: None,
+                    upload: None,
+                    files: None,
+                    reactions: None,
+                }),
+                sender: SlackMessageSender {
+                    user: None,
+                    bot_id: None,
+                    username: None,
+                    display_as_bot: None,
+                },
+                subtype: None,
+                hidden: None,
+                edited: None,
+                deleted_ts: None,
+            }),
+            event_id: SlackEventId(String::from("event_id")),
+            event_time: SlackDateTime(Default::default()),
+            event_context: None,
+            authed_users: None,
+            authorizations: None,
+        };
+        let states = RwLock::new(SlackClientEventsUserStateStorage::new());
+
+        let result = plugin.push_event(event, states);
+
+        assert!(matches!(DoNothing, result));
+    }
+}

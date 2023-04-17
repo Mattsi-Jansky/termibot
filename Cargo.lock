@@ -1410,7 +1410,9 @@ name = "termibot"
 version = "3.0.0"
 dependencies = [
  "async-trait",
+ "chrono",
  "config-file",
+ "futures-locks",
  "http",
  "hyper",
  "hyper-rustls",
