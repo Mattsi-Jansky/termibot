@@ -1,23 +1,6 @@
-[package]
-name = "termibot"
-version = "3.0.0"
-edition = "2021"
+[workspace]
 
-[dependencies]
-http = "0.2.9"
-hyper = { version = "0.14.25", features = ["full"] }
-serde = { version = "1.0.152", features = ["derive"] }
-slack-morphism = { version = "1.8.0", features = ["axum", "hyper"] }
-tokio = { version = "1.25.0", features = ["full"] }
-tracing = "0.1.37"
-tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
-regex = "1.7.2"
-config-file = "0.2.3"
-lazy_static = "1.4.0"
-async-trait = "0.1.68"
-hyper-rustls = "0.23.2"
-
-[dev-dependencies]
-chrono = "0.4.24"
-futures-locks = "0.7.1"
-mockall = "0.11.3"
+members = [
+    "bot",
+    "framework"
+]
