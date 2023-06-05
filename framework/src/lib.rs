@@ -1,4 +1,5 @@
-use reqwest::{Client, Error, Response};
+use reqwest::{Client, Response};
+use reqwest_middleware::{ClientBuilder, ClientWithMiddleware, Error};
 use response::ApiResponse;
 
 use serde::Deserialize;
@@ -9,14 +10,21 @@ mod message;
 
 pub struct SlackClient {
     bot_token: String,
-    client: Client
+    client: ClientWithMiddleware
 }
 
 impl SlackClient {
     pub fn new(bot_token: &str) -> SlackClient {
         SlackClient {
             bot_token: String::from(bot_token),
-            client: Client::new()
+            client: ClientBuilder::new(Client::new()).build()
+        }
+    }
+
+    pub fn with_client(bot_token: &str, client: ClientWithMiddleware) -> SlackClient {
+        SlackClient {
+            bot_token: String::from(bot_token),
+            client
         }
     }
 
@@ -34,6 +42,7 @@ impl SlackClient {
             .await?
             .json::<ApiResponse>()
             .await
+            .map_err(|err| Error::from(err))
     }
 
     pub async fn message_thread(&self, channel: &str, parent: &Message, message: &str) -> Result<Response, Error> {
