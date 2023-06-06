@@ -16,6 +16,7 @@ pub struct TestConfig {
 
 lazy_static! {
     pub static ref TEST_CONFIG: TestConfig = TestConfig::from_config_file("config/config.toml").unwrap();
+    pub static ref TOKEN_REGEX: Regex = Regex::new(r"(xoxb|xapp-1|xoxp|xoxa-2|xoxr)-([a-zA-Z0-9]+-?){3}").unwrap();
 }
 const FAKE_TOKEN: &str = "xoxn-not-a-real-token";
 
@@ -25,15 +26,16 @@ pub struct TestClientBuilder {
 
 impl Drop for TestClientBuilder {
     fn drop(&mut self) {
-        //On drop remove any secure credentials
-        let regex = Regex::new(r"(xoxb|xapp-1|xoxp|xoxa-2|xoxr)-([a-zA-Z0-9]+-?){3}").unwrap();
-        let files = glob::glob(&format!("{}/tests/resources/*", env!("CARGO_MANIFEST_DIR"))[..]).unwrap();
-        for file in files {
-            let file = file.expect("Cleaning cassette failed - DO NOT COMMIT!");
-            let path = file.as_path();
-            let contents = fs::read_to_string(path).expect("Cleaning cassette failed - DO NOT COMMIT!");
-            let cleaned_contents = regex.replace_all(&contents, FAKE_TOKEN).to_string();
-            fs::write(path, cleaned_contents).expect("Writing cleaned cassette failed - DO NOT COMMIT!");
+        //On drop, if we have recorded a file, remove any secure credentials
+        if TEST_CONFIG.is_record_mode {
+            let files = glob::glob(&format!("{}/tests/resources/*", env!("CARGO_MANIFEST_DIR"))[..]).unwrap();
+            for file in files {
+                let file = file.expect("Cleaning cassette failed - DO NOT COMMIT!");
+                let path = file.as_path();
+                let contents = fs::read_to_string(path).expect("Cleaning cassette failed - DO NOT COMMIT!");
+                let cleaned_contents = TOKEN_REGEX.replace_all(&contents, FAKE_TOKEN).to_string();
+                fs::write(path, cleaned_contents).expect("Writing cleaned cassette failed - DO NOT COMMIT!");
+            }
         }
     }
 }
