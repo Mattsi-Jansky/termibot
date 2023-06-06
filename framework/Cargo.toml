@@ -15,4 +15,6 @@ tokio = { version = "1", features = ["full"] }
 
 [dev-dependencies]
 config-file = "0.2.3"
+glob = "0.3.1"
 lazy_static = "1.4.0"
+regex = "1.8.4"
