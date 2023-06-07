@@ -7,6 +7,7 @@ use crate::message::Message;
 
 mod response;
 mod message;
+pub mod rate_limiter;
 
 pub struct SlackClient {
     bot_token: String,

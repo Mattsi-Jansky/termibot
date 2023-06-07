@@ -7,6 +7,7 @@ use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use regex::Regex;
 use serde::Deserialize;
 use config_file::FromConfigFile;
+use framework::rate_limiter::RateLimitingMiddleware;
 
 #[derive(Deserialize)]
 pub struct TestConfig {
@@ -59,6 +60,7 @@ impl TestClientBuilder {
         }
 
         let vcr_client: ClientWithMiddleware = ClientBuilder::new(reqwest::Client::new())
+            .with(RateLimitingMiddleware::new(1))
             .with(middleware)
             .build();
 
