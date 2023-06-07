@@ -1,41 +1,50 @@
-use framework::SlackClient;
-use std::path::Path;
-use std::fs;
-use lazy_static::lazy_static;
-use rvcr::{VCRMiddleware, VCRMode};
-use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
-use regex::Regex;
-use serde::Deserialize;
 use config_file::FromConfigFile;
 use framework::rate_limiter::RateLimitingMiddleware;
+use framework::SlackClient;
+use lazy_static::lazy_static;
+use regex::Regex;
+use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
+use rvcr::{VCRMiddleware, VCRMode};
+use serde::Deserialize;
+use std::fs;
+use std::path::Path;
 
 #[derive(Deserialize)]
 pub struct TestConfig {
     pub bot_token: String,
-    pub is_record_mode: bool
+    pub is_record_mode: bool,
 }
 
 lazy_static! {
-    pub static ref TEST_CONFIG: TestConfig = TestConfig::from_config_file("config/config.toml").unwrap_or(TestConfig {bot_token: String::from(FAKE_TOKEN), is_record_mode: false});
-    pub static ref TOKEN_REGEX: Regex = Regex::new(r"(xoxb|xapp-1|xoxp|xoxa-2|xoxr)-([a-zA-Z0-9]+-?){3}").unwrap();
+    pub static ref TEST_CONFIG: TestConfig = TestConfig::from_config_file("config/config.toml")
+        .unwrap_or(TestConfig {
+            bot_token: String::from(FAKE_TOKEN),
+            is_record_mode: false
+        });
+    pub static ref TOKEN_REGEX: Regex =
+        Regex::new(r"(xoxb|xapp-1|xoxp|xoxa-2|xoxr)-([a-zA-Z0-9]+-?){3}").unwrap();
 }
 const FAKE_TOKEN: &str = "xoxn-not-a-real-token";
 
 pub struct TestClientBuilder {
-    name: String
+    name: String,
 }
 
 impl Drop for TestClientBuilder {
     fn drop(&mut self) {
         //On drop, if we have recorded a file, remove any secure credentials
         if TEST_CONFIG.is_record_mode {
-            let files = glob::glob(&format!("{}/tests/resources/*", env!("CARGO_MANIFEST_DIR"))[..]).unwrap();
+            let files =
+                glob::glob(&format!("{}/tests/resources/*", env!("CARGO_MANIFEST_DIR"))[..])
+                    .unwrap();
             for file in files {
                 let file = file.expect("Cleaning cassette failed - DO NOT COMMIT!");
                 let path = file.as_path();
-                let contents = fs::read_to_string(path).expect("Cleaning cassette failed - DO NOT COMMIT!");
+                let contents =
+                    fs::read_to_string(path).expect("Cleaning cassette failed - DO NOT COMMIT!");
                 let cleaned_contents = TOKEN_REGEX.replace_all(&contents, FAKE_TOKEN).to_string();
-                fs::write(path, cleaned_contents).expect("Writing cleaned cassette failed - DO NOT COMMIT!");
+                fs::write(path, cleaned_contents)
+                    .expect("Writing cleaned cassette failed - DO NOT COMMIT!");
             }
         }
     }
@@ -43,18 +52,23 @@ impl Drop for TestClientBuilder {
 
 impl TestClientBuilder {
     pub fn new(name: &str) -> TestClientBuilder {
-        TestClientBuilder { name: name.to_string() }
+        TestClientBuilder {
+            name: name.to_string(),
+        }
     }
 
     pub fn new_client(&self) -> SlackClient {
-        let path = format!("{}/tests/resources/{}.vcr.json", env!("CARGO_MANIFEST_DIR"), self.name);
+        let path = format!(
+            "{}/tests/resources/{}.vcr.json",
+            env!("CARGO_MANIFEST_DIR"),
+            self.name
+        );
         let path = Path::new(&path);
         if TEST_CONFIG.is_record_mode && path.exists() {
             fs::remove_file(path).expect(&format!("Failed to delete old cassette {:?}", path)[..]);
         }
 
-        let mut vcr_testing_middleware = VCRMiddleware::try_from(path.to_path_buf())
-            .unwrap();
+        let mut vcr_testing_middleware = VCRMiddleware::try_from(path.to_path_buf()).unwrap();
         if TEST_CONFIG.is_record_mode {
             vcr_testing_middleware = vcr_testing_middleware.with_mode(VCRMode::Record);
         }

@@ -2,35 +2,41 @@ use reqwest::{Client, Response};
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware, Error};
 use response::ApiResponse;
 
-use serde::Deserialize;
 use crate::message::Message;
 use crate::rate_limiter::RateLimitingMiddleware;
+use serde::Deserialize;
 
-mod response;
 mod message;
 pub mod rate_limiter;
+mod response;
 
 pub struct SlackClient {
     bot_token: String,
-    client: ClientWithMiddleware
+    client: ClientWithMiddleware,
 }
 
 impl SlackClient {
     pub fn new(bot_token: &str) -> SlackClient {
         SlackClient {
             bot_token: String::from(bot_token),
-            client: ClientBuilder::new(Client::new()).with(RateLimitingMiddleware::new()).build()
+            client: ClientBuilder::new(Client::new())
+                .with(RateLimitingMiddleware::new())
+                .build(),
         }
     }
 
     pub fn with_client(bot_token: &str, client: ClientWithMiddleware) -> SlackClient {
         SlackClient {
             bot_token: String::from(bot_token),
-            client
+            client,
         }
     }
 
-    pub async fn message_channel(&self, channel: &str, message: &str) -> Result<ApiResponse, Error> {
+    pub async fn message_channel(
+        &self,
+        channel: &str,
+        message: &str,
+    ) -> Result<ApiResponse, Error> {
         self.client
             .post("https://slack.com/api/chat.postMessage")
             .header("Authorization", format!("Bearer {}", self.bot_token))
@@ -47,7 +53,12 @@ impl SlackClient {
             .map_err(|err| Error::from(err))
     }
 
-    pub async fn message_thread(&self, channel: &str, parent: &Message, message: &str) -> Result<Response, Error> {
+    pub async fn message_thread(
+        &self,
+        channel: &str,
+        parent: &Message,
+        message: &str,
+    ) -> Result<Response, Error> {
         self.client
             .post("https://slack.com/api/chat.postMessage")
             .header("Authorization", format!("Bearer {}", self.bot_token))

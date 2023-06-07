@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-#[derive(Debug,Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct Message {
     #[serde(rename = "ts")]
     pub id: String,
