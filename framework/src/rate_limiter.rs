@@ -18,6 +18,12 @@ impl RateLimitingMiddleware {
     }
 }
 
+impl Default for RateLimitingMiddleware {
+    fn default() -> Self {
+        RateLimitingMiddleware::new()
+    }
+}
+
 #[async_trait::async_trait]
 impl Middleware for RateLimitingMiddleware {
     async fn handle(

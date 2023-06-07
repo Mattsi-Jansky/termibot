@@ -4,7 +4,6 @@ use response::ApiResponse;
 
 use crate::message::Message;
 use crate::rate_limiter::RateLimitingMiddleware;
-use serde::Deserialize;
 
 mod message;
 pub mod rate_limiter;
@@ -50,7 +49,7 @@ impl SlackClient {
             .await?
             .json::<ApiResponse>()
             .await
-            .map_err(|err| Error::from(err))
+            .map_err(Error::from)
     }
 
     pub async fn message_thread(
