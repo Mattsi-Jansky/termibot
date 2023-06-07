@@ -11,8 +11,8 @@ pub struct RateLimitingMiddleware {
 }
 
 impl RateLimitingMiddleware {
-    pub fn new(rate_limit: u32) -> RateLimitingMiddleware {
-        RateLimitingMiddleware { limiter: RateLimiter::direct(Quota::per_second(nonzero!(1u32))) }
+    pub fn new() -> RateLimitingMiddleware {
+        RateLimitingMiddleware { limiter: RateLimiter::direct(Quota::per_second(nonzero!(8u32))) }
     }
 }
 

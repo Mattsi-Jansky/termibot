@@ -24,12 +24,18 @@ async fn given_too_many_requests_should_throttle_to_avoid_rate_limit() {
     let builder = TestClientBuilder::new("given_too_many_requests_should_throttle_to_avoid_rate_limit");
     let client = builder.new_client();
 
-    client.message_channel("#bots", "foobar").await.expect("Should succeed");
     let before = SystemTime::now();
     client.message_channel("#bots", "foobar").await.expect("Should succeed");
+    client.message_channel("#bots", "foobar").await.expect("Should succeed");
+    client.message_channel("#bots", "foobar").await.expect("Should succeed");
+    client.message_channel("#bots", "foobar").await.expect("Should succeed");
+    client.message_channel("#bots", "foobar").await.expect("Should succeed");
+    client.message_channel("#bots", "foobar").await.expect("Should succeed");
+    client.message_channel("#bots", "foobar").await.expect("Should succeed");
+    client.message_channel("#bots", "foobar").await.expect("Should succeed");
 
+    client.message_channel("#bots", "foobar").await.expect("Should succeed");
 
     let duration = before.elapsed().unwrap().as_millis();
-    println!("Duration: {}", duration);
-    assert!(duration >= 900 && duration <= 2000, "Wrong duration: {}", duration);
+    assert!(duration >= 75, "Wrong duration: {}", duration);
 }

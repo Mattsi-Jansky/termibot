@@ -4,6 +4,7 @@ use response::ApiResponse;
 
 use serde::Deserialize;
 use crate::message::Message;
+use crate::rate_limiter::RateLimitingMiddleware;
 
 mod response;
 mod message;
@@ -18,7 +19,7 @@ impl SlackClient {
     pub fn new(bot_token: &str) -> SlackClient {
         SlackClient {
             bot_token: String::from(bot_token),
-            client: ClientBuilder::new(Client::new()).build()
+            client: ClientBuilder::new(Client::new()).with(RateLimitingMiddleware::new()).build()
         }
     }
 

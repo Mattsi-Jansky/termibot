@@ -53,15 +53,15 @@ impl TestClientBuilder {
             fs::remove_file(path).expect(&format!("Failed to delete old cassette {:?}", path)[..]);
         }
 
-        let mut middleware = VCRMiddleware::try_from(path.to_path_buf())
+        let mut vcr_testing_middleware = VCRMiddleware::try_from(path.to_path_buf())
             .unwrap();
         if TEST_CONFIG.is_record_mode {
-            middleware = middleware.with_mode(VCRMode::Record);
+            vcr_testing_middleware = vcr_testing_middleware.with_mode(VCRMode::Record);
         }
 
         let vcr_client: ClientWithMiddleware = ClientBuilder::new(reqwest::Client::new())
-            .with(RateLimitingMiddleware::new(1))
-            .with(middleware)
+            .with(RateLimitingMiddleware::new())
+            .with(vcr_testing_middleware)
             .build();
 
         if TEST_CONFIG.is_record_mode {
