@@ -16,7 +16,7 @@ pub struct TestConfig {
 }
 
 lazy_static! {
-    pub static ref TEST_CONFIG: TestConfig = TestConfig::from_config_file("config/config.toml").unwrap();
+    pub static ref TEST_CONFIG: TestConfig = TestConfig::from_config_file("config/config.toml").unwrap_or(TestConfig {bot_token: String::from(FAKE_TOKEN), is_record_mode: false});
     pub static ref TOKEN_REGEX: Regex = Regex::new(r"(xoxb|xapp-1|xoxp|xoxa-2|xoxr)-([a-zA-Z0-9]+-?){3}").unwrap();
 }
 const FAKE_TOKEN: &str = "xoxn-not-a-real-token";
