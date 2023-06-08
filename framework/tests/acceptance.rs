@@ -19,8 +19,6 @@ async fn should_send_messages_to_channels_and_threads() {
     assert!(result2.is_ok());
 }
 
-//Parameterise the limits so that we can reduce the limit in the test, make it faster
-//Check time before and after, make sure minimum time has passed
 #[tokio::test]
 async fn given_too_many_requests_should_throttle_to_avoid_rate_limit() {
     let builder =
@@ -28,38 +26,12 @@ async fn given_too_many_requests_should_throttle_to_avoid_rate_limit() {
     let client = builder.new_client();
 
     let before = SystemTime::now();
-    client
-        .message_channel("#bots", "foobar")
-        .await
-        .expect("Should succeed");
-    client
-        .message_channel("#bots", "foobar")
-        .await
-        .expect("Should succeed");
-    client
-        .message_channel("#bots", "foobar")
-        .await
-        .expect("Should succeed");
-    client
-        .message_channel("#bots", "foobar")
-        .await
-        .expect("Should succeed");
-    client
-        .message_channel("#bots", "foobar")
-        .await
-        .expect("Should succeed");
-    client
-        .message_channel("#bots", "foobar")
-        .await
-        .expect("Should succeed");
-    client
-        .message_channel("#bots", "foobar")
-        .await
-        .expect("Should succeed");
-    client
-        .message_channel("#bots", "foobar")
-        .await
-        .expect("Should succeed");
+    for i in 0..8 {
+        client
+            .message_channel("#bots", "foobar")
+            .await
+            .expect("Should succeed");
+    }
 
     client
         .message_channel("#bots", "foobar")
