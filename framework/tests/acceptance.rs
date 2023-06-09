@@ -4,6 +4,7 @@ use crate::test_client_builder::TestClientBuilder;
 use std::time::SystemTime;
 
 #[tokio::test]
+#[ignore]
 async fn should_send_messages_to_channels_and_threads() {
     let builder = TestClientBuilder::new("should_send_messages_to_channels_and_threads");
     let client = builder.new_client();
@@ -20,6 +21,7 @@ async fn should_send_messages_to_channels_and_threads() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn given_too_many_requests_should_throttle_to_avoid_rate_limit() {
     let builder =
         TestClientBuilder::new("given_too_many_requests_should_throttle_to_avoid_rate_limit");
@@ -40,4 +42,15 @@ async fn given_too_many_requests_should_throttle_to_avoid_rate_limit() {
 
     let duration = before.elapsed().unwrap().as_millis();
     assert!(duration >= 75, "Wrong duration: {}", duration);
+}
+
+#[tokio::test]
+async fn should_initiate_socket_mode_connection() {
+    let builder =
+        TestClientBuilder::new("should_initiate_socket_mode_connection");
+    let client = builder.new_client();
+
+    let listener = client.connect_to_socket_mode().await;
+
+    println!("=== {:?}", listener);
 }

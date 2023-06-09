@@ -12,6 +12,7 @@ use std::path::Path;
 #[derive(Deserialize)]
 pub struct TestConfig {
     pub bot_token: String,
+    pub app_token: String,
     pub is_record_mode: bool,
 }
 
@@ -19,12 +20,17 @@ lazy_static! {
     pub static ref TEST_CONFIG: TestConfig = TestConfig::from_config_file("config/config.toml")
         .unwrap_or(TestConfig {
             bot_token: String::from(FAKE_TOKEN),
+            app_token: String::from(FAKE_TOKEN),
             is_record_mode: false
         });
     pub static ref TOKEN_REGEX: Regex =
         Regex::new(r"(xoxb|xapp-1|xoxp|xoxa-2|xoxr)-([a-zA-Z0-9]+-?){3}").unwrap();
+    pub static ref TICKET_REGEX: Regex = Regex::new(r"\?ticket=([a-zA-Z0-9]+-?){5}").unwrap();
+    pub static ref APP_ID_REGEX: Regex = Regex::new(r"&app_id=([a-zA-Z0-9]+-?)").unwrap();
 }
 const FAKE_TOKEN: &str = "xoxn-not-a-real-token";
+const FAKE_TICKET: &str = "?ticket=not-a-real-ticket";
+const FAKE_APP_ID: &str = "&app_id=notarealappid";
 
 pub struct TestClientBuilder {
     name: String,
@@ -43,8 +49,11 @@ impl Drop for TestClientBuilder {
                 let contents =
                     fs::read_to_string(path).expect("Cleaning cassette failed - DO NOT COMMIT!");
                 let cleaned_contents = TOKEN_REGEX.replace_all(&contents, FAKE_TOKEN).to_string();
+                let cleaned_contents = TICKET_REGEX.replace_all(&cleaned_contents, FAKE_TICKET).to_string();
+                let cleaned_contents = APP_ID_REGEX.replace_all(&cleaned_contents, FAKE_APP_ID).to_string();
                 fs::write(path, cleaned_contents)
                     .expect("Writing cleaned cassette failed - DO NOT COMMIT!");
+
             }
         }
     }
@@ -79,9 +88,9 @@ impl TestClientBuilder {
             .build();
 
         if TEST_CONFIG.is_record_mode {
-            SlackClient::with_client(&TEST_CONFIG.bot_token[..], vcr_client)
+            SlackClient::with_client(&TEST_CONFIG.bot_token[..], &TEST_CONFIG.app_token[..], vcr_client)
         } else {
-            SlackClient::with_client(&FAKE_TOKEN, vcr_client)
+            SlackClient::with_client(&FAKE_TOKEN, &FAKE_TOKEN, vcr_client)
         }
     }
 }
