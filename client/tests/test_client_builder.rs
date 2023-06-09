@@ -1,6 +1,6 @@
-use config_file::FromConfigFile;
 use client::rate_limiter::RateLimitingMiddleware;
 use client::ReqwestSlackClient;
+use config_file::FromConfigFile;
 use lazy_static::lazy_static;
 use regex::Regex;
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
@@ -47,10 +47,11 @@ impl Drop for TestClientBuilder {
                 let contents =
                     fs::read_to_string(path).expect("Cleaning cassette failed - DO NOT COMMIT!");
                 let cleaned_contents = TOKEN_REGEX.replace_all(&contents, FAKE_TOKEN).to_string();
-                let cleaned_contents = WSS_URL_REGEX.replace_all(&cleaned_contents, FAKE_WSS_URL).to_string();
+                let cleaned_contents = WSS_URL_REGEX
+                    .replace_all(&cleaned_contents, FAKE_WSS_URL)
+                    .to_string();
                 fs::write(path, cleaned_contents)
                     .expect("Writing cleaned cassette failed - DO NOT COMMIT!");
-
             }
         }
     }
@@ -85,7 +86,11 @@ impl TestClientBuilder {
             .build();
 
         if TEST_CONFIG.is_record_mode {
-            ReqwestSlackClient::with_client(&TEST_CONFIG.bot_token[..], &TEST_CONFIG.app_token[..], vcr_client)
+            ReqwestSlackClient::with_client(
+                &TEST_CONFIG.bot_token[..],
+                &TEST_CONFIG.app_token[..],
+                vcr_client,
+            )
         } else {
             ReqwestSlackClient::with_client(FAKE_TOKEN, FAKE_TOKEN, vcr_client)
         }

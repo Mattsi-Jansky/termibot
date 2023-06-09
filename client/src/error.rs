@@ -6,7 +6,10 @@ pub struct SlackClientError(String);
 
 impl From<reqwest_middleware::Error> for SlackClientError {
     fn from(value: reqwest_middleware::Error) -> Self {
-        SlackClientError(format!("Error with Reqest (HTTP) middleware (Rate limiting?) error: {}", value))
+        SlackClientError(format!(
+            "Error with Reqest (HTTP) middleware (Rate limiting?) error: {}",
+            value
+        ))
     }
 }
 
