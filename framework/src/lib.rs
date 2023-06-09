@@ -16,6 +16,7 @@ mod response;
 mod error;
 mod socket_listener;
 
+/// A client for talking to the Slack API
 pub struct SlackClient {
     bot_token: String,
     app_token: String,
@@ -62,6 +63,9 @@ impl SlackClient {
             .map_err(SlackClientError::from)
     }
 
+    /// Send a reply to a thread.
+    ///
+    /// Threads are specified with `parent`, specifying the message to reply to.
     pub async fn message_thread(
         &self,
         channel: &str,
