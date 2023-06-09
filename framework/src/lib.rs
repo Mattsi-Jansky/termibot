@@ -1,12 +1,11 @@
-use futures_util::{future, pin_mut, StreamExt};
+use futures_util::StreamExt;
 use reqwest::{Client, Response};
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use serde::Deserialize;
 use tokio::io::AsyncWriteExt;
-use tokio::net::TcpStream;
-use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
 use error::SlackClientError;
 use response::ApiResponse;
+use socket_listener::{SlackSocketModeListener, SlackSocketModeListenerBuilder};
 
 use crate::message::Message;
 use crate::rate_limiter::RateLimitingMiddleware;
@@ -15,6 +14,7 @@ mod message;
 pub mod rate_limiter;
 mod response;
 mod error;
+mod socket_listener;
 
 pub struct SlackClient {
     bot_token: String,
@@ -96,30 +96,5 @@ impl SlackClient {
             .await?;
 
         Ok(builder.connect().await?)
-    }
-}
-
-#[derive(Debug, Deserialize)]
-pub struct SlackSocketModeListenerBuilder {
-    /// The websocket address changes per account. You get the URL by requesting it from the `apps.connections.open` endpoint.
-    url: String
-}
-
-impl SlackSocketModeListenerBuilder {
-    async fn connect(&self) -> Result<SlackSocketModeListener, SlackClientError> {
-        let url = url::Url::parse(&self.url).unwrap();
-        let (stream, _) = connect_async(url).await?;
-        Ok(SlackSocketModeListener{ stream })
-    }
-}
-
-#[derive(Debug)]
-pub struct SlackSocketModeListener {
-    stream: WebSocketStream<MaybeTlsStream<TcpStream>>
-}
-
-impl SlackSocketModeListener {
-    pub async fn next(&mut self) -> tokio_tungstenite::tungstenite::Message {
-        self.stream.next().await.unwrap().unwrap()
     }
 }
