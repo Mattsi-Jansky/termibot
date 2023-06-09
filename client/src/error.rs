@@ -6,24 +6,24 @@ pub struct SlackClientError(String);
 
 impl From<reqwest_middleware::Error> for SlackClientError {
     fn from(value: reqwest_middleware::Error) -> Self {
-        SlackClientError { 0: format!("Error with Reqest (HTTP) middleware (Rate limiting?) error: {}", value.to_string()) }
+        SlackClientError(format!("Error with Reqest (HTTP) middleware (Rate limiting?) error: {}", value))
     }
 }
 
 impl From<reqwest::Error> for SlackClientError {
     fn from(value: reqwest::Error) -> Self {
-        SlackClientError { 0: format!("Reqwest (HTTP) error: {}", value.to_string()) }
+        SlackClientError(format!("Reqwest (HTTP) error: {}", value))
     }
 }
 
 impl From<io::Error> for SlackClientError {
     fn from(value: io::Error) -> Self {
-        SlackClientError { 0: format!("IO (TCP?) error: {}", value.to_string()) }
+        SlackClientError(format!("IO (TCP?) error: {}", value))
     }
 }
 
 impl From<tungstenite::Error> for SlackClientError {
     fn from(value: tungstenite::Error) -> Self {
-        SlackClientError { 0: format!("Tungstenite (Websockets) error: {}", value.to_string()) }
+        SlackClientError(format!("Tungstenite (Websockets) error: {}", value))
     }
 }

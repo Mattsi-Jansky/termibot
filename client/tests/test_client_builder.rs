@@ -87,7 +87,7 @@ impl TestClientBuilder {
         if TEST_CONFIG.is_record_mode {
             ReqwestSlackClient::with_client(&TEST_CONFIG.bot_token[..], &TEST_CONFIG.app_token[..], vcr_client)
         } else {
-            ReqwestSlackClient::with_client(&FAKE_TOKEN, &FAKE_TOKEN, vcr_client)
+            ReqwestSlackClient::with_client(FAKE_TOKEN, FAKE_TOKEN, vcr_client)
         }
     }
 }

@@ -2,7 +2,7 @@ mod test_client_builder;
 
 use crate::test_client_builder::TestClientBuilder;
 use std::time::SystemTime;
-use futures_util::{AsyncRead, AsyncWrite, SinkExt, StreamExt};
+
 use client::SlackClient;
 
 #[tokio::test]
@@ -28,7 +28,7 @@ async fn given_too_many_requests_should_throttle_to_avoid_rate_limit() {
     let client = builder.new_client();
 
     let before = SystemTime::now();
-    for i in 0..9 {
+    for _i in 0..9 {
         client
             .message_channel("#bots", "foobar")
             .await
