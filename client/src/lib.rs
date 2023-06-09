@@ -1,9 +1,6 @@
 use async_trait::async_trait;
-use futures_util::StreamExt;
 use reqwest::{Client, Response};
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
-use serde::Deserialize;
-use tokio::io::AsyncWriteExt;
 use error::SlackClientError;
 use response::ApiResponse;
 use socket_listener::{SlackSocketModeListener, SlackSocketModeListenerBuilder};
