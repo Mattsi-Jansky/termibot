@@ -119,17 +119,7 @@ pub struct SlackSocketModeListener {
 }
 
 impl SlackSocketModeListener {
-    pub async fn listen(&mut self) -> tokio_tungstenite::tungstenite::Message {
-        // let (_, read) = self.stream.split();
+    pub async fn next(&mut self) -> tokio_tungstenite::tungstenite::Message {
         self.stream.next().await.unwrap().unwrap()
-        //
-        // let ws_to_stdout = {
-        //     read.for_each(|message| async {
-        //         let data = message.unwrap().into_data();
-        //         tokio::io::stdout().write_all(&data).await.unwrap();
-        //     })
-        // };
-        //
-        // ws_to_stdout.await;
     }
 }
