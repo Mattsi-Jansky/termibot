@@ -6,6 +6,7 @@ use tokio::net::TcpListener;
 use tokio_tungstenite::accept_async;
 use tokio_tungstenite::tungstenite::Message;
 use futures_util::SinkExt;
+use framework::SlackClient;
 use crate::test_client_builder::TestClientBuilder;
 
 const FAKE_SLACK_TEXT_MESSAGE: &str = "{\"envelope_id\":\"fake-enve-lope-i-d\",\"payload\":{\"token\":\"F4K3T0K3N\",\"team_id\":\"F4K3T34M1D\",\"context_team_id\":\"F4K3T34M1D\",\"context_enterprise_id\":null,\"api_app_id\":\"F4K34P1ID\",\"event\":{\"client_msg_id\":\"fake-client-msg-id\",\"type\":\"message\",\"text\":\"test\",\"user\":\"F4K3USER1D\",\"ts\":\"1686321337.206879\",\"blocks\":[{\"type\":\"rich_text\",\"block_id\":\"\\/5p\",\"elements\":[{\"type\":\"rich_text_section\",\"elements\":[{\"type\":\"text\",\"text\":\"test\"}]}]}],\"team\":\"F4K3T34M1D\",\"channel\":\"F4K3CH4NN3L1D\",\"event_ts\":\"1686321337.206879\",\"channel_type\":\"im\"},\"type\":\"event_callback\",\"event_id\":\"F4K33V3NT1D\",\"event_time\":1686321337,\"authed_users\":[\"F4K3USER1D\"],\"authorizations\":[{\"enterprise_id\":null,\"team_id\":\"F4K3T34M1D\",\"user_id\":\"F4K3USER1D\",\"is_bot\":true,\"is_enterprise_install\":false}],\"is_ext_shared_channel\":false,\"event_context\":\"4-fake-event-context\"},\"type\":\"events_api\",\"accepts_response_payload\":false,\"retry_attempt\":0,\"retry_reason\":\"\"}";

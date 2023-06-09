@@ -1,6 +1,6 @@
 use config_file::FromConfigFile;
 use framework::rate_limiter::RateLimitingMiddleware;
-use framework::SlackClient;
+use framework::ReqwestSlackClient;
 use lazy_static::lazy_static;
 use regex::Regex;
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
@@ -63,7 +63,7 @@ impl TestClientBuilder {
         }
     }
 
-    pub fn new_client(&self) -> SlackClient {
+    pub fn new_client(&self) -> ReqwestSlackClient {
         let path = format!(
             "{}/tests/resources/{}.vcr.json",
             env!("CARGO_MANIFEST_DIR"),
@@ -85,9 +85,9 @@ impl TestClientBuilder {
             .build();
 
         if TEST_CONFIG.is_record_mode {
-            SlackClient::with_client(&TEST_CONFIG.bot_token[..], &TEST_CONFIG.app_token[..], vcr_client)
+            ReqwestSlackClient::with_client(&TEST_CONFIG.bot_token[..], &TEST_CONFIG.app_token[..], vcr_client)
         } else {
-            SlackClient::with_client(&FAKE_TOKEN, &FAKE_TOKEN, vcr_client)
+            ReqwestSlackClient::with_client(&FAKE_TOKEN, &FAKE_TOKEN, vcr_client)
         }
     }
 }

@@ -161,6 +161,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "client"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "config-file",
+ "futures-channel",
+ "futures-util",
+ "glob",
+ "governor",
+ "lazy_static",
+ "nonzero",
+ "regex",
+ "reqwest",
+ "reqwest-middleware",
+ "rvcr",
+ "serde",
+ "serde_json",
+ "task-local-extensions",
+ "tokio",
+ "tokio-tungstenite",
+ "url",
+]
+
+[[package]]
 name = "config-file"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -395,24 +419,7 @@ checksum = "6c2141d6d6c8512188a7891b4b01590a45f6dac67afb4f255c4124dbb86d4eaa"
 name = "framework"
 version = "0.1.0"
 dependencies = [
- "async-trait",
- "config-file",
- "futures-channel",
- "futures-util",
- "glob",
- "governor",
- "lazy_static",
- "nonzero",
- "regex",
- "reqwest",
- "reqwest-middleware",
- "rvcr",
- "serde",
- "serde_json",
- "task-local-extensions",
- "tokio",
- "tokio-tungstenite",
- "url",
+ "client",
 ]
 
 [[package]]

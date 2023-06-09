@@ -17,15 +17,35 @@ mod error;
 mod socket_listener;
 
 /// A client for talking to the Slack API
-pub struct SlackClient {
+pub trait SlackClient {
+    async fn message_channel(
+        &self,
+        channel: &str,
+        message: &str,
+    ) -> Result<ApiResponse, SlackClientError>;
+
+    /// Send a reply to a thread.
+    ///
+    /// Threads are specified with `parent`, specifying the message to reply to.
+    async fn message_thread(
+        &self,
+        channel: &str,
+        parent: &Message,
+        message: &str,
+    ) -> Result<Response, SlackClientError>;
+    async fn connect_to_socket_mode(&self) -> Result<SlackSocketModeListener, SlackClientError>;
+}
+
+/// A client for talking to the Slack API
+pub struct ReqwestSlackClient {
     bot_token: String,
     app_token: String,
     http: ClientWithMiddleware,
 }
 
-impl SlackClient {
-    pub fn new(bot_token: &str, app_token: &str) -> SlackClient {
-        SlackClient {
+impl ReqwestSlackClient {
+    pub fn new(bot_token: &str, app_token: &str) -> ReqwestSlackClient {
+        ReqwestSlackClient {
             bot_token: String::from(bot_token),
             app_token: String::from(app_token),
             http: ClientBuilder::new(Client::new())
@@ -34,15 +54,17 @@ impl SlackClient {
         }
     }
 
-    pub fn with_client(bot_token: &str, app_token: &str, client: ClientWithMiddleware) -> SlackClient {
-        SlackClient {
+    pub fn with_client(bot_token: &str, app_token: &str, client: ClientWithMiddleware) -> ReqwestSlackClient {
+        ReqwestSlackClient {
             bot_token: String::from(bot_token),
             app_token: String::from(app_token),
             http: client,
         }
     }
+}
 
-    pub async fn message_channel(
+impl SlackClient for ReqwestSlackClient {
+    async fn message_channel(
         &self,
         channel: &str,
         message: &str,
@@ -62,11 +84,10 @@ impl SlackClient {
             .await
             .map_err(SlackClientError::from)
     }
-
     /// Send a reply to a thread.
     ///
     /// Threads are specified with `parent`, specifying the message to reply to.
-    pub async fn message_thread(
+    async fn message_thread(
         &self,
         channel: &str,
         parent: &Message,
@@ -86,8 +107,7 @@ impl SlackClient {
             .await
             .map_err(SlackClientError::from)
     }
-
-    pub async fn connect_to_socket_mode(&self) -> Result<SlackSocketModeListener, SlackClientError> {
+    async fn connect_to_socket_mode(&self) -> Result<SlackSocketModeListener, SlackClientError> {
         let builder = self.http
             .post("https://slack.com/api/apps.connections.open")
             .header("Authorization", format!("Bearer {}", self.app_token))
