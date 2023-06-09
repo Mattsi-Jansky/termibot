@@ -25,12 +25,10 @@ lazy_static! {
         });
     pub static ref TOKEN_REGEX: Regex =
         Regex::new(r"(xoxb|xapp-1|xoxp|xoxa-2|xoxr)-([a-zA-Z0-9]+-?){3}").unwrap();
-    pub static ref TICKET_REGEX: Regex = Regex::new(r"\?ticket=([a-zA-Z0-9]+-?){5}").unwrap();
-    pub static ref APP_ID_REGEX: Regex = Regex::new(r"&app_id=([a-zA-Z0-9]+-?)").unwrap();
+    pub static ref WSS_URL_REGEX: Regex = Regex::new("\\\\\"url\\\\\":\\\\\".*?\\\\\"").unwrap();
 }
 const FAKE_TOKEN: &str = "xoxn-not-a-real-token";
-const FAKE_TICKET: &str = "?ticket=not-a-real-ticket";
-const FAKE_APP_ID: &str = "&app_id=notarealappid";
+const FAKE_WSS_URL: &str = "\\\"url\\\":\\\"ws://localhost:12345/\\\"";
 
 pub struct TestClientBuilder {
     name: String,
@@ -49,8 +47,7 @@ impl Drop for TestClientBuilder {
                 let contents =
                     fs::read_to_string(path).expect("Cleaning cassette failed - DO NOT COMMIT!");
                 let cleaned_contents = TOKEN_REGEX.replace_all(&contents, FAKE_TOKEN).to_string();
-                let cleaned_contents = TICKET_REGEX.replace_all(&cleaned_contents, FAKE_TICKET).to_string();
-                let cleaned_contents = APP_ID_REGEX.replace_all(&cleaned_contents, FAKE_APP_ID).to_string();
+                let cleaned_contents = WSS_URL_REGEX.replace_all(&cleaned_contents, FAKE_WSS_URL).to_string();
                 fs::write(path, cleaned_contents)
                     .expect("Writing cleaned cassette failed - DO NOT COMMIT!");
 

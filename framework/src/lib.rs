@@ -1,8 +1,10 @@
+use futures_util::{future, pin_mut, StreamExt};
 use reqwest::{Client, Response};
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use serde::Deserialize;
+use tokio::io::AsyncWriteExt;
 use tokio::net::TcpStream;
-use tokio_tungstenite::{client_async, WebSocketStream};
+use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
 use error::SlackClientError;
 use response::ApiResponse;
 
@@ -105,21 +107,29 @@ pub struct SlackSocketModeListenerBuilder {
 
 impl SlackSocketModeListenerBuilder {
     async fn connect(&self) -> Result<SlackSocketModeListener, SlackClientError> {
-        let tcp = TcpStream::connect(&self.url[5..]).await?;
-        let (mut stream, _) = client_async(&self.url, tcp).await?;
+        let url = url::Url::parse(&self.url).unwrap();
+        let (stream, _) = connect_async(url).await?;
         Ok(SlackSocketModeListener{ stream })
     }
 }
 
 #[derive(Debug)]
 pub struct SlackSocketModeListener {
-    stream: WebSocketStream<TcpStream>
+    stream: WebSocketStream<MaybeTlsStream<TcpStream>>
 }
 
 impl SlackSocketModeListener {
-    async fn next(&self) -> Result<SocketMessage, ()> {
-        todo!()
+    pub async fn listen(&mut self) -> tokio_tungstenite::tungstenite::Message {
+        // let (_, read) = self.stream.split();
+        self.stream.next().await.unwrap().unwrap()
+        //
+        // let ws_to_stdout = {
+        //     read.for_each(|message| async {
+        //         let data = message.unwrap().into_data();
+        //         tokio::io::stdout().write_all(&data).await.unwrap();
+        //     })
+        // };
+        //
+        // ws_to_stdout.await;
     }
 }
-
-struct SocketMessage {}
