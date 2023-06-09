@@ -1,6 +1,6 @@
-# Slack bot client thingy
+# Slack bot client
 
-This is still quite experimental but this library represents a client for interacting with the Slack API.
+A client for interacting with the Slack API.
 
 ## Tests
 
