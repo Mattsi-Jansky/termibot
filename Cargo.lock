@@ -409,6 +409,7 @@ dependencies = [
  "serde_json",
  "task-local-extensions",
  "tokio",
+ "tokio-tungstenite",
 ]
 
 [[package]]
@@ -1958,9 +1959,11 @@ checksum = "ec509ac96e9a0c43427c74f003127d953a265737636129424288d27cb5c4b12c"
 dependencies = [
  "futures-util",
  "log",
+ "native-tls",
  "rustls 0.21.1",
  "rustls-native-certs",
  "tokio",
+ "tokio-native-tls",
  "tokio-rustls 0.24.0",
  "tungstenite",
 ]
@@ -2097,6 +2100,7 @@ dependencies = [
  "http",
  "httparse",
  "log",
+ "native-tls",
  "rand",
  "rustls 0.21.1",
  "sha1",

@@ -1,6 +1,9 @@
 use reqwest::{Client, Response};
-use reqwest_middleware::{ClientBuilder, ClientWithMiddleware, Error};
+use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use serde::Deserialize;
+use tokio::net::TcpStream;
+use tokio_tungstenite::{client_async, WebSocketStream};
+use error::SlackClientError;
 use response::ApiResponse;
 
 use crate::message::Message;
@@ -9,6 +12,7 @@ use crate::rate_limiter::RateLimitingMiddleware;
 mod message;
 pub mod rate_limiter;
 mod response;
+mod error;
 
 pub struct SlackClient {
     bot_token: String,
@@ -39,7 +43,7 @@ impl SlackClient {
         &self,
         channel: &str,
         message: &str,
-    ) -> Result<ApiResponse, Error> {
+    ) -> Result<ApiResponse, SlackClientError> {
         self.http
             .post("https://slack.com/api/chat.postMessage")
             .header("Authorization", format!("Bearer {}", self.bot_token))
@@ -53,7 +57,7 @@ impl SlackClient {
             .await?
             .json::<ApiResponse>()
             .await
-            .map_err(Error::from)
+            .map_err(SlackClientError::from)
     }
 
     pub async fn message_thread(
@@ -61,7 +65,7 @@ impl SlackClient {
         channel: &str,
         parent: &Message,
         message: &str,
-    ) -> Result<Response, Error> {
+    ) -> Result<Response, SlackClientError> {
         self.http
             .post("https://slack.com/api/chat.postMessage")
             .header("Authorization", format!("Bearer {}", self.bot_token))
@@ -74,10 +78,11 @@ impl SlackClient {
             }))
             .send()
             .await
+            .map_err(SlackClientError::from)
     }
 
-    pub async fn connect_to_socket_mode(&self) -> Result<SlackSocketModeListener, Error> {
-        self.http
+    pub async fn connect_to_socket_mode(&self) -> Result<SlackSocketModeListener, SlackClientError> {
+        let builder = self.http
             .post("https://slack.com/api/apps.connections.open")
             .header("Authorization", format!("Bearer {}", self.app_token))
             .header("User-Agent", "slackbot-client")
@@ -85,14 +90,36 @@ impl SlackClient {
             .header("Content-type", "application/x-www-form-urlencoded")
             .send()
             .await?
-            .json::<SlackSocketModeListener>()
-            .await
-            .map_err(Error::from)
+            .json::<SlackSocketModeListenerBuilder>()
+            .await?;
+
+        Ok(builder.connect().await?)
     }
 }
 
 #[derive(Debug, Deserialize)]
-pub struct SlackSocketModeListener {
+pub struct SlackSocketModeListenerBuilder {
     /// The websocket address changes per account. You get the URL by requesting it from the `apps.connections.open` endpoint.
     url: String
 }
+
+impl SlackSocketModeListenerBuilder {
+    async fn connect(&self) -> Result<SlackSocketModeListener, SlackClientError> {
+        let tcp = TcpStream::connect(&self.url[5..]).await?;
+        let (mut stream, _) = client_async(&self.url, tcp).await?;
+        Ok(SlackSocketModeListener{ stream })
+    }
+}
+
+#[derive(Debug)]
+pub struct SlackSocketModeListener {
+    stream: WebSocketStream<TcpStream>
+}
+
+impl SlackSocketModeListener {
+    async fn next(&self) -> Result<SocketMessage, ()> {
+        todo!()
+    }
+}
+
+struct SocketMessage {}

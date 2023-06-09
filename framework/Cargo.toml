@@ -16,6 +16,7 @@ async-trait = "0.1.68"
 task-local-extensions = "0.1.4"
 governor = "0.5.1"
 nonzero = "0.1.0"
+tokio-tungstenite = { version = "0.19.0", features = ["native-tls"] }
 
 [dev-dependencies]
 config-file = "0.2.3"
