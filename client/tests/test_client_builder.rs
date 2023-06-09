@@ -1,6 +1,6 @@
 use config_file::FromConfigFile;
-use framework::rate_limiter::RateLimitingMiddleware;
-use framework::ReqwestSlackClient;
+use client::rate_limiter::RateLimitingMiddleware;
+use client::ReqwestSlackClient;
 use lazy_static::lazy_static;
 use regex::Regex;
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};

@@ -3,7 +3,7 @@ mod test_client_builder;
 use crate::test_client_builder::TestClientBuilder;
 use std::time::SystemTime;
 use futures_util::{AsyncRead, AsyncWrite, SinkExt, StreamExt};
-use framework::SlackClient;
+use client::SlackClient;
 
 #[tokio::test]
 async fn should_send_messages_to_channels_and_threads() {

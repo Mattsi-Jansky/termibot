@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use futures_util::StreamExt;
 use reqwest::{Client, Response};
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
@@ -17,6 +18,8 @@ mod error;
 mod socket_listener;
 
 /// A client for talking to the Slack API
+///
+#[async_trait]
 pub trait SlackClient {
     async fn message_channel(
         &self,
@@ -63,6 +66,7 @@ impl ReqwestSlackClient {
     }
 }
 
+#[async_trait]
 impl SlackClient for ReqwestSlackClient {
     async fn message_channel(
         &self,
