@@ -9,3 +9,7 @@ The tests use [RCVR](https://github.com/ChorusOne/rvcr/) to record and replay HT
 To run the tests in record mode against the real Slack API first set a valid `bot_token` value in `config/config.toml` (gitignored, copy it from `config/template.toml`). Then, set `is_record_mode` to `true`. Remember to set it back to `false` before committing.
 
 Run the tests with `cargo test`.
+
+## Acknowledgements
+
+Much inspiration was taken from the [Slack Morphism](https://github.com/abdolence/slack-morphism-rust) crate, particularly around how to represent socket messages. I learned quite a bit about Serde just by reading the Slack Morphism's model definitions.

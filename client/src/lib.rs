@@ -13,6 +13,7 @@ mod message;
 pub mod rate_limiter;
 mod response;
 mod socket_listener;
+pub mod models;
 
 /// A client for talking to the Slack API
 ///
