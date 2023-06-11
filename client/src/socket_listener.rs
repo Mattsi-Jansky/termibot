@@ -21,7 +21,7 @@ impl SlackSocketModeListenerBuilder {
     pub async fn connect(&self) -> Result<SlackSocketModeListener, SlackClientError> {
         let url = url::Url::parse(&self.url).unwrap();
         let (stream, _) = connect_async(url).await?;
-        Ok(SlackSocketModeListener { stream: stream })
+        Ok(SlackSocketModeListener { stream })
     }
 }
 
