@@ -1,9 +1,11 @@
 use crate::error::SlackClientError;
 use crate::models::SocketMessage;
-use futures_util::StreamExt;
+use futures_util::{SinkExt, StreamExt};
 use serde::Deserialize;
+use serde_json::json;
 use tokio::net::TcpStream;
 use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
+use tokio_tungstenite::tungstenite::Message;
 
 /// Build a `SlackSocketModeListener`, given a Websockets URL for it to connect to.
 /// Performs the initial WSS handshake and hands the stream to `SlackSocketModeListener`.
@@ -19,7 +21,7 @@ impl SlackSocketModeListenerBuilder {
     pub async fn connect(&self) -> Result<SlackSocketModeListener, SlackClientError> {
         let url = url::Url::parse(&self.url).unwrap();
         let (stream, _) = connect_async(url).await?;
-        Ok(SlackSocketModeListener { stream })
+        Ok(SlackSocketModeListener { stream: stream })
     }
 }
 
@@ -27,7 +29,7 @@ impl SlackSocketModeListenerBuilder {
 /// Only reads, does not send.
 #[derive(Debug)]
 pub struct SlackSocketModeListener {
-    stream: WebSocketStream<MaybeTlsStream<TcpStream>>,
+    stream: WebSocketStream<MaybeTlsStream<TcpStream>>
 }
 
 impl SlackSocketModeListener {
@@ -40,6 +42,28 @@ impl SlackSocketModeListener {
             .unwrap()
             .into_text()
             .unwrap();
-        serde_json::from_str(&json)
+        let result = serde_json::from_str(&json);
+
+        match &result {
+            Ok(inner) => {
+                match inner {
+                    SocketMessage::Event {envelope_id, payload: _} => {
+                        self.stream.send(Message::Text(json!(
+                            {
+                                "envelope_id": envelope_id
+                            }
+                        ).to_string())).await.unwrap();
+                    }
+                    SocketMessage::Interactive { .. } => {/*Not implemented*/}
+                    SocketMessage::SlashCommand { .. } => {/*Not implemented*/}
+
+                    SocketMessage::Hello { .. } => {/* Does not need to be ACK'd*/}
+                    SocketMessage::Disconnect { .. } => {/* Does not need to be ACK'd*/}
+                }
+            }
+            Err(_) => {}
+        }
+
+        result
     }
 }

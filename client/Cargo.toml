@@ -21,6 +21,7 @@ url = "2.4.0"
 futures-util = { version = "0.3.28", features = ["sink", "std"] }
 serde_with = "3.0.0"
 slack-morphism = "1.8.0"
+serial_test = "2.0.0"
 
 [dev-dependencies]
 config-file = "0.2.3"
