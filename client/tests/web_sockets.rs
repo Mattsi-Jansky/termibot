@@ -72,24 +72,3 @@ async fn should_initiate_socket_mode_connection() {
     } } });
     handle.abort();
 }
-
-/*
-
-blocks: [
-RichText(Object
-{"
-    block_id": String("/5p"),
-    "elements": Array [
-        Object {
-            "elements": Array [
-                Object {
-                    "text": String("test"),
-                     "type": String("text")
-                }
-            ],
-            "type": String("rich_text_section")
-        }
-    ]
-})]
-
- */
