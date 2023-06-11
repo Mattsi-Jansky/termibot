@@ -1,9 +1,9 @@
 use crate::error::SlackClientError;
+use crate::models::SocketMessage;
 use futures_util::StreamExt;
 use serde::Deserialize;
 use tokio::net::TcpStream;
 use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
-use crate::models::SocketMessage;
 
 /// Build a `SlackSocketModeListener`, given a Websockets URL for it to connect to.
 /// Performs the initial WSS handshake and hands the stream to `SlackSocketModeListener`.
@@ -32,7 +32,14 @@ pub struct SlackSocketModeListener {
 
 impl SlackSocketModeListener {
     pub async fn next(&mut self) -> serde_json::error::Result<SocketMessage> {
-        let json = self.stream.next().await.unwrap().unwrap().into_text().unwrap();
+        let json = self
+            .stream
+            .next()
+            .await
+            .unwrap()
+            .unwrap()
+            .into_text()
+            .unwrap();
         serde_json::from_str(&json)
     }
 }

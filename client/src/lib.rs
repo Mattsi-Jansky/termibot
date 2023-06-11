@@ -10,10 +10,10 @@ use crate::rate_limiter::RateLimitingMiddleware;
 
 mod error;
 mod message;
+pub mod models;
 pub mod rate_limiter;
 mod response;
 mod socket_listener;
-pub mod models;
 
 /// A client for talking to the Slack API
 ///

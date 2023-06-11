@@ -2,25 +2,28 @@ use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
 use slack_morphism::blocks::SlackBlock;
 
-#[derive(Debug, Deserialize,  Serialize, PartialEq)]
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
 #[serde(tag = "type")]
 pub enum SocketMessage {
     #[serde(rename = "hello")]
-    Hello{},
+    Hello {},
     #[serde(rename = "disconnect")]
-    Disconnect{},
+    Disconnect {},
     #[serde(rename = "events_api")]
-    Event{envelope_id: String, payload: Payload },
+    Event {
+        envelope_id: String,
+        payload: Payload,
+    },
     #[serde(rename = "interactive")]
-    Interactive{envelope_id: String},
+    Interactive { envelope_id: String },
     #[serde(rename = "slash_commands")]
-    SlashCommand{envelope_id: String},
+    SlashCommand { envelope_id: String },
 }
 
 // Ignores the type field, because it seems to always be `event_callback`
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub struct Payload {
-    pub event: Event
+    pub event: Event,
 }
 
 #[skip_serializing_none]
