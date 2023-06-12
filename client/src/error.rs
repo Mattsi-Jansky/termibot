@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter, Pointer};
 use tokio::io;
 use tokio_tungstenite::tungstenite;
 
@@ -28,5 +29,11 @@ impl From<io::Error> for SlackClientError {
 impl From<tungstenite::Error> for SlackClientError {
     fn from(value: tungstenite::Error) -> Self {
         SlackClientError(format!("Tungstenite (Websockets) error: {}", value))
+    }
+}
+
+impl From<serde_json::error::Error> for SlackClientError {
+    fn from(value: serde_json::error::Error) -> Self {
+        SlackClientError(format!("Serde ([de]serialization) error: {}", value))
     }
 }
