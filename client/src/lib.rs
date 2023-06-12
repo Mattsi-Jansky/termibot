@@ -3,18 +3,18 @@ use error::SlackClientError;
 use reqwest::{Client, Response};
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use response::ApiResponse;
-use socket_listener::{TungsteniteSocketModeListener, TungsteniteSocketModeListenerBuilder};
+use socket_listener::{TungsteniteSocketModeListenerBuilder};
 
 use crate::message::Message;
 use crate::rate_limiter::RateLimitingMiddleware;
 use crate::socket_listener::SocketModeListener;
 
-mod error;
-mod message;
+pub mod error;
+pub mod message;
 pub mod models;
 pub mod rate_limiter;
-mod response;
-mod socket_listener;
+pub mod response;
+pub mod socket_listener;
 
 /// A client for talking to the Slack API
 ///
@@ -34,7 +34,7 @@ pub trait SlackClient {
         channel: &str,
         parent: &Message,
         message: &str,
-    ) -> Result<Response, SlackClientError>;
+    ) -> Result<ApiResponse, SlackClientError>;
 
     /// Open a Socket Mode connection
     ///
@@ -103,7 +103,7 @@ impl SlackClient for ReqwestSlackClient {
         channel: &str,
         parent: &Message,
         message: &str,
-    ) -> Result<Response, SlackClientError> {
+    ) -> Result<ApiResponse, SlackClientError> {
         self.http
             .post("https://slack.com/api/chat.postMessage")
             .header("Authorization", format!("Bearer {}", self.bot_token))
@@ -115,6 +115,8 @@ impl SlackClient for ReqwestSlackClient {
                 "text": message
             }))
             .send()
+            .await?
+            .json::<ApiResponse>()
             .await
             .map_err(SlackClientError::from)
     }
