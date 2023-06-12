@@ -34,6 +34,10 @@ pub trait SlackClient {
         parent: &Message,
         message: &str,
     ) -> Result<Response, SlackClientError>;
+
+    /// Open a Socket Mode connection
+    ///
+    /// Gets the websocket address from the Slack API and returns a connected `SlackSocketModeListener`.
     async fn connect_to_socket_mode(&self) -> Result<SlackSocketModeListener, SlackClientError>;
 }
 
