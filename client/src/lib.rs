@@ -3,10 +3,11 @@ use error::SlackClientError;
 use reqwest::{Client, Response};
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use response::ApiResponse;
-use socket_listener::{SlackSocketModeListener, SlackSocketModeListenerBuilder};
+use socket_listener::{TungsteniteSocketModeListener, TungsteniteSocketModeListenerBuilder};
 
 use crate::message::Message;
 use crate::rate_limiter::RateLimitingMiddleware;
+use crate::socket_listener::SocketModeListener;
 
 mod error;
 mod message;
@@ -38,7 +39,7 @@ pub trait SlackClient {
     /// Open a Socket Mode connection
     ///
     /// Gets the websocket address from the Slack API and returns a connected `SlackSocketModeListener`.
-    async fn connect_to_socket_mode(&self) -> Result<SlackSocketModeListener, SlackClientError>;
+    async fn connect_to_socket_mode(&self) -> Result<Box<dyn SocketModeListener>, SlackClientError>;
 }
 
 /// A client for talking to the Slack API
@@ -117,7 +118,7 @@ impl SlackClient for ReqwestSlackClient {
             .await
             .map_err(SlackClientError::from)
     }
-    async fn connect_to_socket_mode(&self) -> Result<SlackSocketModeListener, SlackClientError> {
+    async fn connect_to_socket_mode(&self) -> Result<Box<dyn SocketModeListener>, SlackClientError> {
         let builder = self
             .http
             .post("https://slack.com/api/apps.connections.open")
@@ -127,9 +128,9 @@ impl SlackClient for ReqwestSlackClient {
             .header("Content-type", "application/x-www-form-urlencoded")
             .send()
             .await?
-            .json::<SlackSocketModeListenerBuilder>()
+            .json::<TungsteniteSocketModeListenerBuilder>()
             .await?;
 
-        Ok(builder.connect().await?)
+        Ok(Box::new(builder.connect().await?))
     }
 }
