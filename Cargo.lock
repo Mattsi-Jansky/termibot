@@ -481,6 +481,8 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "client",
+ "futures-channel",
+ "mockall",
  "serde",
  "serde_json",
  "tokio",
