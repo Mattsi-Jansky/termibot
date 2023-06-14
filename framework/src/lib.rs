@@ -27,11 +27,11 @@ impl SlackBot {
 
             match message {
                 SocketMessage::Event {
-                    envelope_id,
+                    envelope_id: _,
                     payload,
                 } => {
                     for plugin in &self.plugins {
-                        plugin.on_event(&payload.event, &self.client);
+                        plugin.on_event(&payload.event);
                     }
                 }
                 SocketMessage::Interactive { .. } => {
@@ -64,7 +64,7 @@ pub enum Action {
 #[async_trait]
 #[automock]
 pub trait Plugin {
-    async fn on_event(&self, event: &Event, client: &Box<dyn SlackClient + Sync>) -> Action; //todo: return command pattern
+    async fn on_event(&self, event: &Event) -> Action;
 }
 
 #[cfg(test)]
@@ -159,7 +159,7 @@ mod tests {
         let mut mock_plugin = Box::new(MockPlugin::new());
         mock_plugin.expect_on_event()
             .times(1)
-            .returning(|_, _| Box::pin(future::ready(Action::DoNothing)));
+            .returning(|_| Box::pin(future::ready(Action::DoNothing)));
         let bot = SlackBot::from(
             Box::new(TestSlackClient::default()),
             Box::new(TestSocketModeListener::default()),
