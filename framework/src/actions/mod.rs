@@ -1,4 +1,4 @@
-use client::message::Message;
+use client::models::response::Message;
 
 pub mod handler;
 

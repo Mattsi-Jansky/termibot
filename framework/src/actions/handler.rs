@@ -39,9 +39,9 @@ impl Default for DefaultActionHandler{
 
 #[cfg(test)]
 mod tests {
-    use client::message::Message;
+    use client::models::response::Message;
     use client::MockSlackClient;
-    use client::response::ApiResponse;
+    use client::models::response::ApiResponse;
     use super::*;
 
     #[tokio::test]

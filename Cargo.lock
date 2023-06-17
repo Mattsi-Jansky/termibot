@@ -199,6 +199,7 @@ dependencies = [
  "reqwest",
  "reqwest-middleware",
  "rvcr",
+ "rvstruct",
  "secrecy",
  "serde",
  "serde_json",

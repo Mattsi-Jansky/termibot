@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use futures::future::join_all;
 use futures::StreamExt;
 use client::error::SlackClientError;
-use client::message::Message;
+use client::models::response::Message;
 use client::models::{Event, SocketMessage};
 use client::socket_listener::SocketModeListener;
 use client::SlackClient;
@@ -83,7 +83,7 @@ mod tests {
     use async_trait::async_trait;
     use client::error::SlackClientError;
     use client::models::{Payload, SocketMessage};
-    use client::response::ApiResponse;
+    use client::models::response::ApiResponse;
     use crate::actions::Action;
     use plugins::MockPlugin;
     use actions::handler::MockActionHandler;

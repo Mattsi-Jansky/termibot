@@ -1,22 +1,20 @@
 use async_trait::async_trait;
 use mockall::automock;
 use error::SlackClientError;
-use reqwest::{Client, Response};
+use reqwest::Client;
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use secrecy::{ExposeSecret, Secret};
 use tracing::info;
-use response::ApiResponse;
-use socket_listener::{TungsteniteSocketModeListenerBuilder};
+use models::response::ApiResponse;
+use socket_listener::TungsteniteSocketModeListenerBuilder;
 
-use crate::message::Message;
+use models::response::Message;
 use crate::rate_limiter::RateLimitingMiddleware;
 use crate::socket_listener::SocketModeListener;
 
 pub mod error;
-pub mod message;
 pub mod models;
 pub mod rate_limiter;
-pub mod response;
 pub mod socket_listener;
 
 /// A client for talking to the Slack API
