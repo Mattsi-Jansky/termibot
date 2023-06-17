@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use mockall::automock;
 use error::SlackClientError;
 use reqwest::{Client, Response};
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
@@ -20,6 +21,7 @@ pub mod socket_listener;
 
 /// A client for talking to the Slack API
 ///
+#[automock]
 #[async_trait]
 pub trait SlackClient {
     async fn message_channel(

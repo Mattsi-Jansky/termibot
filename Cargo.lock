@@ -193,6 +193,7 @@ dependencies = [
  "glob",
  "governor",
  "lazy_static",
+ "mockall",
  "nonzero",
  "regex",
  "reqwest",
@@ -483,6 +484,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "client",
+ "futures",
  "futures-channel",
  "mockall",
  "serde",
