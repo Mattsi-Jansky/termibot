@@ -7,6 +7,7 @@ use client::message::Message;
 use client::models::{Event, SocketMessage};
 use client::socket_listener::SocketModeListener;
 use client::SlackClient;
+use tracing::info;
 
 pub struct SlackBot {
     client: Box<dyn SlackClient + Sync>,
@@ -21,9 +22,11 @@ impl SlackBot {
 
     pub async fn run(self) -> Result<(), SlackClientError> {
         let mut listener = self.client.connect_to_socket_mode().await?;
+        info!("Slack bot starting");
 
         loop {
             let message = listener.next().await?;
+            info!("Received message: {message:?}");
 
             match message {
                 SocketMessage::Event {
@@ -35,10 +38,10 @@ impl SlackBot {
                     }
                 }
                 SocketMessage::Interactive { .. } => {
-                    todo!() /*Not implemented*/
+                    info!("Cannot handle interactive events yet, not implemented.")
                 }
                 SocketMessage::SlashCommand { .. } => {
-                    todo!() /*Not implemented*/
+                    info!("Cannot handle slash commands yet, not implemented.")
                 }
 
                 SocketMessage::Hello { .. } => { /* Nothing to do */ }
@@ -48,6 +51,7 @@ impl SlackBot {
             }
         }
 
+        info!("Slack bot finishing");
         Ok(())
     }
 
