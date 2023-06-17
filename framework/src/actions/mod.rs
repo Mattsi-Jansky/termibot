@@ -1,7 +1,9 @@
+use client::message::Message;
+
 pub mod handler;
 
-#[derive(Clone)]
 pub enum Action {
     DoNothing,
-    MessageChannel{channel: String, message: String }
+    MessageChannel{channel: String, message: String },
+    ReplyToThread{channel: String, thread: Message, message: String}
 }

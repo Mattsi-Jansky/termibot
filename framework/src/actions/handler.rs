@@ -17,9 +17,14 @@ impl ActionHandler for DefaultActionHandler {
     async fn handle(&self, action: Action, client: &Box<dyn SlackClient + Send + Sync>) -> Result<(), SlackClientError> {
         match action {
             Action::DoNothing => {}
-            Action::MessageChannel { channel, message } =>
-                { client.message_channel(&channel[..], &message[..]).await
-                    .map(|_| ())}?
+            Action::MessageChannel { channel, message } => {
+                client.message_channel(&channel[..], &message[..]).await
+                    .map(|_| ())?
+            },
+            Action::ReplyToThread { channel, thread, message } => {
+                client.message_thread(&channel, &thread, &message).await
+                    .map(|_| ())?
+            }
         }
 
         Ok(())
@@ -42,12 +47,46 @@ mod tests {
     #[tokio::test]
     async fn given_channel_message_action_should_send_message_to_channel() {
         let handler = DefaultActionHandler::default();
-        let test_action = Action::MessageChannel { channel: String::from("#bots"), message: String::from("hello world")};
+        let test_action = Action::MessageChannel {
+            channel: String::from("#bots"),
+            message: String::from("hello world")
+        };
         let mut mock_client = Box::new(MockSlackClient::new());
         mock_client.expect_message_channel()
             .withf(|channel, message|channel == "#bots" && message ==  "hello world")
             .times(1)
             .returning(|_,_|Ok(ApiResponse{ ok: true, message: Message {
+                id: "".to_string(),
+                text: "".to_string(),
+                user: "".to_string(),
+            } }));
+
+        handler.handle(test_action, &(mock_client as Box<dyn SlackClient + Send + Sync>)).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn given_thread_reply_should_send_message_to_thread() {
+        let handler = DefaultActionHandler::default();
+        let test_action = Action::ReplyToThread {
+            channel: String::from("#bots"),
+            thread: Message {
+                id: "thread-id".to_string(),
+                text: "parent-message".to_string(),
+                user: "parent-user".to_string(),
+            },
+            message: String::from("hello world")
+        };
+        let mut mock_client = Box::new(MockSlackClient::new());
+        mock_client.expect_message_thread()
+            .withf(|channel, thread, message| channel == "#bots"
+                && thread == &Message {
+                id: "thread-id".to_string(),
+                text: "parent-message".to_string(),
+                user: "parent-user".to_string(),
+            }
+                && message == "hello world")
+            .times(1)
+            .returning(|_,_,_|Ok(ApiResponse{ ok: true, message: Message {
                 id: "".to_string(),
                 text: "".to_string(),
                 user: "".to_string(),
