@@ -18,3 +18,23 @@ impl ActionHandler for DefaultActionHandler {
         Ok(())
     }
 }
+
+impl Default for DefaultActionHandler{
+    fn default() -> Self {
+        Self {}
+    }
+}
+//
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+//
+//     #[test]
+//     fn given_channel_message_action_should_send_message_to_channel() {
+//         let handler = DefaultActionHandler::default();
+//         let mock_
+//         let test_action = Action::MessageChannel { channel: String::from("#bots"), message: String::from("hello world")};
+//
+//         handler.handle(test_action, )
+//     }
+// }
