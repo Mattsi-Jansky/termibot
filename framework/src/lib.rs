@@ -1,13 +1,16 @@
 extern crate core;
 
 use async_trait::async_trait;
-use mockall::automock;
 use client::error::SlackClientError;
 use client::message::Message;
 use client::models::{Event, SocketMessage};
 use client::socket_listener::SocketModeListener;
 use client::SlackClient;
+use plugins::Plugin;
 use tracing::info;
+
+pub mod plugins;
+pub mod actions;
 
 pub struct SlackBot {
     client: Box<dyn SlackClient + Sync>,
@@ -61,16 +64,6 @@ impl SlackBot {
     }
 }
 
-pub enum Action {
-    DoNothing
-}
-
-#[async_trait]
-#[automock]
-pub trait Plugin {
-    async fn on_event(&self, event: &Event) -> Action;
-}
-
 #[cfg(test)]
 mod tests {
     use std::future;
@@ -79,6 +72,8 @@ mod tests {
     use client::error::SlackClientError;
     use client::models::{Payload, SocketMessage};
     use client::response::ApiResponse;
+    use crate::actions::Action;
+    use plugins::MockPlugin;
 
     struct TestSlackClient { message: String }
     impl Default for TestSlackClient {
