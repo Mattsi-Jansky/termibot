@@ -19,8 +19,8 @@ async fn start_websocket_server() -> WebSocketStream<TcpStream> {
     let listener = TcpListener::bind("127.0.0.1:12345").await.unwrap();
     let (connection, _) = listener.accept().await.expect("No connections to accept");
     let stream = accept_async(connection).await;
-    let mut stream = stream.expect("Failed to handshake with connection");
-    stream
+    
+    stream.expect("Failed to handshake with connection")
 }
 
 #[tokio::test]
