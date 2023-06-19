@@ -14,6 +14,7 @@ pub trait ActionHandler {
     ) -> Result<(), SlackClientError>;
 }
 
+#[derive(Default)]
 pub struct DefaultActionHandler {}
 
 #[async_trait]
@@ -40,12 +41,6 @@ impl ActionHandler for DefaultActionHandler {
         }
 
         Ok(())
-    }
-}
-
-impl Default for DefaultActionHandler {
-    fn default() -> Self {
-        Self {}
     }
 }
 

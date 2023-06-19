@@ -1,14 +1,10 @@
 extern crate core;
 
 use crate::actions::handler::ActionHandler;
-use async_trait::async_trait;
 use client::error::SlackClientError;
-use client::models::socket_message::Event;
 use client::models::socket_message::SocketMessage;
-use client::socket_listener::SocketModeListener;
 use client::SlackClient;
 use futures::future::join_all;
-use futures::StreamExt;
 use plugins::Plugin;
 use tracing::info;
 
@@ -17,7 +13,6 @@ pub mod plugins;
 
 pub struct SlackBot {
     client: Box<dyn SlackClient + Send + Sync>,
-    listener: Box<dyn SocketModeListener>,
     plugins: Vec<Box<dyn Plugin>>,
     action_handler: Box<dyn ActionHandler>,
 }
@@ -25,12 +20,10 @@ pub struct SlackBot {
 impl SlackBot {
     pub fn from(
         client: Box<dyn SlackClient + Send + Sync>,
-        listener: Box<dyn SocketModeListener>,
         handler: Box<dyn ActionHandler>,
     ) -> SlackBot {
         SlackBot {
             client,
-            listener,
             plugins: vec![],
             action_handler: handler,
         }
@@ -81,7 +74,7 @@ impl SlackBot {
         Ok(())
     }
 
-    pub(crate) fn with(mut self, plugin: Box<dyn Plugin>) -> Self {
+    pub fn with(mut self, plugin: Box<dyn Plugin>) -> Self {
         self.plugins.push(plugin);
         self
     }
@@ -138,7 +131,6 @@ mod tests {
     async fn disconnect_after_disconnect_message_received() {
         let bot = SlackBot::from(
             mock_client(),
-            Box::new(TestSocketModeListener::default()),
             Box::new(MockActionHandler::new()),
         );
 
@@ -159,7 +151,6 @@ mod tests {
             .returning(|_, _| Box::pin(future::ready(Ok(()))));
         let bot = SlackBot::from(
             mock_client(),
-            Box::new(TestSocketModeListener::default()),
             mock_action_handler,
         )
         .with(mock_plugin);
@@ -189,7 +180,6 @@ mod tests {
             .returning(|_, _| Box::pin(future::ready(Ok(()))));
         let bot = SlackBot::from(
             mock_client(),
-            Box::new(TestSocketModeListener::default()),
             mock_action_handler,
         )
         .with(mock_plugin);
