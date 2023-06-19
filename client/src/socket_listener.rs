@@ -1,6 +1,6 @@
-use async_trait::async_trait;
 use crate::error::SlackClientError;
 use crate::models::socket_message::SocketMessage;
+use async_trait::async_trait;
 use futures_util::{SinkExt, StreamExt};
 use serde::Deserialize;
 use serde_json::json;
@@ -78,4 +78,3 @@ impl SocketModeListener for TungsteniteSocketModeListener {
         result
     }
 }
-

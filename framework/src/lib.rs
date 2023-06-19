@@ -1,30 +1,39 @@
 extern crate core;
 
+use crate::actions::handler::ActionHandler;
 use async_trait::async_trait;
-use futures::future::join_all;
-use futures::StreamExt;
 use client::error::SlackClientError;
 use client::models::socket_message::Event;
+use client::models::socket_message::SocketMessage;
 use client::socket_listener::SocketModeListener;
 use client::SlackClient;
+use futures::future::join_all;
+use futures::StreamExt;
 use plugins::Plugin;
 use tracing::info;
-use client::models::socket_message::SocketMessage;
-use crate::actions::handler::ActionHandler;
 
-pub mod plugins;
 pub mod actions;
+pub mod plugins;
 
 pub struct SlackBot {
     client: Box<dyn SlackClient + Send + Sync>,
     listener: Box<dyn SocketModeListener>,
     plugins: Vec<Box<dyn Plugin>>,
-    action_handler: Box<dyn ActionHandler>
+    action_handler: Box<dyn ActionHandler>,
 }
 
 impl SlackBot {
-    pub fn from(client: Box<dyn SlackClient + Send + Sync>, listener: Box<dyn SocketModeListener>, handler: Box<dyn ActionHandler>) -> SlackBot {
-        SlackBot { client, listener, plugins: vec![], action_handler: handler }
+    pub fn from(
+        client: Box<dyn SlackClient + Send + Sync>,
+        listener: Box<dyn SocketModeListener>,
+        handler: Box<dyn ActionHandler>,
+    ) -> SlackBot {
+        SlackBot {
+            client,
+            listener,
+            plugins: vec![],
+            action_handler: handler,
+        }
     }
 
     pub async fn run(self) -> Result<(), SlackClientError> {
@@ -60,10 +69,12 @@ impl SlackBot {
             }
 
             join_all(
-                join_all(actions).await
+                join_all(actions)
+                    .await
                     .into_iter()
-                    .map(|action| self.action_handler.handle(action, &self.client))
-            ).await;
+                    .map(|action| self.action_handler.handle(action, &self.client)),
+            )
+            .await;
         }
 
         info!("Slack bot finishing");
@@ -78,14 +89,14 @@ impl SlackBot {
 
 #[cfg(test)]
 mod tests {
-    use std::future;
     use super::*;
-    use async_trait::async_trait;
     use crate::actions::Action;
-    use plugins::MockPlugin;
     use actions::handler::MockActionHandler;
-    use client::MockSlackClient;
+    use async_trait::async_trait;
     use client::models::socket_message::{Payload, SocketMessage};
+    use client::MockSlackClient;
+    use plugins::MockPlugin;
+    use std::future;
 
     struct TestSocketModeListener {
         call_count: usize,
@@ -128,7 +139,7 @@ mod tests {
         let bot = SlackBot::from(
             mock_client(),
             Box::new(TestSocketModeListener::default()),
-            Box::new(MockActionHandler::new())
+            Box::new(MockActionHandler::new()),
         );
 
         bot.run().await.unwrap();
@@ -138,16 +149,20 @@ mod tests {
     async fn forward_event_message_to_plugin() {
         let mut mock_action_handler = Box::new(MockActionHandler::new());
         let mut mock_plugin = Box::new(MockPlugin::new());
-        mock_plugin.expect_on_event()
+        mock_plugin
+            .expect_on_event()
             .times(1)
             .returning(|_| Box::pin(future::ready(Action::DoNothing)));
-        mock_action_handler.expect_handle().times(1).returning(|_, _| Box::pin(future::ready(Ok(()))));
+        mock_action_handler
+            .expect_handle()
+            .times(1)
+            .returning(|_, _| Box::pin(future::ready(Ok(()))));
         let bot = SlackBot::from(
             mock_client(),
             Box::new(TestSocketModeListener::default()),
-            mock_action_handler
+            mock_action_handler,
         )
-            .with(mock_plugin);
+        .with(mock_plugin);
 
         bot.run().await.unwrap();
     }
@@ -155,33 +170,37 @@ mod tests {
     #[tokio::test]
     async fn forward_event_outcome_to_action_handler() {
         let mut mock_plugin = Box::new(MockPlugin::new());
-        mock_plugin.expect_on_event()
-            .returning(|_| Box::pin(future::ready(Action::MessageChannel
-            {
+        mock_plugin.expect_on_event().returning(|_| {
+            Box::pin(future::ready(Action::MessageChannel {
                 channel: String::from("my test channel"),
-                message: String::from("my test message")
-            })));
+                message: String::from("my test message"),
+            }))
+        });
         let mut mock_action_handler = Box::new(MockActionHandler::new());
-        mock_action_handler.expect_handle().times(1)
+        mock_action_handler
+            .expect_handle()
+            .times(1)
             .withf(|action, client| match action {
-                Action::MessageChannel { channel, message } =>
-                    channel == "my test channel" && message == "my test message",
-                _ => false
+                Action::MessageChannel { channel, message } => {
+                    channel == "my test channel" && message == "my test message"
+                }
+                _ => false,
             })
             .returning(|_, _| Box::pin(future::ready(Ok(()))));
         let bot = SlackBot::from(
             mock_client(),
             Box::new(TestSocketModeListener::default()),
-            mock_action_handler
+            mock_action_handler,
         )
-            .with(mock_plugin);
+        .with(mock_plugin);
 
         bot.run().await.unwrap();
     }
 
     fn mock_client() -> Box<MockSlackClient> {
         let mut mock_slack_client = Box::new(MockSlackClient::new());
-        mock_slack_client.expect_connect_to_socket_mode()
+        mock_slack_client
+            .expect_connect_to_socket_mode()
             .times(1)
             .returning(|| Ok(Box::new(TestSocketModeListener::default())));
         mock_slack_client

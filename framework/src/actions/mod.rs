@@ -4,6 +4,13 @@ pub mod handler;
 
 pub enum Action {
     DoNothing,
-    MessageChannel{channel: String, message: String },
-    ReplyToThread{channel: String, thread: Message, message: String}
+    MessageChannel {
+        channel: String,
+        message: String,
+    },
+    ReplyToThread {
+        channel: String,
+        thread: Message,
+        message: String,
+    },
 }

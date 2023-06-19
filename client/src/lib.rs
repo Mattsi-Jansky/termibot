@@ -1,16 +1,16 @@
 use async_trait::async_trait;
-use mockall::automock;
 use error::SlackClientError;
+use mockall::automock;
+use models::response::ApiResponse;
 use reqwest::Client;
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use secrecy::{ExposeSecret, Secret};
-use tracing::info;
-use models::response::ApiResponse;
 use socket_listener::TungsteniteSocketModeListenerBuilder;
+use tracing::info;
 
-use models::response::Message;
 use crate::rate_limiter::RateLimitingMiddleware;
 use crate::socket_listener::SocketModeListener;
+use models::response::Message;
 
 pub mod error;
 pub mod models;
@@ -41,13 +41,13 @@ pub trait SlackClient {
     /// Open a Socket Mode connection
     ///
     /// Gets the websocket address from the Slack API and returns a connected `SlackSocketModeListener`.
-    async fn connect_to_socket_mode(&self) -> Result<Box<dyn SocketModeListener>, SlackClientError>;
+    async fn connect_to_socket_mode(&self)
+        -> Result<Box<dyn SocketModeListener>, SlackClientError>;
 }
 
 /// A client for talking to the Slack API
 #[derive(Debug)]
 pub struct ReqwestSlackClient {
-
     bot_token: Secret<String>,
     app_token: Secret<String>,
     http: ClientWithMiddleware,
@@ -79,7 +79,6 @@ impl ReqwestSlackClient {
 
 #[async_trait]
 impl SlackClient for ReqwestSlackClient {
-
     #[tracing::instrument]
     async fn message_channel(
         &self,
@@ -89,7 +88,10 @@ impl SlackClient for ReqwestSlackClient {
         info!("Messaging channel {} with {}", channel, message);
         self.http
             .post("https://slack.com/api/chat.postMessage")
-            .header("Authorization", format!("Bearer {}", self.bot_token.expose_secret()))
+            .header(
+                "Authorization",
+                format!("Bearer {}", self.bot_token.expose_secret()),
+            )
             .header("User-Agent", "slackbot-client")
             .header("Accept", "application/json")
             .json(&serde_json::json!({
@@ -113,10 +115,16 @@ impl SlackClient for ReqwestSlackClient {
         parent: &Message,
         message: &str,
     ) -> Result<ApiResponse, SlackClientError> {
-        info!("Messaging channel {}, thread {:?} with {}", channel, parent, message);
+        info!(
+            "Messaging channel {}, thread {:?} with {}",
+            channel, parent, message
+        );
         self.http
             .post("https://slack.com/api/chat.postMessage")
-            .header("Authorization", format!("Bearer {}", self.bot_token.expose_secret()))
+            .header(
+                "Authorization",
+                format!("Bearer {}", self.bot_token.expose_secret()),
+            )
             .header("User-Agent", "slackbot-client")
             .header("Accept", "application/json")
             .json(&serde_json::json!({
@@ -132,12 +140,17 @@ impl SlackClient for ReqwestSlackClient {
     }
 
     #[tracing::instrument]
-    async fn connect_to_socket_mode(&self) -> Result<Box<dyn SocketModeListener>, SlackClientError> {
+    async fn connect_to_socket_mode(
+        &self,
+    ) -> Result<Box<dyn SocketModeListener>, SlackClientError> {
         info!("Connecting to socket mode");
         let builder = self
             .http
             .post("https://slack.com/api/apps.connections.open")
-            .header("Authorization", format!("Bearer {}", self.app_token.expose_secret()))
+            .header(
+                "Authorization",
+                format!("Bearer {}", self.app_token.expose_secret()),
+            )
             .header("User-Agent", "slackbot-client")
             .header("Accept", "application/json")
             .header("Content-type", "application/x-www-form-urlencoded")
