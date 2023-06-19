@@ -4,12 +4,12 @@ use async_trait::async_trait;
 use futures::future::join_all;
 use futures::StreamExt;
 use client::error::SlackClientError;
-use client::models::response::Message;
-use client::models::{Event, SocketMessage};
+use client::models::socket_message::Event;
 use client::socket_listener::SocketModeListener;
 use client::SlackClient;
 use plugins::Plugin;
 use tracing::info;
+use client::models::socket_message::SocketMessage;
 use crate::actions::handler::ActionHandler;
 
 pub mod plugins;
@@ -81,13 +81,11 @@ mod tests {
     use std::future;
     use super::*;
     use async_trait::async_trait;
-    use client::error::SlackClientError;
-    use client::models::{Payload, SocketMessage};
-    use client::models::response::ApiResponse;
     use crate::actions::Action;
     use plugins::MockPlugin;
     use actions::handler::MockActionHandler;
     use client::MockSlackClient;
+    use client::models::socket_message::{Payload, SocketMessage};
 
     struct TestSocketModeListener {
         call_count: usize,

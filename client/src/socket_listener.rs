@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use crate::error::SlackClientError;
-use crate::models::SocketMessage;
+use crate::models::socket_message::SocketMessage;
 use futures_util::{SinkExt, StreamExt};
 use serde::Deserialize;
 use serde_json::json;

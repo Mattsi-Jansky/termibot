@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use mockall::automock;
-use client::models::Event;
+use client::models::socket_message::Event;
 use crate::actions::Action;
 
 #[async_trait]
