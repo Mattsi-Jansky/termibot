@@ -16,7 +16,7 @@ async fn should_send_messages_to_channels_and_threads() {
 
     let new_message = &format!("replying to {}", result.message.text)[..];
     let result2 = client
-        .message_thread("#bots", &result.message, new_message)
+        .message_thread("#bots", &result.message.id, new_message)
         .await;
     assert!(result2.is_ok());
 }

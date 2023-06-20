@@ -1,4 +1,4 @@
-use client::models::http_response::Message;
+use client::models::message_id::MessageId;
 
 pub mod handler;
 
@@ -10,7 +10,7 @@ pub enum Action {
     },
     ReplyToThread {
         channel: String,
-        thread: Message,
+        thread_id: MessageId,
         message: String,
     },
 }

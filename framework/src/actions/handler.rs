@@ -33,10 +33,10 @@ impl ActionHandler for DefaultActionHandler {
                 .map(|_| ())?,
             Action::ReplyToThread {
                 channel,
-                thread,
+                thread_id,
                 message,
             } => client
-                .message_thread(&channel, &thread, &message)
+                .message_thread(&channel, &thread_id, &message)
                 .await
                 .map(|_| ())?,
         }
@@ -51,6 +51,7 @@ mod tests {
     use client::models::http_response::HttpApiResponse;
     use client::models::http_response::Message;
     use client::MockSlackClient;
+    use client::models::message_id::MessageId;
 
     #[tokio::test]
     async fn given_channel_message_action_should_send_message_to_channel() {
@@ -89,11 +90,7 @@ mod tests {
         let handler = DefaultActionHandler::default();
         let test_action = Action::ReplyToThread {
             channel: String::from("#bots"),
-            thread: Message {
-                id: "thread-id".to_string().into(),
-                text: "parent-message".to_string(),
-                user: "parent-user".to_string(),
-            },
+            thread_id: "thread-id".to_string().into(),
             message: String::from("hello world"),
         };
         let mut mock_client = MockSlackClient::new();
@@ -102,11 +99,7 @@ mod tests {
             .withf(|channel, thread, message| {
                 channel == "#bots"
                     && thread
-                        == &Message {
-                            id: "thread-id".to_string().into(),
-                            text: "parent-message".to_string(),
-                            user: "parent-user".to_string(),
-                        }
+                        == &MessageId::new(String::from("thread-id"))
                     && message == "hello world"
             })
             .times(1)

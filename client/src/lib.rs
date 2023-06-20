@@ -11,6 +11,7 @@ use tracing::info;
 use crate::rate_limiter::RateLimitingMiddleware;
 use crate::socket_listener::SocketModeListener;
 use models::http_response::Message;
+use crate::models::message_id::MessageId;
 
 pub mod error;
 pub mod models;
@@ -34,7 +35,7 @@ pub trait SlackClient {
     async fn message_thread(
         &self,
         channel: &str,
-        parent: &Message,
+        parent: &MessageId,
         message: &str,
     ) -> Result<HttpApiResponse, SlackClientError>;
 
@@ -112,7 +113,7 @@ impl SlackClient for ReqwestSlackClient {
     async fn message_thread(
         &self,
         channel: &str,
-        parent: &Message,
+        parent: &MessageId,
         message: &str,
     ) -> Result<HttpApiResponse, SlackClientError> {
         info!(
@@ -129,7 +130,7 @@ impl SlackClient for ReqwestSlackClient {
             .header("Accept", "application/json")
             .json(&serde_json::json!({
                 "channel": channel,
-                "thread_ts": parent.id,
+                "thread_ts": parent,
                 "text": message
             }))
             .send()
