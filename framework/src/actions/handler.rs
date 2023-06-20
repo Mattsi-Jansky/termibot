@@ -68,7 +68,7 @@ mod tests {
                 Ok(HttpApiResponse {
                     ok: true,
                     message: Message {
-                        id: "".to_string(),
+                        id: "".to_string().into(),
                         text: "".to_string(),
                         user: "".to_string(),
                     },
@@ -90,7 +90,7 @@ mod tests {
         let test_action = Action::ReplyToThread {
             channel: String::from("#bots"),
             thread: Message {
-                id: "thread-id".to_string(),
+                id: "thread-id".to_string().into(),
                 text: "parent-message".to_string(),
                 user: "parent-user".to_string(),
             },
@@ -103,7 +103,7 @@ mod tests {
                 channel == "#bots"
                     && thread
                         == &Message {
-                            id: "thread-id".to_string(),
+                            id: "thread-id".to_string().into(),
                             text: "parent-message".to_string(),
                             user: "parent-user".to_string(),
                         }
@@ -114,7 +114,7 @@ mod tests {
                 Ok(HttpApiResponse {
                     ok: true,
                     message: Message {
-                        id: "".to_string(),
+                        id: "".to_string().into(),
                         text: "".to_string(),
                         user: "".to_string(),
                     },
