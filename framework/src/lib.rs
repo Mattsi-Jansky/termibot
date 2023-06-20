@@ -1,5 +1,6 @@
 extern crate core;
 
+use std::sync::Arc;
 use crate::actions::handler::ActionHandler;
 use client::error::SlackClientError;
 use client::models::socket_message::SocketMessage;
@@ -12,14 +13,14 @@ pub mod actions;
 pub mod plugins;
 
 pub struct SlackBot {
-    client: Box<dyn SlackClient + Send + Sync>,
+    client: Arc<dyn SlackClient + Send + Sync>,
     plugins: Vec<Box<dyn Plugin>>,
     action_handler: Box<dyn ActionHandler>,
 }
 
 impl SlackBot {
     pub fn from(
-        client: Box<dyn SlackClient + Send + Sync>,
+        client: Arc<dyn SlackClient + Send + Sync>,
         handler: Box<dyn ActionHandler>,
     ) -> SlackBot {
         SlackBot {
@@ -65,7 +66,7 @@ impl SlackBot {
                 join_all(actions)
                     .await
                     .into_iter()
-                    .map(|action| self.action_handler.handle(action, &self.client)),
+                    .map(|action| self.action_handler.handle(action, self.client.clone())),
             )
             .await;
         }
@@ -86,10 +87,11 @@ mod tests {
     use crate::actions::Action;
     use actions::handler::MockActionHandler;
     use async_trait::async_trait;
-    use client::models::socket_message::{Payload, SocketMessage};
+    use client::models::socket_message::{Event, Payload, SocketMessage};
     use client::MockSlackClient;
     use plugins::MockPlugin;
     use std::future;
+    use client::socket_listener::SocketModeListener;
 
     struct TestSocketModeListener {
         call_count: usize,
@@ -187,12 +189,12 @@ mod tests {
         bot.run().await.unwrap();
     }
 
-    fn mock_client() -> Box<MockSlackClient> {
-        let mut mock_slack_client = Box::new(MockSlackClient::new());
+    fn mock_client() -> Arc<MockSlackClient> {
+        let mut mock_slack_client = MockSlackClient::new();
         mock_slack_client
             .expect_connect_to_socket_mode()
             .times(1)
             .returning(|| Ok(Box::new(TestSocketModeListener::default())));
-        mock_slack_client
+        Arc::new(mock_slack_client)
     }
 }

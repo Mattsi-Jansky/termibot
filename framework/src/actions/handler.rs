@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use crate::actions::Action;
 use async_trait::async_trait;
 use client::error::SlackClientError;
@@ -10,7 +11,7 @@ pub trait ActionHandler {
     async fn handle(
         &self,
         action: Action,
-        client: &Box<dyn SlackClient + Send + Sync>,
+        client: Arc<dyn SlackClient + Send + Sync>,
     ) -> Result<(), SlackClientError>;
 }
 
@@ -22,7 +23,7 @@ impl ActionHandler for DefaultActionHandler {
     async fn handle(
         &self,
         action: Action,
-        client: &Box<dyn SlackClient + Send + Sync>,
+        client: Arc<dyn SlackClient + Send + Sync>,
     ) -> Result<(), SlackClientError> {
         match action {
             Action::DoNothing => {}
@@ -58,7 +59,7 @@ mod tests {
             channel: String::from("#bots"),
             message: String::from("hello world"),
         };
-        let mut mock_client = Box::new(MockSlackClient::new());
+        let mut mock_client = MockSlackClient::new();
         mock_client
             .expect_message_channel()
             .withf(|channel, message| channel == "#bots" && message == "hello world")
@@ -77,7 +78,7 @@ mod tests {
         handler
             .handle(
                 test_action,
-                &(mock_client as Box<dyn SlackClient + Send + Sync>),
+                Arc::new(mock_client),
             )
             .await
             .unwrap();
@@ -95,7 +96,7 @@ mod tests {
             },
             message: String::from("hello world"),
         };
-        let mut mock_client = Box::new(MockSlackClient::new());
+        let mut mock_client = MockSlackClient::new();
         mock_client
             .expect_message_thread()
             .withf(|channel, thread, message| {
@@ -123,7 +124,7 @@ mod tests {
         handler
             .handle(
                 test_action,
-                &(mock_client as Box<dyn SlackClient + Send + Sync>),
+                Arc::new(mock_client),
             )
             .await
             .unwrap();
