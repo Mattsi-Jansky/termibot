@@ -48,8 +48,8 @@ impl ActionHandler for DefaultActionHandler {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use client::models::response::ApiResponse;
-    use client::models::response::Message;
+    use client::models::http_response::HttpApiResponse;
+    use client::models::http_response::Message;
     use client::MockSlackClient;
 
     #[tokio::test]
@@ -65,7 +65,7 @@ mod tests {
             .withf(|channel, message| channel == "#bots" && message == "hello world")
             .times(1)
             .returning(|_, _| {
-                Ok(ApiResponse {
+                Ok(HttpApiResponse {
                     ok: true,
                     message: Message {
                         id: "".to_string(),
@@ -111,7 +111,7 @@ mod tests {
             })
             .times(1)
             .returning(|_, _, _| {
-                Ok(ApiResponse {
+                Ok(HttpApiResponse {
                     ok: true,
                     message: Message {
                         id: "".to_string(),

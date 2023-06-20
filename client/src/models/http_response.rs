@@ -1,7 +1,7 @@
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
-pub struct ApiResponse {
+pub struct HttpApiResponse {
     pub ok: bool,
     pub message: Message,
 }

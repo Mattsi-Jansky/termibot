@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use error::SlackClientError;
 use mockall::automock;
-use models::response::ApiResponse;
+use models::http_response::HttpApiResponse;
 use reqwest::Client;
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use secrecy::{ExposeSecret, Secret};
@@ -10,7 +10,7 @@ use tracing::info;
 
 use crate::rate_limiter::RateLimitingMiddleware;
 use crate::socket_listener::SocketModeListener;
-use models::response::Message;
+use models::http_response::Message;
 
 pub mod error;
 pub mod models;
@@ -26,7 +26,7 @@ pub trait SlackClient {
         &self,
         channel: &str,
         message: &str,
-    ) -> Result<ApiResponse, SlackClientError>;
+    ) -> Result<HttpApiResponse, SlackClientError>;
 
     /// Send a reply to a thread.
     ///
@@ -36,7 +36,7 @@ pub trait SlackClient {
         channel: &str,
         parent: &Message,
         message: &str,
-    ) -> Result<ApiResponse, SlackClientError>;
+    ) -> Result<HttpApiResponse, SlackClientError>;
 
     /// Open a Socket Mode connection
     ///
@@ -84,7 +84,7 @@ impl SlackClient for ReqwestSlackClient {
         &self,
         channel: &str,
         message: &str,
-    ) -> Result<ApiResponse, SlackClientError> {
+    ) -> Result<HttpApiResponse, SlackClientError> {
         info!("Messaging channel {} with {}", channel, message);
         self.http
             .post("https://slack.com/api/chat.postMessage")
@@ -100,7 +100,7 @@ impl SlackClient for ReqwestSlackClient {
             }))
             .send()
             .await?
-            .json::<ApiResponse>()
+            .json::<HttpApiResponse>()
             .await
             .map_err(SlackClientError::from)
     }
@@ -114,7 +114,7 @@ impl SlackClient for ReqwestSlackClient {
         channel: &str,
         parent: &Message,
         message: &str,
-    ) -> Result<ApiResponse, SlackClientError> {
+    ) -> Result<HttpApiResponse, SlackClientError> {
         info!(
             "Messaging channel {}, thread {:?} with {}",
             channel, parent, message
@@ -134,7 +134,7 @@ impl SlackClient for ReqwestSlackClient {
             }))
             .send()
             .await?
-            .json::<ApiResponse>()
+            .json::<HttpApiResponse>()
             .await
             .map_err(SlackClientError::from)
     }
