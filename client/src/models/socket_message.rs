@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
 use crate::models::blocks::Block;
+use crate::models::message_id::MessageId;
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 #[serde(tag = "type")]
@@ -30,7 +31,7 @@ pub struct Payload {
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub struct Event {
     #[serde(rename = "event_ts")]
-    pub id: String,
+    pub id: MessageId,
     #[serde(rename = "type")]
     pub event_type: String,
     pub text: Option<String>,

@@ -53,7 +53,7 @@ async fn should_initiate_socket_mode_connection() {
             envelope_id: String::from("fake-enve-lope-i-d"),
             payload: Payload {
                 event: Event {
-                    id: "1686321337.206879".to_string(),
+                    id: "1686321337.206879".to_string().into(),
                     event_type: "message".to_string(),
                     text: Some("test".to_string()),
                     user: Some("F4K3USER1D".to_string()),
