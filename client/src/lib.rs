@@ -11,7 +11,6 @@ use tracing::info;
 use crate::models::message_id::MessageId;
 use crate::rate_limiter::RateLimitingMiddleware;
 use crate::socket_listener::SocketModeListener;
-use models::http_response::Message;
 
 pub mod error;
 pub mod models;
