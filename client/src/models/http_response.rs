@@ -1,5 +1,5 @@
-use serde::Deserialize;
 use crate::models::message_id::MessageId;
+use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct HttpApiResponse {

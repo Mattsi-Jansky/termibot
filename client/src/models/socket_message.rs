@@ -1,7 +1,7 @@
-use serde::{Deserialize, Serialize};
-use serde_with::skip_serializing_none;
 use crate::models::blocks::Block;
 use crate::models::message_id::MessageId;
+use serde::{Deserialize, Serialize};
+use serde_with::skip_serializing_none;
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 #[serde(tag = "type")]

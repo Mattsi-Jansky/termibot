@@ -1,12 +1,12 @@
 extern crate core;
 
-use std::sync::Arc;
 use crate::actions::handler::ActionHandler;
 use client::error::SlackClientError;
 use client::models::socket_message::SocketMessage;
 use client::SlackClient;
 use futures::future::join_all;
 use plugins::Plugin;
+use std::sync::Arc;
 use tracing::info;
 
 pub mod actions;
@@ -88,10 +88,10 @@ mod tests {
     use actions::handler::MockActionHandler;
     use async_trait::async_trait;
     use client::models::socket_message::{Event, Payload, SocketMessage};
+    use client::socket_listener::SocketModeListener;
     use client::MockSlackClient;
     use plugins::MockPlugin;
     use std::future;
-    use client::socket_listener::SocketModeListener;
 
     struct TestSocketModeListener {
         call_count: usize,
@@ -131,10 +131,7 @@ mod tests {
 
     #[tokio::test]
     async fn disconnect_after_disconnect_message_received() {
-        let bot = SlackBot::from(
-            mock_client(),
-            Box::new(MockActionHandler::new()),
-        );
+        let bot = SlackBot::from(mock_client(), Box::new(MockActionHandler::new()));
 
         bot.run().await.unwrap();
     }
@@ -151,11 +148,7 @@ mod tests {
             .expect_handle()
             .times(1)
             .returning(|_, _| Box::pin(future::ready(Ok(()))));
-        let bot = SlackBot::from(
-            mock_client(),
-            mock_action_handler,
-        )
-        .with(mock_plugin);
+        let bot = SlackBot::from(mock_client(), mock_action_handler).with(mock_plugin);
 
         bot.run().await.unwrap();
     }
@@ -180,11 +173,7 @@ mod tests {
                 _ => false,
             })
             .returning(|_, _| Box::pin(future::ready(Ok(()))));
-        let bot = SlackBot::from(
-            mock_client(),
-            mock_action_handler,
-        )
-        .with(mock_plugin);
+        let bot = SlackBot::from(mock_client(), mock_action_handler).with(mock_plugin);
 
         bot.run().await.unwrap();
     }

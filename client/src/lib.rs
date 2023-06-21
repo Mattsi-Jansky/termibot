@@ -8,10 +8,10 @@ use secrecy::{ExposeSecret, Secret};
 use socket_listener::TungsteniteSocketModeListenerBuilder;
 use tracing::info;
 
+use crate::models::message_id::MessageId;
 use crate::rate_limiter::RateLimitingMiddleware;
 use crate::socket_listener::SocketModeListener;
 use models::http_response::Message;
-use crate::models::message_id::MessageId;
 
 pub mod error;
 pub mod models;

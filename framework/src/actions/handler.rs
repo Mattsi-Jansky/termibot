@@ -1,9 +1,9 @@
-use std::sync::Arc;
 use crate::actions::Action;
 use async_trait::async_trait;
 use client::error::SlackClientError;
 use client::SlackClient;
 use mockall::automock;
+use std::sync::Arc;
 
 #[async_trait]
 #[automock]
@@ -50,8 +50,8 @@ mod tests {
     use super::*;
     use client::models::http_response::HttpApiResponse;
     use client::models::http_response::Message;
-    use client::MockSlackClient;
     use client::models::message_id::MessageId;
+    use client::MockSlackClient;
 
     #[tokio::test]
     async fn given_channel_message_action_should_send_message_to_channel() {
@@ -77,10 +77,7 @@ mod tests {
             });
 
         handler
-            .handle(
-                test_action,
-                Arc::new(mock_client),
-            )
+            .handle(test_action, Arc::new(mock_client))
             .await
             .unwrap();
     }
@@ -98,8 +95,7 @@ mod tests {
             .expect_message_thread()
             .withf(|channel, thread, message| {
                 channel == "#bots"
-                    && thread
-                        == &MessageId::new(String::from("thread-id"))
+                    && thread == &MessageId::new(String::from("thread-id"))
                     && message == "hello world"
             })
             .times(1)
@@ -115,10 +111,7 @@ mod tests {
             });
 
         handler
-            .handle(
-                test_action,
-                Arc::new(mock_client),
-            )
+            .handle(test_action, Arc::new(mock_client))
             .await
             .unwrap();
     }

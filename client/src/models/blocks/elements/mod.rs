@@ -7,5 +7,5 @@ pub mod text;
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum BlockElement {
     RichTextSection(RichTextSectionElement),
-    Text(TextElement)
+    Text(TextElement),
 }
