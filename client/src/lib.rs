@@ -7,6 +7,7 @@ use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use secrecy::{ExposeSecret, Secret};
 use socket_listener::TungsteniteSocketModeListenerBuilder;
 use tracing::info;
+use crate::models::template::MessageBody;
 
 use crate::models::message_id::MessageId;
 use crate::rate_limiter::RateLimitingMiddleware;
@@ -25,7 +26,7 @@ pub trait SlackClient {
     async fn message_channel(
         &self,
         channel: &str,
-        message: &str,
+        message: &MessageBody,
     ) -> Result<HttpApiResponse, SlackClientError>;
 
     /// Send a reply to a thread.
@@ -83,9 +84,9 @@ impl SlackClient for ReqwestSlackClient {
     async fn message_channel(
         &self,
         channel: &str,
-        message: &str,
+        message: &MessageBody,
     ) -> Result<HttpApiResponse, SlackClientError> {
-        info!("Messaging channel {} with {}", channel, message);
+        info!("Messaging channel {} with {:?}", channel, message);
         self.http
             .post("https://slack.com/api/chat.postMessage")
             .header(
@@ -96,7 +97,7 @@ impl SlackClient for ReqwestSlackClient {
             .header("Accept", "application/json")
             .json(&serde_json::json!({
                 "channel": channel,
-                "text": message
+                "text": message.get_text()
             }))
             .send()
             .await?

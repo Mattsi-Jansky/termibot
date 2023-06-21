@@ -1,19 +1,32 @@
 use crate::error::SlackClientError;
 use crate::models::blocks::Block;
 
-pub struct MessageTemplate {
+#[derive(Debug)]
+pub struct MessageBody {
     text: Option<String>,
     blocks: Vec<Block>
     //attachments
 }
 
-impl MessageTemplate {
+impl MessageBody {
     pub fn new(blocks: Vec<Block>, text: Option<String>) -> Result<Self, SlackClientError>{
         if blocks.is_empty() && text.is_none() {
             Err(SlackClientError("Must have..".to_string()))
         } else {
             Ok(Self {blocks, text})
         }
+    }
+
+    pub fn from_text(text: &str) -> Self {
+        Self {text: Some(text.to_string()), blocks: vec![] }
+    }
+
+    pub fn get_text(&self) -> String {
+        self.text.clone().unwrap_or(String::new())
+    }
+
+    pub fn get_blocks(&self) -> &Vec<Block> {
+        &self.blocks
     }
 }
 
@@ -26,14 +39,14 @@ mod tests {
 
     #[test]
     fn given_no_text_or_attachments_constructor_should_return_error() {
-        let result = MessageTemplate::new(vec![], None);
+        let result = MessageBody::new(vec![], None);
 
         assert!(result.is_err())
     }
 
     #[test]
     fn given_text_but_no_blocks_constructor_should_succeed() {
-        let result = MessageTemplate::new(vec![], Some("test".to_string()));
+        let result = MessageBody::new(vec![], Some("test".to_string()));
 
         assert!(result.is_ok());
         let result = result.unwrap();
@@ -43,7 +56,7 @@ mod tests {
 
     #[test]
     fn given_blocks_but_no_text_constructor_should_succeed() {
-        let result = MessageTemplate::new(vec![
+        let result = MessageBody::new(vec![
             Block::RichText(RichTextBlock::new()
                 .elements(vec![BlockElement::RichTextSection(
                     RichTextSectionElement::new()
@@ -62,7 +75,7 @@ mod tests {
 
     #[test]
     fn given_both_blocks_and_text_constructor_should_succeed() {
-        let result = MessageTemplate::new(vec![
+        let result = MessageBody::new(vec![
                                             Block::RichText(RichTextBlock::new()
                                               .elements(vec![BlockElement::RichTextSection(
                                                   RichTextSectionElement::new()

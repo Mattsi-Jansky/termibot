@@ -2,6 +2,7 @@ mod test_client_builder;
 
 use crate::test_client_builder::TestClientBuilder;
 use std::time::SystemTime;
+use client::models::template::MessageBody;
 
 use client::SlackClient;
 
@@ -10,7 +11,7 @@ async fn should_send_messages_to_channels_and_threads() {
     let builder = TestClientBuilder::new("should_send_messages_to_channels_and_threads");
     let client = builder.new_client();
 
-    let result = client.message_channel("#bots", "foobar").await;
+    let result = client.message_channel("#bots", &MessageBody::from_text("foobar")).await;
     assert!(result.is_ok());
     let result = result.unwrap();
 
@@ -30,7 +31,7 @@ async fn given_too_many_requests_should_throttle_to_avoid_rate_limit() {
     let before = SystemTime::now();
     for _i in 0..9 {
         client
-            .message_channel("#bots", "foobar")
+            .message_channel("#bots", &MessageBody::from_text("foobar"))
             .await
             .expect("Should succeed");
     }
