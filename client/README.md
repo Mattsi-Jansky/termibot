@@ -12,4 +12,4 @@ Run the tests with `cargo test`.
 
 ## Acknowledgements
 
-Much inspiration was taken from the [Slack Morphism](https://github.com/abdolence/slack-morphism-rust) crate, particularly around how to represent socket messages. I learned quite a bit about Serde just by reading the Slack Morphism's model definitions.
+Much inspiration was taken from the [Slack Morphism](https://github.com/abdolence/slack-morphism-rust) and [Slack Blocks](https://github.com/cakekindel/slack-blocks-rs) crates, particularly around how to represent socket messages. Earlier versions of the client used these crates but it was later decided to write bespoke models using the lessons learned from these crates.

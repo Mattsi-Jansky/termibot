@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
-use slack_morphism::blocks::SlackBlock;
+use crate::models::blocks::Block;
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 #[serde(tag = "type")]
@@ -35,7 +35,7 @@ pub struct Event {
     pub event_type: String,
     pub text: Option<String>,
     pub user: Option<String>,
-    pub blocks: Vec<SlackBlock>,
+    pub blocks: Vec<Block>,
     pub channel: Option<String>,
     pub channel_type: Option<String>,
 }

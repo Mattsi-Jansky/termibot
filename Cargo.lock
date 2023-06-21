@@ -138,6 +138,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "builder-pattern"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d85376b93d8efe18dd819f56505e33e7a9c0f93fb02bd761f8690026178ed6e5"
+dependencies = [
+ "builder-pattern-macro",
+ "futures",
+]
+
+[[package]]
+name = "builder-pattern-macro"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "47d624ef88b39588d113f807ffb38ee968aafc388ca57dd7a9a7b82d3de1f5f4"
+dependencies = [
+ "bitflags",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "bumpalo"
 version = "3.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -187,6 +209,7 @@ name = "client"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "builder-pattern",
  "config-file",
  "futures-channel",
  "futures-util",
@@ -205,7 +228,6 @@ dependencies = [
  "serde_json",
  "serde_with 3.0.0",
  "serial_test",
- "slack-morphism",
  "task-local-extensions",
  "tokio",
  "tokio-tungstenite",
