@@ -2,7 +2,7 @@ use tokio::io;
 use tokio_tungstenite::tungstenite;
 
 #[derive(Debug)]
-pub struct SlackClientError(String);
+pub struct SlackClientError(pub String);
 
 impl From<reqwest_middleware::Error> for SlackClientError {
     fn from(value: reqwest_middleware::Error) -> Self {
