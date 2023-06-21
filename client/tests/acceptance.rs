@@ -2,7 +2,7 @@ mod test_client_builder;
 
 use crate::test_client_builder::TestClientBuilder;
 use std::time::SystemTime;
-use client::models::template::MessageBody;
+use client::models::message_body::MessageBody;
 
 use client::SlackClient;
 
