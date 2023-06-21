@@ -36,7 +36,7 @@ pub trait SlackClient {
         &self,
         channel: &str,
         parent: &MessageId,
-        message: &str,
+        message: &MessageBody,
     ) -> Result<HttpApiResponse, SlackClientError>;
 
     /// Open a Socket Mode connection
@@ -84,9 +84,9 @@ impl SlackClient for ReqwestSlackClient {
     async fn message_channel(
         &self,
         channel: &str,
-        message: &MessageBody,
+        body: &MessageBody,
     ) -> Result<HttpApiResponse, SlackClientError> {
-        info!("Messaging channel {} with {:?}", channel, message);
+        info!("Messaging channel {} with {:?}", channel, body);
         self.http
             .post("https://slack.com/api/chat.postMessage")
             .header(
@@ -97,7 +97,8 @@ impl SlackClient for ReqwestSlackClient {
             .header("Accept", "application/json")
             .json(&serde_json::json!({
                 "channel": channel,
-                "text": message.get_text()
+                "text": body.get_text()
+                //todo add blocks
             }))
             .send()
             .await?
@@ -114,11 +115,11 @@ impl SlackClient for ReqwestSlackClient {
         &self,
         channel: &str,
         parent: &MessageId,
-        message: &str,
+        body: &MessageBody,
     ) -> Result<HttpApiResponse, SlackClientError> {
         info!(
-            "Messaging channel {}, thread {:?} with {}",
-            channel, parent, message
+            "Messaging channel {}, thread {:?} with {:?}",
+            channel, parent, body
         );
         self.http
             .post("https://slack.com/api/chat.postMessage")
@@ -131,7 +132,7 @@ impl SlackClient for ReqwestSlackClient {
             .json(&serde_json::json!({
                 "channel": channel,
                 "thread_ts": parent,
-                "text": message
+                "text": body.get_text()
             }))
             .send()
             .await?
