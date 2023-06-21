@@ -1,8 +1,8 @@
 mod test_client_builder;
 
 use crate::test_client_builder::TestClientBuilder;
-use std::time::SystemTime;
 use client::models::message_body::MessageBody;
+use std::time::SystemTime;
 
 use client::SlackClient;
 
@@ -11,7 +11,9 @@ async fn should_send_messages_to_channels_and_threads() {
     let builder = TestClientBuilder::new("should_send_messages_to_channels_and_threads");
     let client = builder.new_client();
 
-    let result = client.message_channel("#bots", &MessageBody::from_text("foobar")).await;
+    let result = client
+        .message_channel("#bots", &MessageBody::from_text("foobar"))
+        .await;
     assert!(result.is_ok());
     let result = result.unwrap();
 

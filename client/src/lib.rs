@@ -1,3 +1,4 @@
+use crate::models::message_body::MessageBody;
 use async_trait::async_trait;
 use error::SlackClientError;
 use mockall::automock;
@@ -7,7 +8,6 @@ use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use secrecy::{ExposeSecret, Secret};
 use socket_listener::TungsteniteSocketModeListenerBuilder;
 use tracing::info;
-use crate::models::message_body::MessageBody;
 
 use crate::models::message_id::MessageId;
 use crate::rate_limiter::RateLimitingMiddleware;
