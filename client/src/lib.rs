@@ -93,7 +93,7 @@ impl ReqwestSlackClient {
                         .unwrap_or(vec![])
                         .into_iter()
                         .reduce(|acc, err| format!("{},{}", acc, err))
-                        .unwrap();
+                        .unwrap_or(String::new());
                     Err(SlackClientError(format!("{}: [{}]", err_type, errors)))
                 }
             } else {

@@ -18,15 +18,12 @@ pub struct SongLinkPlugin {}
 #[async_trait]
 impl Plugin for SongLinkPlugin {
     async fn on_event(&self, event: &Event) -> Action {
-        println!("--- Processing event");
         match event {
             Event::Message(message) => {
-                println!("--- Able to read message");
                 let text = message.text.clone().unwrap_or(String::new());
                 let captures = SPOTIFY_MATCHER.captures(&text[..]);
 
                 if let Some(matches) = captures {
-                    println!("--- Found capture");
                     let content = matches
                         .get(0)
                         .expect("regex capture should be present")
@@ -34,7 +31,6 @@ impl Plugin for SongLinkPlugin {
                     let mut new_link = String::from(SONG_LINK_BASE_URL);
                     new_link.push_str(&content[31..]);
 
-                    println!("--- Replying to thread");
                     Action::ReplyToThread { channel: message.channel.clone().unwrap_or(String::new()), thread_id: message.id.clone(), message: MessageBody::from_text(&new_link[..]),  }
                 } else {
                     Action::DoNothing

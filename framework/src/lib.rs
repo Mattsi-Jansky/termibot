@@ -75,7 +75,7 @@ impl SlackBot {
                 join_all(actions)
                     .await
                     .into_iter()
-                    .map(|action| self.action_handler.handle(action, self.client.clone())),
+                    .map(|action| self.action_handler.handle(action, self.client.clone()))
             ).await;
 
             for result in results {
