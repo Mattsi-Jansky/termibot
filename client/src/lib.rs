@@ -76,6 +76,33 @@ impl ReqwestSlackClient {
             http: client,
         }
     }
+
+    fn ensure_correct_result_type_because_slack_stupidly_uses_200_status_for_errors(result: Result<HttpApiResponse, SlackClientError>) -> Result<HttpApiResponse, SlackClientError> {
+        if let Ok(response) = result {
+            if !response.ok {
+                if response.error.is_none() && response.errors.is_none() {
+                    Err(SlackClientError(
+                        "Slack returned not-okay result but no errors".to_string(),
+                    ))
+                } else {
+                    let err_type = response
+                        .error
+                        .unwrap_or("No error type provided".to_string());
+                    let errors = response
+                        .errors
+                        .unwrap_or(vec![])
+                        .into_iter()
+                        .reduce(|acc, err| format!("{},{}", acc, err))
+                        .unwrap();
+                    Err(SlackClientError(format!("{}: [{}]", err_type, errors)))
+                }
+            } else {
+                Ok(response)
+            }
+        } else {
+            result
+        }
+    }
 }
 
 #[async_trait]
@@ -109,30 +136,7 @@ impl SlackClient for ReqwestSlackClient {
             .await
             .map_err(SlackClientError::from);
 
-        if let Ok(response) = result {
-            if !response.ok {
-                if response.error.is_none() && response.errors.is_none() {
-                    Err(SlackClientError(
-                        "Slack returned not-okay result but no errors".to_string(),
-                    ))
-                } else {
-                    let err_type = response
-                        .error
-                        .unwrap_or("No error type provided".to_string());
-                    let errors = response
-                        .errors
-                        .unwrap_or(vec![])
-                        .into_iter()
-                        .reduce(|acc, err| format!("{},{}", acc, err))
-                        .unwrap();
-                    Err(SlackClientError(format!("{}: [{}]", err_type, errors)))
-                }
-            } else {
-                Ok(response)
-            }
-        } else {
-            result
-        }
+        Self::ensure_correct_result_type_because_slack_stupidly_uses_200_status_for_errors(result)
     }
 
     /// Send a reply to a thread.
