@@ -1,0 +1,127 @@
+{
+  "http_interactions": [
+    {
+      "response": {
+        "body": {
+          "encoding": null,
+          "string": "{\"ok\":true,\"url\":\"ws://localhost:12345/\"}"
+        },
+        "http_version": "1.1",
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "headers": {
+          "x-accepted-oauth-scopes": [
+            "connections:write"
+          ],
+          "x-xss-protection": [
+            "0"
+          ],
+          "via": [
+            "1.1 slack-prod.tinyspeck.com, envoy-www-iad-sorehkrk, envoy-edge-lhr-pdukkkjw"
+          ],
+          "content-length": [
+            "173"
+          ],
+          "content-type": [
+            "application/json; charset=utf-8"
+          ],
+          "date": [
+            "Thu, 22 Jun 2023 11:13:00 GMT"
+          ],
+          "strict-transport-security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "x-slack-req-id": [
+            "e98badc21cd1f2de6d182fd6e2d31940"
+          ],
+          "access-control-allow-headers": [
+            "slack-route, x-slack-version-ts, x-b3-traceid, x-b3-spanid, x-b3-parentspanid, x-b3-sampled, x-b3-flags"
+          ],
+          "x-robots-tag": [
+            "noindex,nofollow"
+          ],
+          "referrer-policy": [
+            "no-referrer"
+          ],
+          "x-backend": [
+            "main_normal main_canary_with_overflow main_control_with_overflow"
+          ],
+          "x-envoy-upstream-service-time": [
+            "90"
+          ],
+          "cache-control": [
+            "private, no-cache, no-store, must-revalidate"
+          ],
+          "x-server": [
+            "slack-www-hhvm-main-iad-fcxx"
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "x-slack-shared-secret-outcome": [
+            "no-match"
+          ],
+          "x-slack-edge-shared-secret-outcome": [
+            "no-match"
+          ],
+          "server": [
+            "Apache"
+          ],
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "x-slack-backend": [
+            "r"
+          ],
+          "x-oauth-scopes": [
+            "connections:write,authorizations:read,app_configurations:write"
+          ],
+          "x-edge-backend": [
+            "envoy-www"
+          ],
+          "expires": [
+            "Sat, 26 Jul 1997 05:00:00 GMT"
+          ],
+          "x-slack-unique-id": [
+            "ZJQsvCXEl9IxbZ991pmbVwAAACU"
+          ],
+          "pragma": [
+            "no-cache"
+          ],
+          "access-control-expose-headers": [
+            "x-slack-req-id, retry-after"
+          ],
+          "vary": [
+            "Accept-Encoding"
+          ]
+        }
+      },
+      "request": {
+        "uri": "https://slack.com/api/apps.connections.open",
+        "body": {
+          "encoding": null,
+          "string": ""
+        },
+        "method": "post",
+        "headers": {
+          "accept": [
+            "application/json"
+          ],
+          "authorization": [
+            "Bearer xoxn-not-a-real-token"
+          ],
+          "content-type": [
+            "application/x-www-form-urlencoded"
+          ],
+          "user-agent": [
+            "slackbot-client"
+          ]
+        }
+      },
+      "recorded_at": "Thu, 22 Jun 2023 11:13:00 +0000"
+    }
+  ],
+  "recorded_with": "rVCR 0.1.1"
+}

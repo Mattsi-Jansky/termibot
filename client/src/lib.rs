@@ -86,8 +86,14 @@ impl SlackClient for ReqwestSlackClient {
         channel: &str,
         body: &MessageBody,
     ) -> Result<HttpApiResponse, SlackClientError> {
+        let body = serde_json::json!({
+                "channel": channel,
+                "text": body.get_text(),
+                "blocks": body.get_blocks()
+            });
         info!("Messaging channel {} with {:?}", channel, body);
-        self.http
+
+        let result = self.http
             .post("https://slack.com/api/chat.postMessage")
             .header(
                 "Authorization",
@@ -95,16 +101,25 @@ impl SlackClient for ReqwestSlackClient {
             )
             .header("User-Agent", "slackbot-client")
             .header("Accept", "application/json")
-            .json(&serde_json::json!({
-                "channel": channel,
-                "text": body.get_text()
-                //todo add blocks
-            }))
+            .json(&body)
             .send()
             .await?
             .json::<HttpApiResponse>()
             .await
-            .map_err(SlackClientError::from)
+            .map_err(SlackClientError::from);
+
+        if result.is_ok() {
+            let response = result.unwrap();
+            if !response.ok {
+                if response.error.is_none() && response.errors.is_none() {
+                    Err(SlackClientError("Slack returned not-okay result but no errors".to_string()))
+                } else {
+                    let err_type = response.error.unwrap_or("No error type provided".to_string());
+                    let errors = response.errors.unwrap_or(vec![]).into_iter().reduce(|acc, err| format!("{},{}", acc, err)).unwrap();
+                    Err(SlackClientError(format!("{}: [{}]", err_type, errors)))
+                }
+            } else { Ok(response) }
+        } else { result }
     }
 
     /// Send a reply to a thread.
