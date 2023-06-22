@@ -28,7 +28,6 @@ async fn start_websocket_server() -> WebSocketStream<TcpStream> {
 
 #[tokio::test]
 #[serial]
-#[ignore]
 async fn should_initiate_socket_mode_connection() {
     let websocket_server = async move {
         let mut stream = start_websocket_server().await;
@@ -81,7 +80,6 @@ async fn should_initiate_socket_mode_connection() {
 
 #[tokio::test]
 #[serial]
-#[ignore]
 async fn should_send_acknowledgement_of_event_messages() {
     let (tx, rx) = futures_channel::oneshot::channel();
     let websocket_server = async move {
