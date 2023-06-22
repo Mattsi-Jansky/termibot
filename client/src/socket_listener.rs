@@ -7,7 +7,7 @@ use serde_json::json;
 use tokio::net::TcpStream;
 use tokio_tungstenite::tungstenite::Message;
 use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
-use tracing::error;
+use tracing::{error, info, warn};
 
 #[async_trait]
 pub trait SocketModeListener {
@@ -56,8 +56,9 @@ impl SocketModeListener for TungsteniteSocketModeListener {
             error!("Received unexpected non-text message from WSS: {:?}", message);
             self.next().await
         } else {
-            let json = message.into_text().unwrap();
-            let mut result = serde_json::from_str(&json);
+            let text = message.into_text().unwrap();
+            info!("Received message {}", text);
+            let mut result = serde_json::from_str(&text);
 
             match &result {
                 Ok(inner) => {
@@ -79,11 +80,13 @@ impl SocketModeListener for TungsteniteSocketModeListener {
                         SocketMessage::Hello { .. } => { /* Does not need to be ACK'd*/ }
                         SocketMessage::Disconnect { .. } => { /* Does not need to be ACK'd*/ }
                     }
+                    result
                 }
-                Err(_) => {}
+                Err(err) => {
+                    warn!("Could not parse previous message from Slack (socket mode), probably an unsupported type not yet implemented. Caused by: `{}`", err);
+                    self.next().await
+                }
             }
-
-            result
         }
     }
 }
