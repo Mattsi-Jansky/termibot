@@ -10,10 +10,10 @@ pub enum Text {
     #[serde(rename = "plain_text")]
     PlainText(TextBody),
     #[serde(rename = "mrkdwn")]
-    Markdown(TextBody)
+    Markdown(TextBody),
 }
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Builder)]
 pub struct TextBody {
-    pub text: String
+    pub text: String,
 }

@@ -1,11 +1,11 @@
 mod test_client_builder;
 
 use crate::test_client_builder::TestClientBuilder;
-use client::models::message_body::MessageBody;
-use std::time::SystemTime;
-use client::models::blocks::Block;
 use client::models::blocks::objects::text::{Text, TextBody};
 use client::models::blocks::section::SectionBlock;
+use client::models::blocks::Block;
+use client::models::message_body::MessageBody;
+use std::time::SystemTime;
 
 use client::SlackClient;
 
@@ -47,23 +47,32 @@ async fn given_too_many_requests_should_throttle_to_avoid_rate_limit() {
 
 #[tokio::test]
 async fn given_blocks_api_used_should_send_blocks_message() {
-    let builder =
-        TestClientBuilder::new("given_blocks_api_used_should_send_blocks_message");
+    let builder = TestClientBuilder::new("given_blocks_api_used_should_send_blocks_message");
     let client = builder.new_client();
 
     let blocks = vec![
         Block::Section(
-            SectionBlock::new().text(Some(Text::Markdown(TextBody::new().text("*why* _hello_ there".to_string()).build()))).build()
+            SectionBlock::new()
+                .text(Some(Text::Markdown(
+                    TextBody::new()
+                        .text("*why* _hello_ there".to_string())
+                        .build(),
+                )))
+                .build(),
         ),
         Block::Divider,
         Block::Section(
-            SectionBlock::new().fields(Some(vec![
-                Text::PlainText(TextBody::new().text("foo".to_string()).build()),
-                Text::PlainText(TextBody::new().text("bar".to_string()).build())
-            ])).build()
+            SectionBlock::new()
+                .fields(Some(vec![
+                    Text::PlainText(TextBody::new().text("foo".to_string()).build()),
+                    Text::PlainText(TextBody::new().text("bar".to_string()).build()),
+                ]))
+                .build(),
         ),
     ];
-    let result = client.message_channel("#bots", &MessageBody::new(blocks, None).unwrap()).await;
+    let result = client
+        .message_channel("#bots", &MessageBody::new(blocks, None).unwrap())
+        .await;
 
     assert!(result.unwrap().ok);
 }

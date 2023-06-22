@@ -87,13 +87,14 @@ impl SlackClient for ReqwestSlackClient {
         body: &MessageBody,
     ) -> Result<HttpApiResponse, SlackClientError> {
         let body = serde_json::json!({
-                "channel": channel,
-                "text": body.get_text(),
-                "blocks": body.get_blocks()
-            });
+            "channel": channel,
+            "text": body.get_text(),
+            "blocks": body.get_blocks()
+        });
         info!("Messaging channel {} with {:?}", channel, body);
 
-        let result = self.http
+        let result = self
+            .http
             .post("https://slack.com/api/chat.postMessage")
             .header(
                 "Authorization",
@@ -112,14 +113,27 @@ impl SlackClient for ReqwestSlackClient {
             let response = result.unwrap();
             if !response.ok {
                 if response.error.is_none() && response.errors.is_none() {
-                    Err(SlackClientError("Slack returned not-okay result but no errors".to_string()))
+                    Err(SlackClientError(
+                        "Slack returned not-okay result but no errors".to_string(),
+                    ))
                 } else {
-                    let err_type = response.error.unwrap_or("No error type provided".to_string());
-                    let errors = response.errors.unwrap_or(vec![]).into_iter().reduce(|acc, err| format!("{},{}", acc, err)).unwrap();
+                    let err_type = response
+                        .error
+                        .unwrap_or("No error type provided".to_string());
+                    let errors = response
+                        .errors
+                        .unwrap_or(vec![])
+                        .into_iter()
+                        .reduce(|acc, err| format!("{},{}", acc, err))
+                        .unwrap();
                     Err(SlackClientError(format!("{}: [{}]", err_type, errors)))
                 }
-            } else { Ok(response) }
-        } else { result }
+            } else {
+                Ok(response)
+            }
+        } else {
+            result
+        }
     }
 
     /// Send a reply to a thread.

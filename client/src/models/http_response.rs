@@ -6,7 +6,7 @@ pub struct HttpApiResponse {
     pub ok: bool,
     pub message: Option<Message>,
     pub error: Option<String>,
-    pub errors: Option<Vec<String>>
+    pub errors: Option<Vec<String>>,
 }
 
 #[derive(Debug, Deserialize, PartialEq)]

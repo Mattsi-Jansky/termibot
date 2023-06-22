@@ -50,9 +50,9 @@ mod tests {
     use super::*;
     use client::models::http_response::HttpApiResponse;
     use client::models::http_response::Message;
+    use client::models::message_body::MessageBody;
     use client::models::message_id::MessageId;
     use client::MockSlackClient;
-    use client::models::message_body::MessageBody;
 
     #[tokio::test]
     async fn given_channel_message_action_should_send_message_to_channel() {
@@ -72,7 +72,7 @@ mod tests {
                     message: Some(Message {
                         id: "".to_string().into(),
                         text: "".to_string(),
-                        user: "".to_string()
+                        user: "".to_string(),
                     }),
                     error: None,
                     errors: None,

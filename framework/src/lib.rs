@@ -87,13 +87,13 @@ mod tests {
     use crate::actions::Action;
     use actions::handler::MockActionHandler;
     use async_trait::async_trait;
+    use client::models::message_body::MessageBody;
+    use client::models::message_id::MessageId;
     use client::models::socket_message::{Event, Payload, SocketMessage};
     use client::socket_listener::SocketModeListener;
     use client::MockSlackClient;
     use plugins::MockPlugin;
     use std::future;
-    use client::models::message_body::MessageBody;
-    use client::models::message_id::MessageId;
 
     struct TestSocketModeListener {
         call_count: usize,

@@ -35,8 +35,8 @@ impl MessageBody {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::blocks::elements::BlockElement;
     use crate::models::blocks::elements::text::RichTextSectionElement;
+    use crate::models::blocks::elements::BlockElement;
     use crate::models::blocks::objects::text::{Text, TextBody};
     use crate::models::blocks::text::RichTextBlock;
 
