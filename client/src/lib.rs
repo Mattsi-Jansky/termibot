@@ -153,7 +153,7 @@ impl SlackClient for ReqwestSlackClient {
             "Messaging channel {}, thread {:?} with {:?}",
             channel, parent, body
         );
-        self.http
+        let result = self.http
             .post("https://slack.com/api/chat.postMessage")
             .header(
                 "Authorization",
@@ -170,7 +170,9 @@ impl SlackClient for ReqwestSlackClient {
             .await?
             .json::<HttpApiResponse>()
             .await
-            .map_err(SlackClientError::from)
+            .map_err(SlackClientError::from);
+
+        Self::ensure_correct_result_type_because_slack_stupidly_uses_200_status_for_errors(result)
     }
 
     #[tracing::instrument]
