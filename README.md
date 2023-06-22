@@ -23,6 +23,8 @@ We're going to Rust town, baby!
 
 ## Stretch Goals
 
+* Create some sort of DSL to make creating blocks API messages easier
+  * A simple solution: Write it in JSON, use `format!` to inject values and `serde` to deserialise it?
 * Convert non-Songlink links to Songlink
   * Give output similar to Songlink app itself?
 * Each time a new emoji is added, post the "emoji changelist" automatically
