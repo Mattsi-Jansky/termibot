@@ -6,7 +6,7 @@ use client::models::blocks::elements::BlockElement;
 use client::models::blocks::objects::text::TextBody;
 use client::models::blocks::text::RichTextBlock;
 use client::models::blocks::Block;
-use client::models::socket_message::Event;
+use client::models::socket_message::{Event, MessageEvent};
 use client::models::socket_message::{Payload, SocketMessage};
 use client::SlackClient;
 use futures_util::{SinkExt, StreamExt};
@@ -53,12 +53,11 @@ async fn should_initiate_socket_mode_connection() {
         SocketMessage::Event {
             envelope_id: String::from("fake-enve-lope-i-d"),
             payload: Payload {
-                event: Event {
+                event: Event::Message(MessageEvent {
                     id: "1686321337.206879".to_string().into(),
-                    event_type: "message".to_string(),
                     text: Some("test".to_string()),
                     user: Some("F4K3USER1D".to_string()),
-                    blocks: vec![Block::RichText(
+                    blocks: Some(vec![Block::RichText(
                         RichTextBlock::new()
                             .elements(vec![BlockElement::RichTextSection(
                                 RichTextSectionElement::new()
@@ -68,10 +67,10 @@ async fn should_initiate_socket_mode_connection() {
                                     .build()
                             )])
                             .build()
-                    )],
+                    )]),
                     channel: Some("F4K3CH4NN3L1D".to_string()),
                     channel_type: Some("im".to_string()),
-                }
+                })
             }
         }
     );

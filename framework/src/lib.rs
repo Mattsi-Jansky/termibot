@@ -97,7 +97,7 @@ mod tests {
     use async_trait::async_trait;
     use client::models::message_body::MessageBody;
     use client::models::message_id::MessageId;
-    use client::models::socket_message::{Event, Payload, SocketMessage};
+    use client::models::socket_message::{Event, MessageEvent, Payload, SocketMessage};
     use client::socket_listener::SocketModeListener;
     use client::MockSlackClient;
     use plugins::MockPlugin;
@@ -122,15 +122,14 @@ mod tests {
                 Ok(SocketMessage::Event {
                     envelope_id: "fake-envelope-id".to_string(),
                     payload: Payload {
-                        event: Event {
+                        event: Event::Message(MessageEvent {
                             id: MessageId("fake-id".to_string()),
-                            event_type: "fake-id".to_string(),
                             text: Some("this is your secret message".to_string()),
                             user: None,
-                            blocks: vec![],
+                            blocks: Some(vec![]),
                             channel: None,
                             channel_type: None,
-                        },
+                        }),
                     },
                 })
             } else {

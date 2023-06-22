@@ -41,7 +41,7 @@ pub struct MessageEvent {
     pub id: MessageId,
     pub text: Option<String>,
     pub user: Option<String>,
-    pub blocks: Vec<Block>,
+    pub blocks: Option<Vec<Block>>,
     pub channel: Option<String>,
     pub channel_type: Option<String>,
 }
@@ -99,7 +99,7 @@ mod tests {
         if let Event::Message(message) = result {
             assert_eq!(message.id, "1687458843.576569".into());
             assert_eq!(message.text.unwrap(), "wat".to_string());
-            assert_eq!(message.blocks, vec![Block::RichText(RichTextBlock::new()
+            assert_eq!(message.blocks.unwrap(), vec![Block::RichText(RichTextBlock::new()
                 .elements(vec![BlockElement::RichTextSection(
                     RichTextSectionElement::new()
                         .elements(vec![BlockElement::Text(
