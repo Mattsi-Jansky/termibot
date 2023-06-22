@@ -10,7 +10,6 @@ use client::models::blocks::section::SectionBlock;
 use client::SlackClient;
 
 #[tokio::test]
-#[ignore]
 async fn should_send_messages_to_channels_and_threads() {
     let builder = TestClientBuilder::new("should_send_messages_to_channels_and_threads");
     let client = builder.new_client();
@@ -29,7 +28,6 @@ async fn should_send_messages_to_channels_and_threads() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn given_too_many_requests_should_throttle_to_avoid_rate_limit() {
     let builder =
         TestClientBuilder::new("given_too_many_requests_should_throttle_to_avoid_rate_limit");
@@ -50,7 +48,7 @@ async fn given_too_many_requests_should_throttle_to_avoid_rate_limit() {
 #[tokio::test]
 async fn given_blocks_api_used_should_send_blocks_message() {
     let builder =
-        TestClientBuilder::new("given_too_many_requests_should_throttle_to_avoid_rate_limit");
+        TestClientBuilder::new("given_blocks_api_used_should_send_blocks_message");
     let client = builder.new_client();
 
     let blocks = vec![
