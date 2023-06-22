@@ -1,9 +1,9 @@
 extern crate core;
 
-use crate::actions::handler::ActionHandler;
+use crate::actions::handler::{ActionHandler, DefaultActionHandler};
 use client::error::SlackClientError;
 use client::models::socket_message::SocketMessage;
-use client::SlackClient;
+use client::{ReqwestSlackClient, SlackClient};
 use futures::future::join_all;
 use plugins::Plugin;
 use std::sync::Arc;
@@ -19,6 +19,14 @@ pub struct SlackBot {
 }
 
 impl SlackBot {
+    pub fn new(bot_token: &str, app_token: &str) -> Self {
+        Self {
+            client: Arc::new(ReqwestSlackClient::new(bot_token, app_token)),
+            plugins: vec![],
+            action_handler: Box::new(DefaultActionHandler{}),
+        }
+    }
+
     pub fn from(
         client: Arc<dyn SlackClient + Send + Sync>,
         handler: Box<dyn ActionHandler>,

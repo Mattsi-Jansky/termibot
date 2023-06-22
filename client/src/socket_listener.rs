@@ -7,6 +7,7 @@ use serde_json::json;
 use tokio::net::TcpStream;
 use tokio_tungstenite::tungstenite::Message;
 use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
+use tracing::error;
 
 #[async_trait]
 pub trait SocketModeListener {
@@ -41,40 +42,48 @@ pub struct TungsteniteSocketModeListener {
 #[async_trait]
 impl SocketModeListener for TungsteniteSocketModeListener {
     async fn next(&mut self) -> serde_json::error::Result<SocketMessage> {
-        let json = self
+        let message = self
             .stream
             .next()
             .await
             .unwrap()
-            .unwrap()
-            .into_text()
             .unwrap();
-        let result = serde_json::from_str(&json);
 
-        match &result {
-            Ok(inner) => {
-                match inner {
-                    SocketMessage::Event {
-                        envelope_id,
-                        payload: _,
-                    } => {
-                        self.stream
-                            .send(Message::Text(
-                                json!({ "envelope_id": envelope_id }).to_string(),
-                            ))
-                            .await
-                            .unwrap();
+        if message.is_ping() {
+            self.stream.send(Message::Pong("Pong from slackbot".to_string().into_bytes())).await.unwrap();
+            self.next().await
+        } else if !message.is_text() {
+            error!("Received unexpected non-text message from WSS: {:?}", message);
+            self.next().await
+        } else {
+            let json = message.into_text().unwrap();
+            let mut result = serde_json::from_str(&json);
+
+            match &result {
+                Ok(inner) => {
+                    match inner {
+                        SocketMessage::Event {
+                            envelope_id,
+                            payload: _,
+                        } => {
+                            self.stream
+                                .send(Message::Text(
+                                    json!({ "envelope_id": envelope_id }).to_string(),
+                                ))
+                                .await
+                                .unwrap();
+                        }
+                        SocketMessage::Interactive { .. } => { /*Not implemented*/ }
+                        SocketMessage::SlashCommand { .. } => { /*Not implemented*/ }
+
+                        SocketMessage::Hello { .. } => { /* Does not need to be ACK'd*/ }
+                        SocketMessage::Disconnect { .. } => { /* Does not need to be ACK'd*/ }
                     }
-                    SocketMessage::Interactive { .. } => { /*Not implemented*/ }
-                    SocketMessage::SlashCommand { .. } => { /*Not implemented*/ }
-
-                    SocketMessage::Hello { .. } => { /* Does not need to be ACK'd*/ }
-                    SocketMessage::Disconnect { .. } => { /* Does not need to be ACK'd*/ }
                 }
+                Err(_) => {}
             }
-            Err(_) => {}
-        }
 
-        result
+            result
+        }
     }
 }

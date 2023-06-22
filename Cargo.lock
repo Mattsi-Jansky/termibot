@@ -1970,6 +1970,7 @@ dependencies = [
  "async-trait",
  "chrono",
  "config-file",
+ "framework",
  "futures-locks",
  "http",
  "hyper",
