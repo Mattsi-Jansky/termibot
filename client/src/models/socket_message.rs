@@ -50,7 +50,7 @@ pub struct MessageEvent {
 #[serde(tag = "subtype", rename_all = "snake_case")]
 pub enum EmojiChangedEvent {
     Add(AddEmojiEvent),
-    Remove,
+    Remove(RemoveEmojiEvent),
     Rename
 }
 
@@ -60,6 +60,14 @@ pub struct AddEmojiEvent {
     #[serde(rename = "event_ts")]
     pub id: MessageId,
     name: String
+}
+
+#[skip_serializing_none]
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
+pub struct RemoveEmojiEvent {
+    #[serde(rename = "event_ts")]
+    pub id: MessageId,
+    pub names: Vec<String>
 }
 
 #[cfg(test)]
@@ -72,6 +80,7 @@ mod tests {
 
     const FAKE_NEW_MESSAGE_EVENT: &str = "{ \"client_msg_id\": \"aa022dae-607c-4e24-b0e1-f96c08855f4f\", \"type\": \"message\", \"text\": \"wat\", \"user\": \"U118BF6LQ\", \"ts\": \"1687458843.576569\", \"blocks\": [ { \"type\": \"rich_text\", \"block_id\": \"ZrfB\", \"elements\": [ { \"type\": \"rich_text_section\", \"elements\": [ { \"type\": \"text\", \"text\": \"wat\" } ] } ] } ], \"team\": \"T0G5PM4NR\", \"channel\": \"DEAS25LNP\", \"event_ts\": \"1687458843.576569\", \"channel_type\": \"im\"}";
     const FAKE_NEW_EMOJI_EVENT: &str = "{ \"type\": \"emoji_changed\", \"subtype\": \"add\", \"name\": \"blobcat_knife\", \"value\": \"https://emoji.slack-edge.com/T0G5PM4NR/blobcat_knife/8ce3359f5936936a.png\", \"event_ts\": \"1687458875.040100\"}";
+    const FAKE_REMOVED_EMOJI_EVENT: &str = "{	\"type\": \"emoji_changed\",	\"subtype\": \"remove\",	\"names\": [\"picard_facepalm\"],	\"event_ts\" : \"1361482916.000004\"}";
 
     #[test]
     fn should_parse_message_event() {
@@ -100,6 +109,18 @@ mod tests {
             if let EmojiChangedEvent::Add(result) = result {
                 assert_eq!(result.id, "1687458875.040100".into());
                 assert_eq!(result.name, "blobcat_knife".to_string());
+            } else { panic!("Wrong type of event") }
+        } else { panic!("Wrong type of event") }
+    }
+
+    #[test]
+    fn should_parse_removed_emoji_event() {
+        let result: Event = serde_json::from_str(FAKE_REMOVED_EMOJI_EVENT).unwrap();
+
+        if let Event::EmojiChanged(result) = result {
+            if let EmojiChangedEvent::Remove(result) = result {
+                assert_eq!(result.id, "1361482916.000004".into());
+                assert_eq!(result.names, vec!["picard_facepalm".to_string()]);
             } else { panic!("Wrong type of event") }
         } else { panic!("Wrong type of event") }
     }
