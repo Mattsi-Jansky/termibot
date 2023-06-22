@@ -109,8 +109,7 @@ impl SlackClient for ReqwestSlackClient {
             .await
             .map_err(SlackClientError::from);
 
-        if result.is_ok() {
-            let response = result.unwrap();
+        if let Ok(response) = result {
             if !response.ok {
                 if response.error.is_none() && response.errors.is_none() {
                     Err(SlackClientError(
