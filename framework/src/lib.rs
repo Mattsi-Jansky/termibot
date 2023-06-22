@@ -92,6 +92,8 @@ mod tests {
     use client::MockSlackClient;
     use plugins::MockPlugin;
     use std::future;
+    use client::models::message_body::MessageBody;
+    use client::models::message_id::MessageId;
 
     struct TestSocketModeListener {
         call_count: usize,
@@ -113,7 +115,7 @@ mod tests {
                     envelope_id: "fake-envelope-id".to_string(),
                     payload: Payload {
                         event: Event {
-                            id: "fake-id".to_string(),
+                            id: MessageId("fake-id".to_string()),
                             event_type: "fake-id".to_string(),
                             text: Some("this is your secret message".to_string()),
                             user: None,
@@ -159,7 +161,7 @@ mod tests {
         mock_plugin.expect_on_event().returning(|_| {
             Box::pin(future::ready(Action::MessageChannel {
                 channel: String::from("my test channel"),
-                message: String::from("my test message"),
+                message: MessageBody::from_text("my test message"),
             }))
         });
         let mut mock_action_handler = Box::new(MockActionHandler::new());
@@ -168,7 +170,7 @@ mod tests {
             .times(1)
             .withf(|action, client| match action {
                 Action::MessageChannel { channel, message } => {
-                    channel == "my test channel" && message == "my test message"
+                    channel == "my test channel" && message.get_text() == "my test message"
                 }
                 _ => false,
             })
