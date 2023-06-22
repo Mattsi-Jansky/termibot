@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
-use text::{RichTextSectionElement, TextElement};
+use text::{RichTextSectionElement};
+use crate::models::blocks::objects::text::TextBody;
 
 pub mod text;
 
@@ -7,5 +8,5 @@ pub mod text;
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum BlockElement {
     RichTextSection(RichTextSectionElement),
-    Text(TextElement),
+    Text(TextBody)
 }
