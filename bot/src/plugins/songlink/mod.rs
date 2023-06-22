@@ -1,14 +1,11 @@
-use slack_morphism::prelude::*;
-
-use crate::actions::Action;
-use crate::actions::Action::*;
-use crate::plugins::Plugin;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
-use message_template::SongLinkMessageTemplate;
 use regex::Regex;
+use client::models::message_body::MessageBody;
+use client::models::socket_message::Event;
+use framework::actions::Action;
+use framework::plugins::Plugin;
 
-mod message_template;
 
 lazy_static! {
     static ref SPOTIFY_MATCHER: Regex =
@@ -17,6 +14,36 @@ lazy_static! {
 const SONG_LINK_BASE_URL: &str = "https://song.link/s/";
 
 pub struct SongLinkPlugin {}
+
+#[async_trait]
+impl Plugin for SongLinkPlugin {
+    async fn on_event(&self, event: &Event) -> Action {
+        println!("--- Processing event");
+        match event {
+            Event::Message(message) => {
+                println!("--- Able to read message");
+                let text = message.text.clone().unwrap_or(String::new());
+                let captures = SPOTIFY_MATCHER.captures(&text[..]);
+
+                if let Some(matches) = captures {
+                    println!("--- Found capture");
+                    let content = matches
+                        .get(0)
+                        .expect("regex capture should be present")
+                        .as_str();
+                    let mut new_link = String::from(SONG_LINK_BASE_URL);
+                    new_link.push_str(&content[31..]);
+
+                    println!("--- Replying to thread");
+                    Action::ReplyToThread { channel: message.channel.clone().unwrap_or(String::new()), thread_id: message.id.clone(), message: MessageBody::from_text(&new_link[..]),  }
+                } else {
+                    Action::DoNothing
+                }
+            }
+            _ => { Action::DoNothing }
+        }
+    }
+}
 //
 // #[async_trait]
 // impl Plugin for SongLinkPlugin {

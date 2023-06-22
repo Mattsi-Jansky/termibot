@@ -6,3 +6,8 @@ use serde::{Deserialize, Serialize};
 pub struct RichTextSectionElement {
     pub elements: Vec<BlockElement>,
 }
+
+#[derive(Debug, Deserialize, Serialize, PartialEq, Builder)]
+pub struct LinkElement {
+    pub url: String
+}

@@ -1969,6 +1969,7 @@ version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
+ "client",
  "config-file",
  "framework",
  "futures-locks",

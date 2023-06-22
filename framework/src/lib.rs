@@ -7,7 +7,8 @@ use client::{ReqwestSlackClient, SlackClient};
 use futures::future::join_all;
 use plugins::Plugin;
 use std::sync::Arc;
-use tracing::info;
+use futures::TryFutureExt;
+use tracing::{error, info};
 
 pub mod actions;
 pub mod plugins;
@@ -70,13 +71,18 @@ impl SlackBot {
                 }
             }
 
-            join_all(
+            let results = join_all(
                 join_all(actions)
                     .await
                     .into_iter()
                     .map(|action| self.action_handler.handle(action, self.client.clone())),
-            )
-            .await;
+            ).await;
+
+            for result in results {
+                if let Err(err) = result {
+                    error!("Error occurred when trying to execute action: {:?}", err);
+                }
+            }
         }
 
         info!("Slack bot finishing");
