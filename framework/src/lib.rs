@@ -8,18 +8,18 @@ use futures::future::join_all;
 use plugins::Plugin;
 use std::sync::Arc;
 
-use tracing::{error, info};
 use crate::dependencies::DependencesBuilder;
+use tracing::{error, info};
 
 pub mod actions;
-pub mod plugins;
 mod dependencies;
+pub mod plugins;
 
 pub struct SlackBot {
     client: Arc<dyn SlackClient + Send + Sync>,
     plugins: Vec<Box<dyn Plugin>>,
     action_handler: Box<dyn ActionHandler>,
-    dependencies_builder: DependencesBuilder
+    dependencies_builder: DependencesBuilder,
 }
 
 impl SlackBot {
@@ -27,8 +27,8 @@ impl SlackBot {
         Self {
             client: Arc::new(ReqwestSlackClient::new(bot_token, app_token)),
             plugins: vec![],
-            action_handler: Box::new(DefaultActionHandler{}),
-            dependencies_builder: DependencesBuilder::new()
+            action_handler: Box::new(DefaultActionHandler {}),
+            dependencies_builder: DependencesBuilder::new(),
         }
     }
 
@@ -40,7 +40,7 @@ impl SlackBot {
             client,
             plugins: vec![],
             action_handler: handler,
-            dependencies_builder: DependencesBuilder::new()
+            dependencies_builder: DependencesBuilder::new(),
         }
     }
 
@@ -80,8 +80,9 @@ impl SlackBot {
                 join_all(actions)
                     .await
                     .into_iter()
-                    .map(|action| self.action_handler.handle(action, self.client.clone()))
-            ).await;
+                    .map(|action| self.action_handler.handle(action, self.client.clone())),
+            )
+            .await;
 
             for result in results {
                 if let Err(err) = result {
@@ -115,10 +116,10 @@ mod tests {
     use std::future;
 
     #[derive(Default)]
-struct TestSocketModeListener {
+    struct TestSocketModeListener {
         call_count: usize,
     }
-    
+
     #[async_trait]
     impl SocketModeListener for TestSocketModeListener {
         async fn next(&mut self) -> serde_json::error::Result<SocketMessage> {

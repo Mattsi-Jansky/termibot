@@ -9,5 +9,5 @@ pub struct RichTextSectionElement {
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Builder)]
 pub struct LinkElement {
-    pub url: String
+    pub url: String,
 }

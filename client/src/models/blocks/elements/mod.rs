@@ -1,7 +1,7 @@
+use crate::models::blocks::elements::text::LinkElement;
 use crate::models::blocks::objects::text::TextBody;
 use serde::{Deserialize, Serialize};
 use text::RichTextSectionElement;
-use crate::models::blocks::elements::text::LinkElement;
 
 pub mod text;
 
@@ -10,5 +10,5 @@ pub mod text;
 pub enum BlockElement {
     RichTextSection(RichTextSectionElement),
     Text(TextBody),
-    Link(LinkElement)
+    Link(LinkElement),
 }

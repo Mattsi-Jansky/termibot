@@ -77,7 +77,9 @@ impl ReqwestSlackClient {
         }
     }
 
-    fn ensure_correct_result_type_because_slack_stupidly_uses_200_status_for_errors(result: Result<HttpApiResponse, SlackClientError>) -> Result<HttpApiResponse, SlackClientError> {
+    fn ensure_correct_result_type_because_slack_stupidly_uses_200_status_for_errors(
+        result: Result<HttpApiResponse, SlackClientError>,
+    ) -> Result<HttpApiResponse, SlackClientError> {
         if let Ok(response) = result {
             if !response.ok {
                 if response.error.is_none() && response.errors.is_none() {
@@ -153,7 +155,8 @@ impl SlackClient for ReqwestSlackClient {
             "Messaging channel {}, thread {:?} with {:?}",
             channel, parent, body
         );
-        let result = self.http
+        let result = self
+            .http
             .post("https://slack.com/api/chat.postMessage")
             .header(
                 "Authorization",

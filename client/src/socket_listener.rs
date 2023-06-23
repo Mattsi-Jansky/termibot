@@ -42,18 +42,19 @@ pub struct TungsteniteSocketModeListener {
 #[async_trait]
 impl SocketModeListener for TungsteniteSocketModeListener {
     async fn next(&mut self) -> serde_json::error::Result<SocketMessage> {
-        let message = self
-            .stream
-            .next()
-            .await
-            .unwrap()
-            .unwrap();
+        let message = self.stream.next().await.unwrap().unwrap();
 
         if message.is_ping() {
-            self.stream.send(Message::Pong("Pong from slackbot".to_string().into_bytes())).await.unwrap();
+            self.stream
+                .send(Message::Pong("Pong from slackbot".to_string().into_bytes()))
+                .await
+                .unwrap();
             self.next().await
         } else if !message.is_text() {
-            error!("Received unexpected non-text message from WSS: {:?}", message);
+            error!(
+                "Received unexpected non-text message from WSS: {:?}",
+                message
+            );
             self.next().await
         } else {
             let text = message.into_text().unwrap();

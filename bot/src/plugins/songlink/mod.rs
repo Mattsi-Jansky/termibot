@@ -1,11 +1,10 @@
 use async_trait::async_trait;
-use lazy_static::lazy_static;
-use regex::Regex;
 use client::models::message_body::MessageBody;
 use client::models::socket_message::Event;
 use framework::actions::Action;
 use framework::plugins::Plugin;
-
+use lazy_static::lazy_static;
+use regex::Regex;
 
 lazy_static! {
     static ref SPOTIFY_MATCHER: Regex =
@@ -31,12 +30,16 @@ impl Plugin for SongLinkPlugin {
                     let mut new_link = String::from(SONG_LINK_BASE_URL);
                     new_link.push_str(&content[31..]);
 
-                    Action::ReplyToThread { channel: message.channel.clone().unwrap_or(String::new()), thread_id: message.id.clone(), message: MessageBody::from_text(&new_link[..]),  }
+                    Action::ReplyToThread {
+                        channel: message.channel.clone().unwrap_or(String::new()),
+                        thread_id: message.id.clone(),
+                        message: MessageBody::from_text(&new_link[..]),
+                    }
                 } else {
                     Action::DoNothing
                 }
             }
-            _ => { Action::DoNothing }
+            _ => Action::DoNothing,
         }
     }
 }
