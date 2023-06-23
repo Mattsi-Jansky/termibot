@@ -1,7 +1,9 @@
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
 use std::sync::Arc;
+use reqwest::Client;
 use tokio::sync::RwLock;
+use client::ReqwestSlackClient;
 
 pub struct DependencesBuilder{
     values: HashMap<TypeId, Arc<RwLock<dyn Any + Send + Sync + 'static>>>
@@ -10,6 +12,7 @@ pub struct DependencesBuilder{
 impl DependencesBuilder {
     pub fn new() -> Self {
         DependencesBuilder { values: HashMap::new() }
+            .with(Client::new())
     }
 
     pub fn with<T: Send + Sync + 'static>(mut self, new: T) -> Self {
