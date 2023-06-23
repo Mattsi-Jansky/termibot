@@ -510,6 +510,7 @@ dependencies = [
  "futures",
  "futures-channel",
  "mockall",
+ "reqwest",
  "serde",
  "serde_json",
  "tokio",
