@@ -12,6 +12,7 @@ use tracing::{error, info};
 
 pub mod actions;
 pub mod plugins;
+pub mod dependencies;
 
 pub struct SlackBot {
     client: Arc<dyn SlackClient + Send + Sync>,
