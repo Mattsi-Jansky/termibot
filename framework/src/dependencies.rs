@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use reqwest::Client;
 use tokio::sync::RwLock;
-use client::ReqwestSlackClient;
+
 
 pub struct DependencesBuilder{
     values: HashMap<TypeId, Arc<RwLock<dyn Any + Send + Sync + 'static>>>
@@ -31,7 +31,7 @@ pub struct Dependencies {
 
 impl Dependencies {
     pub(crate) fn get<T: Any + Send + Sync + 'static>(&self) -> Option<Arc<RwLock<dyn Any + Send + Sync + 'static>>> {
-        self.values.get(&TypeId::of::<T>()).map(|arc| arc.clone())
+        self.values.get(&TypeId::of::<T>()).cloned()
     }
 }
 
@@ -43,10 +43,10 @@ mod tests {
 
     #[test]
     fn should_add_and_retrieve_service() {
-        let mut dependencies_builder = DependencesBuilder::new();
+        let dependencies_builder = DependencesBuilder::new();
 
         let dependencies = dependencies_builder.with(TestType(431)).build();
 
-        let result = dependencies.get::<TestType>();
+        let _result = dependencies.get::<TestType>();
     }
 }

@@ -58,7 +58,7 @@ impl SocketModeListener for TungsteniteSocketModeListener {
         } else {
             let text = message.into_text().unwrap();
             info!("Received message {}", text);
-            let mut result = serde_json::from_str(&text);
+            let result = serde_json::from_str(&text);
 
             match &result {
                 Ok(inner) => {

@@ -7,7 +7,7 @@ use client::{ReqwestSlackClient, SlackClient};
 use futures::future::join_all;
 use plugins::Plugin;
 use std::sync::Arc;
-use futures::TryFutureExt;
+
 use tracing::{error, info};
 
 pub mod actions;
@@ -110,14 +110,11 @@ mod tests {
     use plugins::MockPlugin;
     use std::future;
 
-    struct TestSocketModeListener {
+    #[derive(Default)]
+struct TestSocketModeListener {
         call_count: usize,
     }
-    impl Default for TestSocketModeListener {
-        fn default() -> Self {
-            TestSocketModeListener { call_count: 0 }
-        }
-    }
+    
     #[async_trait]
     impl SocketModeListener for TestSocketModeListener {
         async fn next(&mut self) -> serde_json::error::Result<SocketMessage> {
@@ -182,7 +179,7 @@ mod tests {
         mock_action_handler
             .expect_handle()
             .times(1)
-            .withf(|action, client| match action {
+            .withf(|action, _client| match action {
                 Action::MessageChannel { channel, message } => {
                     channel == "my test channel" && message.get_text() == "my test message"
                 }
@@ -199,7 +196,7 @@ mod tests {
         mock_slack_client
             .expect_connect_to_socket_mode()
             .times(1)
-            .returning(|| Ok(Box::new(TestSocketModeListener::default())));
+            .returning(|| Ok(Box::<TestSocketModeListener>::default()));
         Arc::new(mock_slack_client)
     }
 }
