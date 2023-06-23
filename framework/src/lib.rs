@@ -9,15 +9,17 @@ use plugins::Plugin;
 use std::sync::Arc;
 
 use tracing::{error, info};
+use crate::dependencies::DependencesBuilder;
 
 pub mod actions;
 pub mod plugins;
-pub mod dependencies;
+mod dependencies;
 
 pub struct SlackBot {
     client: Arc<dyn SlackClient + Send + Sync>,
     plugins: Vec<Box<dyn Plugin>>,
     action_handler: Box<dyn ActionHandler>,
+    dependencies_builder: DependencesBuilder
 }
 
 impl SlackBot {
@@ -26,6 +28,7 @@ impl SlackBot {
             client: Arc::new(ReqwestSlackClient::new(bot_token, app_token)),
             plugins: vec![],
             action_handler: Box::new(DefaultActionHandler{}),
+            dependencies_builder: DependencesBuilder::new()
         }
     }
 
@@ -37,6 +40,7 @@ impl SlackBot {
             client,
             plugins: vec![],
             action_handler: handler,
+            dependencies_builder: DependencesBuilder::new()
         }
     }
 
