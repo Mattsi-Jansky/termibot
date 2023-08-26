@@ -8,7 +8,7 @@ use futures::future::join_all;
 use plugins::Plugin;
 use std::sync::Arc;
 
-use crate::dependencies::DependencesBuilder;
+use crate::dependencies::DependenciesBuilder;
 use tracing::{error, info};
 
 pub mod actions;
@@ -19,7 +19,7 @@ pub struct SlackBot {
     client: Arc<dyn SlackClient + Send + Sync>,
     plugins: Vec<Box<dyn Plugin>>,
     action_handler: Box<dyn ActionHandler>,
-    dependencies_builder: DependencesBuilder,
+    dependencies_builder: DependenciesBuilder,
 }
 
 impl SlackBot {
@@ -28,7 +28,7 @@ impl SlackBot {
             client: Arc::new(ReqwestSlackClient::new(bot_token, app_token)),
             plugins: vec![],
             action_handler: Box::new(DefaultActionHandler {}),
-            dependencies_builder: DependencesBuilder::new(),
+            dependencies_builder: DependenciesBuilder::new(),
         }
     }
 
@@ -40,7 +40,7 @@ impl SlackBot {
             client,
             plugins: vec![],
             action_handler: handler,
-            dependencies_builder: DependencesBuilder::new(),
+            dependencies_builder: DependenciesBuilder::new(),
         }
     }
 

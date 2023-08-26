@@ -4,13 +4,13 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-pub struct DependencesBuilder {
+pub struct DependenciesBuilder {
     values: HashMap<TypeId, Arc<RwLock<dyn Any + Send + Sync + 'static>>>,
 }
 
-impl DependencesBuilder {
+impl DependenciesBuilder {
     pub fn new() -> Self {
-        DependencesBuilder {
+        DependenciesBuilder {
             values: HashMap::new(),
         }
         .with(Client::new())
@@ -49,7 +49,7 @@ mod tests {
 
     #[test]
     fn should_add_and_retrieve_service() {
-        let dependencies_builder = DependencesBuilder::new();
+        let dependencies_builder = DependenciesBuilder::new();
 
         let dependencies = dependencies_builder.with(TestType(431)).build();
 
