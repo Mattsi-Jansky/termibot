@@ -10,7 +10,7 @@ use serde::Deserialize;
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     activate_logging().unwrap();
     SlackBot::new(&CONFIG.bot_token[..], &CONFIG.app_token[..])
-        .with(Box::new(SongLinkPlugin {}))
+        .with_plugin(Box::new(SongLinkPlugin {}))
         .run()
         .await
         .unwrap();

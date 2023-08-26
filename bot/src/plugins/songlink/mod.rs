@@ -5,6 +5,7 @@ use framework::actions::Action;
 use framework::plugins::Plugin;
 use lazy_static::lazy_static;
 use regex::Regex;
+use framework::dependencies::Dependencies;
 
 lazy_static! {
     static ref SPOTIFY_MATCHER: Regex =
@@ -16,7 +17,7 @@ pub struct SongLinkPlugin {}
 
 #[async_trait]
 impl Plugin for SongLinkPlugin {
-    async fn on_event(&self, event: &Event) -> Action {
+    async fn on_event(&self, event: &Event, _dependencies: &Dependencies) -> Action {
         match event {
             Event::Message(message) => {
                 let text = message.text.clone().unwrap_or(String::new());

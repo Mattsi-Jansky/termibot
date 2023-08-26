@@ -10,16 +10,16 @@ pub struct DependenciesBuilder {
 
 impl DependenciesBuilder {
     pub fn new() -> Self {
-        DependenciesBuilder {
+        let mut builder = DependenciesBuilder {
             values: HashMap::new(),
-        }
-        .with(Client::new())
+        };
+        builder.add(Client::new());
+        builder
     }
 
-    pub fn with<T: Send + Sync + 'static>(mut self, new: T) -> Self {
+    pub fn add<T: Send + Sync + 'static>(&mut self, new: T) {
         self.values
             .insert(new.type_id(), Arc::new(RwLock::new(new)));
-        self
     }
 
     pub fn build(self) -> Dependencies {
@@ -51,9 +51,9 @@ mod tests {
 
     #[tokio::test]
     async fn should_add_and_retrieve_service() {
-        let dependencies_builder = DependenciesBuilder::new();
-
-        let dependencies = dependencies_builder.with(TestType(431)).build();
+        let mut dependencies_builder = DependenciesBuilder::new();
+        dependencies_builder.add(TestType(431));
+        let dependencies = dependencies_builder.build();
 
         let result = dependencies.get::<TestType>().unwrap();
         let result = result.read().await;
