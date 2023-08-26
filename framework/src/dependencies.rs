@@ -34,10 +34,9 @@ pub struct Dependencies {
 }
 
 impl Dependencies {
-    pub(crate) fn get<T: Any + Send + Sync>(
-        &self,
-    ) -> Option<Arc<RwLock<T>>> {
-        self.values.get(&TypeId::of::<T>())
+    pub(crate) fn get<T: Any + Send + Sync>(&self) -> Option<Arc<RwLock<T>>> {
+        self.values
+            .get(&TypeId::of::<T>())
             .map(|arc| arc.clone().downcast().unwrap())
     }
 }

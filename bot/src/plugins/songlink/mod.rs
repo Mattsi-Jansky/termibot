@@ -2,10 +2,10 @@ use async_trait::async_trait;
 use client::models::message_body::MessageBody;
 use client::models::socket_message::Event;
 use framework::actions::Action;
+use framework::dependencies::Dependencies;
 use framework::plugins::Plugin;
 use lazy_static::lazy_static;
 use regex::Regex;
-use framework::dependencies::Dependencies;
 
 lazy_static! {
     static ref SPOTIFY_MATCHER: Regex =

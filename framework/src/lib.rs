@@ -111,6 +111,7 @@ impl SlackBot {
 mod tests {
     use super::*;
     use crate::actions::Action;
+    use crate::dependencies::Dependencies;
     use actions::handler::MockActionHandler;
     use async_trait::async_trait;
     use client::models::message_body::MessageBody;
@@ -120,7 +121,6 @@ mod tests {
     use client::MockSlackClient;
     use plugins::MockPlugin;
     use std::future;
-    use crate::dependencies::Dependencies;
 
     #[derive(Default)]
     struct TestSocketModeListener {
@@ -168,7 +168,7 @@ mod tests {
         mock_plugin
             .expect_on_event()
             .times(1)
-            .returning(|_,_| Box::pin(future::ready(Action::DoNothing)));
+            .returning(|_, _| Box::pin(future::ready(Action::DoNothing)));
         mock_action_handler
             .expect_handle()
             .times(1)
@@ -181,7 +181,8 @@ mod tests {
     #[tokio::test]
     async fn forward_service_to_plugin() {
         let mut mock_action_handler = Box::new(MockActionHandler::new());
-        let mock_plugin_asserts_dependencies_passed = Box::new(MockPluginAssertDependencyIsPassed());
+        let mock_plugin_asserts_dependencies_passed =
+            Box::new(MockPluginAssertDependencyIsPassed());
         mock_action_handler
             .expect_handle()
             .times(1)
@@ -205,7 +206,7 @@ mod tests {
     #[tokio::test]
     async fn forward_event_outcome_to_action_handler() {
         let mut mock_plugin = Box::new(MockPlugin::new());
-        mock_plugin.expect_on_event().returning(|_,_| {
+        mock_plugin.expect_on_event().returning(|_, _| {
             Box::pin(future::ready(Action::MessageChannel {
                 channel: String::from("my test channel"),
                 message: MessageBody::from_text("my test message"),
