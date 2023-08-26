@@ -28,7 +28,7 @@ impl SlackBot {
             client: Arc::new(ReqwestSlackClient::new(bot_token, app_token)),
             plugins: vec![],
             action_handler: Box::new(DefaultActionHandler {}),
-            dependencies_builder: DependenciesBuilder::new(),
+            dependencies_builder: DependenciesBuilder::default(),
         }
     }
 
@@ -40,7 +40,7 @@ impl SlackBot {
             client,
             plugins: vec![],
             action_handler: handler,
-            dependencies_builder: DependenciesBuilder::new(),
+            dependencies_builder: DependenciesBuilder::default(),
         }
     }
 

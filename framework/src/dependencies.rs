@@ -4,19 +4,21 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-pub struct DependenciesBuilder {
+pub(crate) struct DependenciesBuilder {
     values: HashMap<TypeId, Arc<dyn Any + Send + Sync>>,
 }
 
-impl DependenciesBuilder {
-    pub fn new() -> Self {
+impl Default for DependenciesBuilder {
+    fn default() -> Self {
         let mut builder = DependenciesBuilder {
             values: HashMap::new(),
         };
         builder.add(Client::new());
         builder
     }
+}
 
+impl DependenciesBuilder {
     pub fn add<T: Send + Sync + 'static>(&mut self, new: T) {
         self.values
             .insert(new.type_id(), Arc::new(RwLock::new(new)));
@@ -34,7 +36,7 @@ pub struct Dependencies {
 }
 
 impl Dependencies {
-    pub(crate) fn get<T: Any + Send + Sync>(&self) -> Option<Arc<RwLock<T>>> {
+    pub fn get<T: Any + Send + Sync>(&self) -> Option<Arc<RwLock<T>>> {
         self.values
             .get(&TypeId::of::<T>())
             .map(|arc| arc.clone().downcast().unwrap())
@@ -50,7 +52,7 @@ mod tests {
 
     #[tokio::test]
     async fn should_add_and_retrieve_service() {
-        let mut dependencies_builder = DependenciesBuilder::new();
+        let mut dependencies_builder = DependenciesBuilder::default();
         dependencies_builder.add(TestType(431));
         let dependencies = dependencies_builder.build();
 
