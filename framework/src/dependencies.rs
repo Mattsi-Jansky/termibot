@@ -5,7 +5,7 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 
 pub struct DependenciesBuilder {
-    values: HashMap<TypeId, Arc<RwLock<dyn Any + Send + Sync + 'static>>>,
+    values: HashMap<TypeId, Arc<dyn Any + Send + Sync>>,
 }
 
 impl DependenciesBuilder {
@@ -18,7 +18,7 @@ impl DependenciesBuilder {
 
     pub fn with<T: Send + Sync + 'static>(mut self, new: T) -> Self {
         self.values
-            .insert(TypeId::of::<T>(), Arc::new(RwLock::new(new)));
+            .insert(new.type_id(), Arc::new(RwLock::new(new)));
         self
     }
 
@@ -30,14 +30,15 @@ impl DependenciesBuilder {
 }
 
 pub struct Dependencies {
-    values: HashMap<TypeId, Arc<RwLock<dyn Any + Send + Sync + 'static>>>,
+    values: HashMap<TypeId, Arc<dyn Any + Send + Sync>>,
 }
 
 impl Dependencies {
-    pub(crate) fn get<T: Any + Send + Sync + 'static>(
+    pub(crate) fn get<T: Any + Send + Sync>(
         &self,
-    ) -> Option<Arc<RwLock<dyn Any + Send + Sync + 'static>>> {
-        self.values.get(&TypeId::of::<T>()).cloned()
+    ) -> Option<Arc<RwLock<T>>> {
+        self.values.get(&TypeId::of::<T>())
+            .map(|arc| arc.clone().downcast().unwrap())
     }
 }
 
@@ -45,14 +46,17 @@ impl Dependencies {
 mod tests {
     use super::*;
 
+    #[derive(Debug, PartialEq)]
     struct TestType(u32);
 
-    #[test]
-    fn should_add_and_retrieve_service() {
+    #[tokio::test]
+    async fn should_add_and_retrieve_service() {
         let dependencies_builder = DependenciesBuilder::new();
 
         let dependencies = dependencies_builder.with(TestType(431)).build();
 
-        let _result = dependencies.get::<TestType>();
+        let result = dependencies.get::<TestType>().unwrap();
+        let result = result.read().await;
+        assert_eq!(*result, TestType(431))
     }
 }
