@@ -59,7 +59,7 @@ pub enum EmojiChangedEvent {
 pub struct AddEmojiEvent {
     #[serde(rename = "event_ts")]
     pub id: MessageId,
-    name: String,
+    pub name: String,
 }
 
 #[skip_serializing_none]
