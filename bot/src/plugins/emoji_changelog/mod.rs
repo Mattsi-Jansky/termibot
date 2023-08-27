@@ -32,7 +32,7 @@ impl Plugin for EmojiChangelogPlugin {
                                 channel: self.notification_channel.clone(),
                                 message: MessageBody::new(vec![
                                     HeaderBlock::new( "Emoji changelog"),
-                                    SectionBlock::new_markdown(&format!(":heavy_plus_sign: :{name}: `:{name}:")[..])
+                                    SectionBlock::new_markdown(&format!(":heavy_plus_sign: :{name}: `:{name}:`")[..])
                                 ], None).unwrap(),
                             }
                         ]
@@ -69,7 +69,7 @@ mod tests {
             channel: "#general".to_string(),
             message: MessageBody::new(vec![
                 HeaderBlock::new( "Emoji changelog"),
-                SectionBlock::new_markdown(":heavy_plus_sign: :newmoji: `:newmoji:")
+                SectionBlock::new_markdown(":heavy_plus_sign: :newmoji: `:newmoji:`")
             ], None).unwrap(),
         }, result.pop().unwrap())
     }
