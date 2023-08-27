@@ -31,8 +31,8 @@ mod tests {
         assert_eq!(
             result,
             vec![
-                Block::Header(HeaderBlock { text: Text::PlainText(TextBody { text: "Emoji changelog".to_string() }) }),
-                Block::Section(SectionBlock { text: Some(Text::Markdown(TextBody { text: ":heavy_plus_sign: :smile: `:smile:`\n        By <@userid>".to_string() })), fields: None })
+                HeaderBlock::new( "Emoji changelog"),
+                SectionBlock::new_markdown(":heavy_plus_sign: :smile: `:smile:`\n        By <@userid>")
             ]
         )
     }
