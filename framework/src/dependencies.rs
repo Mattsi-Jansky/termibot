@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-pub(crate) struct DependenciesBuilder {
+pub struct DependenciesBuilder {
     values: HashMap<TypeId, Arc<dyn Any + Send + Sync>>,
 }
 

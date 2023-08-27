@@ -44,7 +44,33 @@ impl Plugin for SongLinkPlugin {
         }
     }
 }
-//
+
+#[cfg(test)]
+mod tests {
+    use regex::internal::Input;
+    use client::models::message_id::MessageId;
+    use client::models::socket_message::MessageEvent;
+    use framework::dependencies::DependenciesBuilder;
+    use super::*;
+
+    #[tokio::test]
+    async fn given_no_matching_url_do_nothing() {
+        let dependencies = DependenciesBuilder::default().build();
+        let event = Event::Message(MessageEvent {
+            id: MessageId("myMessageId".to_string()),
+            text: Some("test message".to_string()),
+            user: None,
+            blocks: None,
+            channel: None,
+            channel_type: None,
+        });
+
+        let result = SongLinkPlugin{}.on_event(&event,&dependencies).await;
+
+        assert_eq!(0, result.len())
+    }
+}
+
 // #[async_trait]
 // impl Plugin for SongLinkPlugin {
 //     fn new() -> Self
