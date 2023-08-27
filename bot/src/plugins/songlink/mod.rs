@@ -17,7 +17,7 @@ pub struct SongLinkPlugin {}
 
 #[async_trait]
 impl Plugin for SongLinkPlugin {
-    async fn on_event(&self, event: &Event, _dependencies: &Dependencies) -> Action {
+    async fn on_event(&self, event: &Event, _dependencies: &Dependencies) -> Vec<Action> {
         match event {
             Event::Message(message) => {
                 let text = message.text.clone().unwrap_or(String::new());
@@ -31,16 +31,16 @@ impl Plugin for SongLinkPlugin {
                     let mut new_link = String::from(SONG_LINK_BASE_URL);
                     new_link.push_str(&content[31..]);
 
-                    Action::ReplyToThread {
+                    vec![Action::ReplyToThread {
                         channel: message.channel.clone().unwrap_or(String::new()),
                         thread_id: message.id.clone(),
                         message: MessageBody::from_text(&new_link[..]),
-                    }
+                    }]
                 } else {
-                    Action::DoNothing
+                    vec![]
                 }
             }
-            _ => Action::DoNothing,
+            _ => vec![],
         }
     }
 }

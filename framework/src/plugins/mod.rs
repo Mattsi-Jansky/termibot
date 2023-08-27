@@ -7,5 +7,5 @@ use mockall::automock;
 #[async_trait]
 #[automock]
 pub trait Plugin {
-    async fn on_event(&self, event: &Event, dependencies: &Dependencies) -> Action;
+    async fn on_event(&self, event: &Event, dependencies: &Dependencies) -> Vec<Action>;
 }

@@ -26,7 +26,6 @@ impl ActionHandler for DefaultActionHandler {
         client: Arc<dyn SlackClient + Send + Sync>,
     ) -> Result<(), SlackClientError> {
         match action {
-            Action::DoNothing => {}
             Action::MessageChannel { channel, message } => client
                 .message_channel(&channel[..], &message)
                 .await

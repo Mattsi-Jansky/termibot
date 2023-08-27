@@ -4,7 +4,6 @@ use client::models::message_id::MessageId;
 pub mod handler;
 
 pub enum Action {
-    DoNothing,
     MessageChannel {
         channel: String,
         message: MessageBody,
