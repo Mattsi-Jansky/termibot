@@ -69,6 +69,31 @@ mod tests {
 
         assert_eq!(0, result.len())
     }
+
+    #[tokio::test]
+    async fn given_spotify_link_should_respond_with_songlink_in_thread() {
+        let dependencies = DependenciesBuilder::default().build();
+        let event = Event::Message(MessageEvent {
+            id: MessageId("myMessageId".to_string()),
+            text: Some("https://open.spotify.com/track/0mjOx4zUlL5t4rF1xnrfvi".to_string()),
+            user: None,
+            blocks: None,
+            channel: None,
+            channel_type: None,
+        });
+
+        let mut result = SongLinkPlugin{}.on_event(&event,&dependencies).await;
+
+        assert_eq!(1, result.len());
+        assert_eq!(
+            Action::ReplyToThread {
+                channel: "".to_string(),
+                thread_id: "myMessageId".to_string().into(),
+                message: MessageBody::from_text("https://song.link/s/0mjOx4zUlL5t4rF1xnrfvi"),
+            },
+            result.pop().unwrap()
+        )
+    }
 }
 
 // #[async_trait]

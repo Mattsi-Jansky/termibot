@@ -3,6 +3,7 @@ use client::models::message_id::MessageId;
 
 pub mod handler;
 
+#[derive(Debug,PartialEq)]
 pub enum Action {
     MessageChannel {
         channel: String,
