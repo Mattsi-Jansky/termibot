@@ -3,5 +3,6 @@
 members = [
     "bot",
     "client",
-    "framework"
+    "framework",
+    "karma"
 ]
