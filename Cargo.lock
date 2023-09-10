@@ -1037,6 +1037,9 @@ dependencies = [
 name = "karma"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
+ "client",
+ "framework",
  "lazy_static",
  "regex",
  "sqlx",
