@@ -1,8 +1,15 @@
 use async_trait::async_trait;
+use client::models::message_body::MessageBody;
 use client::models::socket_message::Event;
 use framework::actions::Action;
 use framework::dependencies::Dependencies;
 use framework::plugins::Plugin;
+use lazy_static::lazy_static;
+use regex::Regex;
+
+lazy_static! {
+    static ref KARMA_MATCHER: Regex = Regex::new(r"([^\`\s]{2,})(--|\+\+)(^|\s|$)").unwrap();
+}
 
 pub struct KarmaPlugin {
     upvote_emoji: String,
@@ -21,7 +28,22 @@ impl Default for KarmaPlugin {
 #[async_trait]
 impl Plugin for KarmaPlugin {
     async fn on_event(&self, event: &Event, dependencies: &Dependencies) -> Vec<Action> {
-        vec![]
+        let mut results = vec![];
+
+        if let Event::Message(message) = event {
+            let text = message.text.clone().unwrap_or(String::new());
+
+            for capture in KARMA_MATCHER.captures_iter(&text[..]) {
+                let capture = capture.get(0).unwrap().as_str();
+                let thing = &capture[..capture.len() - 2];
+                results.push(Action::MessageChannel {
+                    channel: "".to_string(),
+                    message: MessageBody::from_text(&format!(":upboat: {thing}: 1")[..]),
+                });
+            }
+        }
+
+        results
     }
 }
 
@@ -32,7 +54,6 @@ mod tests {
     use client::models::message_id::MessageId;
     use client::models::socket_message::MessageEvent;
     use framework::dependencies::DependenciesBuilder;
-    use regex::internal::Input;
 
     #[tokio::test]
     async fn given_no_karma_change_do_nothing() {
@@ -65,6 +86,7 @@ mod tests {
 
         let result = KarmaPlugin::default().on_event(&event, &dependencies).await;
 
+        dbg!(&result);
         assert_eq!(1, result.len());
         assert_eq!(
             &Action::MessageChannel {
