@@ -28,6 +28,7 @@ impl Plugin for KarmaPlugin {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use client::models::message_body::MessageBody;
     use client::models::message_id::MessageId;
     use client::models::socket_message::MessageEvent;
     use framework::dependencies::DependenciesBuilder;
@@ -48,5 +49,29 @@ mod tests {
         let result = KarmaPlugin::default().on_event(&event, &dependencies).await;
 
         assert_eq!(0, result.len())
+    }
+
+    #[tokio::test]
+    async fn given_karma_change_return_karma_changed_message() {
+        let dependencies = DependenciesBuilder::default().build();
+        let event = Event::Message(MessageEvent {
+            id: MessageId("myMessageId".to_string()),
+            text: Some("sunnydays++".to_string()),
+            user: None,
+            blocks: None,
+            channel: None,
+            channel_type: None,
+        });
+
+        let result = KarmaPlugin::default().on_event(&event, &dependencies).await;
+
+        assert_eq!(1, result.len());
+        assert_eq!(
+            &Action::MessageChannel {
+                channel: "".to_string(),
+                message: MessageBody::from_text(":upboat: sunnydays: 1"),
+            },
+            result.get(0).unwrap()
+        );
     }
 }
