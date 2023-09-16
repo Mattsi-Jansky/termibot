@@ -34,6 +34,19 @@ pub enum Event {
     EmojiChanged(EmojiChangedEvent),
 }
 
+impl Event {
+    pub fn new_test_text_message(message: &str) -> Event {
+        Event::Message(MessageEvent {
+            id: MessageId("myMessageId".to_string()),
+            text: Some(message.to_string()),
+            user: None,
+            blocks: None,
+            channel: None,
+            channel_type: None,
+        })
+    }
+}
+
 #[skip_serializing_none]
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub struct MessageEvent {

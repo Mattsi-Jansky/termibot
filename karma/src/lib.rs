@@ -61,21 +61,12 @@ impl Plugin for KarmaPlugin {
 mod tests {
     use super::*;
     use client::models::message_body::MessageBody;
-    use client::models::message_id::MessageId;
-    use client::models::socket_message::MessageEvent;
     use framework::dependencies::DependenciesBuilder;
 
     #[tokio::test]
     async fn given_no_karma_change_do_nothing() {
         let dependencies = DependenciesBuilder::default().build();
-        let event = Event::Message(MessageEvent {
-            id: MessageId("myMessageId".to_string()),
-            text: Some("test message".to_string()),
-            user: None,
-            blocks: None,
-            channel: None,
-            channel_type: None,
-        });
+        let event = Event::new_test_text_message("test message");
 
         let result = KarmaPlugin::default().on_event(&event, &dependencies).await;
 
@@ -83,16 +74,9 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn given_karma_change_should_return_karma_changed_message() {
+    async fn given_positive_karma_change_should_return_karma_changed_message() {
         let dependencies = DependenciesBuilder::default().build();
-        let event = Event::Message(MessageEvent {
-            id: MessageId("myMessageId".to_string()),
-            text: Some("sunnydays++".to_string()),
-            user: None,
-            blocks: None,
-            channel: None,
-            channel_type: None,
-        });
+        let event = Event::new_test_text_message("sunnydays++");
 
         let result = KarmaPlugin::default().on_event(&event, &dependencies).await;
 
@@ -111,14 +95,7 @@ mod tests {
     async fn given_override_of_upvote_emoji_should_return_karma_changed_message_with_custom_emoji()
     {
         let dependencies = DependenciesBuilder::default().build();
-        let event = Event::Message(MessageEvent {
-            id: MessageId("myMessageId".to_string()),
-            text: Some("sunnydays++".to_string()),
-            user: None,
-            blocks: None,
-            channel: None,
-            channel_type: None,
-        });
+        let event = Event::new_test_text_message("sunnydays++");
 
         let result = KarmaPlugin::new("up_custom", "down_custom")
             .on_event(&event, &dependencies)
