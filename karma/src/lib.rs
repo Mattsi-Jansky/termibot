@@ -135,4 +135,25 @@ mod tests {
             result.get(0).unwrap()
         );
     }
+
+    #[tokio::test]
+    async fn given_override_of_downvote_emoji_should_return_karma_changed_message_with_custom_emoji(
+    ) {
+        let dependencies = DependenciesBuilder::default().build();
+        let event = Event::new_test_text_message("rainydays--");
+
+        let result = KarmaPlugin::new("up_custom", "down_custom")
+            .on_event(&event, &dependencies)
+            .await;
+
+        dbg!(&result);
+        assert_eq!(1, result.len());
+        assert_eq!(
+            &Action::MessageChannel {
+                channel: "".to_string(),
+                message: MessageBody::from_text(":down_custom: rainydays: -1"),
+            },
+            result.get(0).unwrap()
+        );
+    }
 }
