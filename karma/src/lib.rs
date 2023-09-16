@@ -45,10 +45,16 @@ impl Plugin for KarmaPlugin {
             for capture in KARMA_MATCHER.captures_iter(&text[..]) {
                 let capture = capture.get(0).unwrap().as_str();
                 let thing = &capture[..capture.len() - 2];
-                let emoji = &self.upvote_emoji;
+                let is_increment = capture[capture.len() - 2..].eq("++");
+                let emoji = if is_increment {
+                    &self.upvote_emoji
+                } else {
+                    &self.downvote_emoji
+                };
+                let value = if is_increment { "1" } else { "-1" };
                 results.push(Action::MessageChannel {
                     channel: "".to_string(),
-                    message: MessageBody::from_text(&format!(":{emoji}: {thing}: 1")[..]),
+                    message: MessageBody::from_text(&format!(":{emoji}: {thing}: {value}")[..]),
                 });
             }
         }
@@ -107,6 +113,24 @@ mod tests {
             &Action::MessageChannel {
                 channel: "".to_string(),
                 message: MessageBody::from_text(":up_custom: sunnydays: 1"),
+            },
+            result.get(0).unwrap()
+        );
+    }
+
+    #[tokio::test]
+    async fn given_negative_karma_change_should_return_karma_changed_message() {
+        let dependencies = DependenciesBuilder::default().build();
+        let event = Event::new_test_text_message("rainydays--");
+
+        let result = KarmaPlugin::default().on_event(&event, &dependencies).await;
+
+        dbg!(&result);
+        assert_eq!(1, result.len());
+        assert_eq!(
+            &Action::MessageChannel {
+                channel: "".to_string(),
+                message: MessageBody::from_text(":downboat: rainydays: -1"),
             },
             result.get(0).unwrap()
         );
