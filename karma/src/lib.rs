@@ -7,6 +7,8 @@ use framework::plugins::Plugin;
 use lazy_static::lazy_static;
 use regex::Regex;
 
+pub mod services;
+
 lazy_static! {
     static ref KARMA_MATCHER: Regex = Regex::new(r"([^\`\s]{2,})(--|\+\+)(^|\s|$)").unwrap();
 }
