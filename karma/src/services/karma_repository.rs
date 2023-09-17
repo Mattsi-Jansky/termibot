@@ -16,6 +16,10 @@ impl KarmaRepository {
             .expect("Cannot read sqlite DB");
         KarmaRepository { connection }
     }
+
+    async fn default() -> Self {
+        KarmaRepository::new("karma.db").await
+    }
 }
 
 #[cfg(test)]
