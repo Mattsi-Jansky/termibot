@@ -28,9 +28,10 @@ impl KarmaRepository {
     }
 
     pub async fn upsert_karma_change(&self, request: ChangeRequest) {
+        let id_name = request.name.to_lowercase();
         sqlx::query!(
             "INSERT INTO Entries (IdName, DisplayName, Karma) VALUES (?, ?, ?)",
-            request.name,
+            id_name,
             request.name,
             request.amount
         )
@@ -75,7 +76,7 @@ mod tests {
         fs::remove_file(DATABASE_FILENAME).unwrap_or(());
         let repo = KarmaRepository::new(DATABASE_FILENAME).await;
 
-        repo.upsert_karma_change(ChangeRequest::new("rainydays", -1))
+        repo.upsert_karma_change(ChangeRequest::new("rAinydays", -1))
             .await;
         let karma = repo.get_karma_for("Rainydays").await;
         assert_eq!(Some(-1), karma);
