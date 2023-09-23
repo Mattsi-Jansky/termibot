@@ -14,6 +14,10 @@ impl KarmaRepository {
         let connection = SqlitePool::connect_with(options)
             .await
             .expect("Cannot read sqlite DB");
+        sqlx::migrate!()
+            .run(&connection)
+            .await
+            .expect("Failed applying Karma migrations");
         KarmaRepository { connection }
     }
 
