@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT Karma FROM Entries WHERE IdName = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "Karma",
+        "ordinal": 0,
+        "type_info": "Int64"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "ea29df290edfa79f6c72bf597fd7603f90ff004f3e858a4dca763d1890e30f63"
+}
