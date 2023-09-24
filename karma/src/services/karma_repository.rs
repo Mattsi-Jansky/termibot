@@ -107,19 +107,26 @@ impl KarmaRepository for SqliteKarmaRepository {
 
     async fn get_top(&self, n: i32) -> Vec<Entry> {
         let mut result = vec![];
-        let records = sqlx::query!(
+        let query_result = sqlx::query!(
             "SELECT IdName, DisplayName, Karma FROM Entries ORDER BY Karma DESC LIMIT ?",
             n
         )
         .fetch_all(&self.connection)
         .await;
 
-        for record in records.unwrap() {
-            result.push(Entry {
-                id_name: record.IdName,
-                display_name: record.DisplayName,
-                karma: record.Karma,
-            })
+        match query_result {
+            Ok(records) => {
+                for record in records {
+                    result.push(Entry {
+                        id_name: record.IdName,
+                        display_name: record.DisplayName,
+                        karma: record.Karma,
+                    })
+                }
+            }
+            Err(err) => {
+                error!("Error communicating with DB - was the file deleted or locked? Error is as follows, but do not trust it it will often be wrong or unhelpful: {}", err);
+            }
         }
 
         result
@@ -303,6 +310,24 @@ mod tests {
 
         assert_eq!(1, results.len());
         assert_eq!("for being warm", results.get(0).unwrap().value);
+        fs::remove_file(DATABASE_FILENAME).unwrap_or(());
+    }
+
+    #[tokio::test]
+    #[serial]
+    #[traced_test]
+    async fn given_database_error_top_karma_should_() {
+        let repo = SqliteKarmaRepository::new(DATABASE_FILENAME).await;
+        fs::remove_file(DATABASE_FILENAME).unwrap_or(());
+
+        let result = repo.get_top(10).await;
+
+        assert_eq!(0, result.len());
+        logs_assert(|lines: &[&str]| match lines.len() {
+            1 => Ok(()),
+            n => Err(format!("Expected one logs, but found {}", n)),
+        });
+        assert!(logs_contain("Error communicating with DB - was the file deleted or locked? Error is as follows, but do not trust it it will often be wrong or unhelpful: error returned from database: (code: 1) no such table: Entries"));
         fs::remove_file(DATABASE_FILENAME).unwrap_or(());
     }
 }
