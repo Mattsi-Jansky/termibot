@@ -48,11 +48,22 @@ impl KarmaRepository {
 
     pub async fn get_karma_for(&self, name: &str) -> Option<i64> {
         let id_name = name.to_lowercase();
-        sqlx::query!("SELECT Karma FROM Entries WHERE IdName = ?", id_name)
-            .fetch_one(&self.connection)
-            .await
-            .ok()
-            .map(|record| record.Karma)
+        let result: Result<i64, sqlx::Error> =
+            sqlx::query!("SELECT Karma FROM Entries WHERE IdName = ?", id_name)
+                .fetch_one(&self.connection)
+                .await
+                .map(|record| record.Karma);
+
+        match result {
+            Ok(karma) => Some(karma),
+            Err(err) => match err {
+                Error::RowNotFound => Some(0),
+                _ => {
+                    error!("Error communicating with DB - was the file deleted or locked? Error is as follows, but do not trust it it will often be wrong or unhelpful: {}", err);
+                    Some(0)
+                }
+            },
+        }
     }
 }
 
@@ -106,6 +117,40 @@ mod tests {
             n => Err(format!("Expected one logs, but found {}", n)),
         });
         assert!(logs_contain("Error communicating with DB - was the file deleted or locked? Error is as follows, but do not trust it it will often be wrong or unhelpful: error returned from database: (code: 1) no such table: Entries"));
+        fs::remove_file(DATABASE_FILENAME).unwrap_or(());
+    }
+
+    #[tokio::test]
+    #[serial]
+    #[traced_test]
+    async fn given_database_error_get_karma_should_log_error() {
+        let repo = KarmaRepository::new(DATABASE_FILENAME).await;
+        fs::remove_file(DATABASE_FILENAME).unwrap_or(());
+
+        let karma = repo.get_karma_for("Rainydays").await;
+
+        logs_assert(|lines: &[&str]| match lines.len() {
+            1 => Ok(()),
+            n => Err(format!("Expected one logs, but found {}", n)),
+        });
+        assert!(logs_contain("Error communicating with DB - was the file deleted or locked? Error is as follows, but do not trust it it will often be wrong or unhelpful: error returned from database: (code: 1) no such table: Entries"));
+        fs::remove_file(DATABASE_FILENAME).unwrap_or(());
+    }
+
+    #[tokio::test]
+    #[serial]
+    #[traced_test]
+    async fn given_no_karma_entry_get_karma_should_return_zero_and_not_log_anything() {
+        fs::remove_file(DATABASE_FILENAME).unwrap_or(());
+        let repo = KarmaRepository::new(DATABASE_FILENAME).await;
+
+        let karma = repo.get_karma_for("Rainydays").await;
+
+        logs_assert(|lines: &[&str]| match lines.len() {
+            0 => Ok(()),
+            n => Err(format!("Expected zero logs, but found {}", n)),
+        });
+        assert_eq!(Some(0), karma);
         fs::remove_file(DATABASE_FILENAME).unwrap_or(());
     }
 }
