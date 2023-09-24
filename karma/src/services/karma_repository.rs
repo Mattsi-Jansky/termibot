@@ -35,32 +35,36 @@ impl KarmaRepository {
 
         match existing_karma {
             None => {
-                match sqlx::query!(
+                let result = sqlx::query!(
                     "INSERT INTO Entries (IdName, DisplayName, Karma) VALUES (?, ?, ?)",
                     id_name,
                     request.name,
                     request.amount
                 )
                 .execute(&self.connection)
-                .await
-                {
-                    Ok(_) => {}
-                    Err(err) => {
-                        error!("Error communicating with DB - was the file deleted or locked? Error is as follows, but do not trust it it will often be wrong or unhelpful: {}", err.to_string())
-                    }
-                }
+                .await;
+                Self::log_if_error(result);
             }
             Some(karma) => {
                 let new_karma = karma + request.amount;
-                sqlx::query!(
+                let result = sqlx::query!(
                     "UPDATE Entries SET Karma = ?\
                     WHERE IdName = ?",
                     new_karma,
                     id_name,
                 )
                 .execute(&self.connection)
-                .await
-                .unwrap();
+                .await;
+                Self::log_if_error(result);
+            }
+        }
+    }
+
+    fn log_if_error<T>(result: Result<T, sqlx::Error>) {
+        match result {
+            Ok(_) => {}
+            Err(err) => {
+                error!("Error communicating with DB - was the file deleted or locked? Error is as follows, but do not trust it it will often be wrong or unhelpful: {}", err.to_string())
             }
         }
     }
