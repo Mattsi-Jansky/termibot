@@ -15,3 +15,6 @@ framework = { path = "../framework" }
 client = { path = "../client" }
 async-trait = "0.1.68"
 serial_test = "2.0.0"
+
+[dev-dependencies]
+tracing-test = "0.2.4"

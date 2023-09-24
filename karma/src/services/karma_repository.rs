@@ -1,7 +1,8 @@
 use crate::change_request::ChangeRequest;
-use sqlx::sqlite::SqliteRow;
-use sqlx::{sqlite::SqliteConnectOptions, Pool, Row, Sqlite, SqlitePool};
+use sqlx::sqlite::{SqliteQueryResult, SqliteRow};
+use sqlx::{sqlite::SqliteConnectOptions, Error, Pool, Row, Sqlite, SqlitePool};
 use std::{future::Future, path::Path};
+use tracing::error;
 
 pub struct KarmaRepository {
     connection: Pool<Sqlite>,
@@ -29,14 +30,20 @@ impl KarmaRepository {
 
     pub async fn upsert_karma_change(&self, request: ChangeRequest) {
         let id_name = request.name.to_lowercase();
-        sqlx::query!(
+        match sqlx::query!(
             "INSERT INTO Entries (IdName, DisplayName, Karma) VALUES (?, ?, ?)",
             id_name,
             request.name,
             request.amount
         )
         .execute(&self.connection)
-        .await;
+        .await
+        {
+            Ok(_) => {}
+            Err(err) => {
+                error!("Error communicating with DB - was the file deleted or locked? Error is as follows, but do not trust it it will often be wrong or unhelpful: {}", err.to_string())
+            }
+        }
     }
 
     pub async fn get_karma_for(&self, name: &str) -> Option<i64> {
@@ -56,6 +63,7 @@ mod tests {
     use serial_test::serial;
     use std::fs;
     use std::path::Path;
+    use tracing_test::traced_test;
 
     const DATABASE_FILENAME: &'static str = "testdb.db";
 
@@ -80,6 +88,24 @@ mod tests {
             .await;
         let karma = repo.get_karma_for("Rainydays").await;
         assert_eq!(Some(-1), karma);
+        fs::remove_file(DATABASE_FILENAME).unwrap_or(());
+    }
+
+    #[tokio::test]
+    #[serial]
+    #[traced_test]
+    async fn given_database_error_upsert_should_log_error_but_not_panic() {
+        let repo = KarmaRepository::new(DATABASE_FILENAME).await;
+        fs::remove_file(DATABASE_FILENAME).unwrap_or(());
+
+        repo.upsert_karma_change(ChangeRequest::new("rainydays", -1))
+            .await;
+
+        logs_assert(|lines: &[&str]| match lines.len() {
+            1 => Ok(()),
+            n => Err(format!("Expected one logs, but found {}", n)),
+        });
+        assert!(logs_contain("Error communicating with DB - was the file deleted or locked? Error is as follows, but do not trust it it will often be wrong or unhelpful: error returned from database: (code: 1) no such table: Entries"));
         fs::remove_file(DATABASE_FILENAME).unwrap_or(());
     }
 }
