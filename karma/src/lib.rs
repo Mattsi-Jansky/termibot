@@ -8,6 +8,7 @@ use lazy_static::lazy_static;
 use regex::Regex;
 
 mod change_request;
+pub mod entry;
 pub mod services;
 
 lazy_static! {

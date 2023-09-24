@@ -1,4 +1,5 @@
 use crate::change_request::ChangeRequest;
+use crate::entry::Entry;
 use regex::internal::Input;
 use sqlx::sqlite::{SqliteQueryResult, SqliteRow};
 use sqlx::{sqlite::SqliteConnectOptions, Error, Pool, Row, Sqlite, SqlitePool};
@@ -88,6 +89,26 @@ impl KarmaRepository {
             },
         }
     }
+
+    pub async fn get_top(&self, n: i32) -> Vec<Entry> {
+        let mut result = vec![];
+        let records = sqlx::query!(
+            "SELECT IdName, DisplayName, Karma FROM Entries ORDER BY Karma DESC LIMIT ?",
+            n
+        )
+        .fetch_all(&self.connection)
+        .await;
+
+        for record in records.unwrap() {
+            result.push(Entry {
+                id_name: record.IdName,
+                display_name: record.DisplayName,
+                karma: record.Karma,
+            })
+        }
+
+        result
+    }
 }
 
 #[cfg(test)]
@@ -137,6 +158,30 @@ mod tests {
             .await;
         let karma = repo.get_karma_for("sunnydays").await;
         assert_eq!(Some(2), karma);
+        fs::remove_file(DATABASE_FILENAME).unwrap_or(());
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn should_get_top_karma_scores() {
+        fs::remove_file(DATABASE_FILENAME).unwrap_or(());
+        let repo = KarmaRepository::new(DATABASE_FILENAME).await;
+        repo.upsert_karma_change(ChangeRequest::new("sunnydays", 1))
+            .await;
+        repo.upsert_karma_change(ChangeRequest::new("rainydays", -1))
+            .await;
+
+        let result = repo.get_top(10).await;
+
+        assert_eq!(2, result.len());
+        assert_eq!(
+            &Entry {
+                id_name: "sunnydays".to_string(),
+                display_name: "sunnydays".to_string(),
+                karma: 1
+            },
+            result.get(0).unwrap()
+        );
         fs::remove_file(DATABASE_FILENAME).unwrap_or(());
     }
 

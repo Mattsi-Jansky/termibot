@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT IdName, DisplayName, Karma FROM Entries ORDER BY Karma DESC LIMIT ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "IdName",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "DisplayName",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "Karma",
+        "ordinal": 2,
+        "type_info": "Int64"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "9a5912d79aff71285f2a721af427bbcb8344d2e2c9855b8e34dad191a03ec0f0"
+}
