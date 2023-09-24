@@ -1,4 +1,5 @@
 use crate::change_request::ChangeRequest;
+use regex::internal::Input;
 use sqlx::sqlite::{SqliteQueryResult, SqliteRow};
 use sqlx::{sqlite::SqliteConnectOptions, Error, Pool, Row, Sqlite, SqlitePool};
 use std::{future::Future, path::Path};
@@ -30,18 +31,36 @@ impl KarmaRepository {
 
     pub async fn upsert_karma_change(&self, request: ChangeRequest) {
         let id_name = request.name.to_lowercase();
-        match sqlx::query!(
-            "INSERT INTO Entries (IdName, DisplayName, Karma) VALUES (?, ?, ?)",
-            id_name,
-            request.name,
-            request.amount
-        )
-        .execute(&self.connection)
-        .await
-        {
-            Ok(_) => {}
-            Err(err) => {
-                error!("Error communicating with DB - was the file deleted or locked? Error is as follows, but do not trust it it will often be wrong or unhelpful: {}", err.to_string())
+        let existing_karma = self.get_karma_for(&id_name[..]).await;
+
+        match existing_karma {
+            None => {
+                match sqlx::query!(
+                    "INSERT INTO Entries (IdName, DisplayName, Karma) VALUES (?, ?, ?)",
+                    id_name,
+                    request.name,
+                    request.amount
+                )
+                .execute(&self.connection)
+                .await
+                {
+                    Ok(_) => {}
+                    Err(err) => {
+                        error!("Error communicating with DB - was the file deleted or locked? Error is as follows, but do not trust it it will often be wrong or unhelpful: {}", err.to_string())
+                    }
+                }
+            }
+            Some(karma) => {
+                let new_karma = karma + request.amount;
+                sqlx::query!(
+                    "UPDATE Entries SET Karma = ?\
+                    WHERE IdName = ?",
+                    new_karma,
+                    id_name,
+                )
+                .execute(&self.connection)
+                .await
+                .unwrap();
             }
         }
     }
@@ -57,10 +76,10 @@ impl KarmaRepository {
         match result {
             Ok(karma) => Some(karma),
             Err(err) => match err {
-                Error::RowNotFound => Some(0),
+                Error::RowNotFound => None,
                 _ => {
                     error!("Error communicating with DB - was the file deleted or locked? Error is as follows, but do not trust it it will often be wrong or unhelpful: {}", err);
-                    Some(0)
+                    None
                 }
             },
         }
@@ -104,6 +123,21 @@ mod tests {
 
     #[tokio::test]
     #[serial]
+    async fn should_insert_two_karma_changes_and_get_new_number() {
+        fs::remove_file(DATABASE_FILENAME).unwrap_or(());
+        let repo = KarmaRepository::new(DATABASE_FILENAME).await;
+
+        repo.upsert_karma_change(ChangeRequest::new("Sunnydays", 1))
+            .await;
+        repo.upsert_karma_change(ChangeRequest::new("sUnnydays", 1))
+            .await;
+        let karma = repo.get_karma_for("sunnydays").await;
+        assert_eq!(Some(2), karma);
+        fs::remove_file(DATABASE_FILENAME).unwrap_or(());
+    }
+
+    #[tokio::test]
+    #[serial]
     #[traced_test]
     async fn given_database_error_upsert_should_log_error_but_not_panic() {
         let repo = KarmaRepository::new(DATABASE_FILENAME).await;
@@ -113,7 +147,7 @@ mod tests {
             .await;
 
         logs_assert(|lines: &[&str]| match lines.len() {
-            1 => Ok(()),
+            2 => Ok(()),
             n => Err(format!("Expected one logs, but found {}", n)),
         });
         assert!(logs_contain("Error communicating with DB - was the file deleted or locked? Error is as follows, but do not trust it it will often be wrong or unhelpful: error returned from database: (code: 1) no such table: Entries"));
@@ -150,7 +184,7 @@ mod tests {
             0 => Ok(()),
             n => Err(format!("Expected zero logs, but found {}", n)),
         });
-        assert_eq!(Some(0), karma);
+        assert_eq!(None, karma);
         fs::remove_file(DATABASE_FILENAME).unwrap_or(());
     }
 }
