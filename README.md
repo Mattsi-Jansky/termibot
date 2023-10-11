@@ -2,6 +2,11 @@
 
 We're going to Rust town, baby!
 
+# Dependencies
+
+* [Rust](https://www.rust-lang.org/tools/install)
+* `sudo apt install libssl-dev sqlite`
+
 ## How to use
 
 * If you haven't already, [create a Slack app](https://api.slack.com/authentication/basics)
