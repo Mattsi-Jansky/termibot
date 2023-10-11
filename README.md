@@ -5,10 +5,11 @@ We're going to Rust town, baby!
 # Dependencies
 
 * [Rust](https://www.rust-lang.org/tools/install)
-* `sudo apt install libssl-dev sqlite`
+* `sudo apt install libssl-dev sqlite libsqlite3-dev`
 
 ## How to use
 
+* Ensure dependencies are installed
 * If you haven't already, [create a Slack app](https://api.slack.com/authentication/basics)
   * Enable socket mode
   * Enable events API and give it access to all the bot messing read/write events, reactions and threads
