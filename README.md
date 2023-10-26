@@ -33,7 +33,6 @@ We're going to Rust town, baby!
   * A simple solution: Write it in JSON, use `format!` to inject values and `serde` to deserialise it?
 * Convert non-Songlink links to Songlink
   * Give output similar to Songlink app itself?
-* Each time a new emoji is added, post the "emoji changelist" automatically
 * Generate previews for Mastodon
  * Currently Slack only shows first image of toots that have multiple images, would be great to be able to add the other images
  * Would require matching against a long list of Mastoon instance URLs, can never be comprehensive.
