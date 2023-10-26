@@ -5,7 +5,7 @@ We're going to Rust town, baby!
 # Dependencies
 
 * [Rust](https://www.rust-lang.org/tools/install)
-* `sudo apt install libssl-dev sqlite libsqlite3-dev libsqlite0-dev`
+* `sudo apt install libssl-dev libsqlite3-dev`
 
 ## How to use
 
