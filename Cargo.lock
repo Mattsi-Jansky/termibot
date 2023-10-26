@@ -1122,6 +1122,7 @@ dependencies = [
  "client",
  "framework",
  "lazy_static",
+ "mockall",
  "regex",
  "serial_test",
  "sqlx",

@@ -5,13 +5,23 @@ use sqlx::sqlite::{SqliteQueryResult, SqliteRow};
 use sqlx::{sqlite::SqliteConnectOptions, Error, Pool, Row, Sqlite, SqlitePool};
 use std::{future::Future, path::Path};
 use tracing::error;
+use async_trait::async_trait;
+use mockall::automock;
 
-pub struct KarmaRepository {
+#[async_trait]
+#[automock]
+pub trait KarmaRepository {
+    async fn upsert_karma_change(&self, request: ChangeRequest);
+    async fn get_karma_for(&self, name: &str) -> Option<i64>;
+    async fn get_top(&self, n: i32) -> Vec<Entry>;
+}
+
+pub struct SqliteKarmaRepository {
     connection: Pool<Sqlite>,
 }
 
-impl KarmaRepository {
-    async fn new(filename: &'static str) -> KarmaRepository {
+impl SqliteKarmaRepository {
+    async fn new(filename: &'static str) -> SqliteKarmaRepository {
         let options = SqliteConnectOptions::new()
             .filename(filename)
             .create_if_missing(true);
@@ -23,14 +33,27 @@ impl KarmaRepository {
             .run(&connection)
             .await
             .expect("Failed applying Karma migrations");
-        KarmaRepository { connection }
+        SqliteKarmaRepository { connection }
     }
 
     pub async fn default() -> Self {
-        KarmaRepository::new("karma.db").await
+        SqliteKarmaRepository::new("karma.db").await
     }
 
-    pub async fn upsert_karma_change(&self, request: ChangeRequest) {
+    fn log_if_error<T>(result: Result<T, sqlx::Error>) {
+        match result {
+            Ok(_) => {}
+            Err(err) => {
+                error!("Error communicating with DB - was the file deleted or locked? Error is as follows, but do not trust it it will often be wrong or unhelpful: {}", err.to_string())
+            }
+        }
+    }
+}
+
+#[async_trait]
+impl KarmaRepository for SqliteKarmaRepository {
+
+    async fn upsert_karma_change(&self, request: ChangeRequest) {
         let id_name = request.name.to_lowercase();
         let existing_karma = self.get_karma_for(&id_name[..]).await;
 
@@ -42,8 +65,8 @@ impl KarmaRepository {
                     request.name,
                     request.amount
                 )
-                .execute(&self.connection)
-                .await;
+                    .execute(&self.connection)
+                    .await;
                 Self::log_if_error(result);
             }
             Some(karma) => {
@@ -54,23 +77,14 @@ impl KarmaRepository {
                     new_karma,
                     id_name,
                 )
-                .execute(&self.connection)
-                .await;
+                    .execute(&self.connection)
+                    .await;
                 Self::log_if_error(result);
             }
         }
     }
 
-    fn log_if_error<T>(result: Result<T, sqlx::Error>) {
-        match result {
-            Ok(_) => {}
-            Err(err) => {
-                error!("Error communicating with DB - was the file deleted or locked? Error is as follows, but do not trust it it will often be wrong or unhelpful: {}", err.to_string())
-            }
-        }
-    }
-
-    pub async fn get_karma_for(&self, name: &str) -> Option<i64> {
+    async fn get_karma_for(&self, name: &str) -> Option<i64> {
         let id_name = name.to_lowercase();
         let result: Result<i64, sqlx::Error> =
             sqlx::query!("SELECT Karma FROM Entries WHERE IdName = ?", id_name)
@@ -90,14 +104,14 @@ impl KarmaRepository {
         }
     }
 
-    pub async fn get_top(&self, n: i32) -> Vec<Entry> {
+    async fn get_top(&self, n: i32) -> Vec<Entry> {
         let mut result = vec![];
         let records = sqlx::query!(
             "SELECT IdName, DisplayName, Karma FROM Entries ORDER BY Karma DESC LIMIT ?",
             n
         )
-        .fetch_all(&self.connection)
-        .await;
+            .fetch_all(&self.connection)
+            .await;
 
         for record in records.unwrap() {
             result.push(Entry {
@@ -119,6 +133,7 @@ mod tests {
     use std::fs;
     use std::path::Path;
     use tracing_test::traced_test;
+    use crate::services::karma_repository::KarmaRepository;
 
     const DATABASE_FILENAME: &'static str = "testdb.db";
 
@@ -127,7 +142,7 @@ mod tests {
     async fn given_database_does_not_exist_should_create_it() {
         fs::remove_file(DATABASE_FILENAME).unwrap_or(());
 
-        KarmaRepository::new(DATABASE_FILENAME).await;
+        SqliteKarmaRepository::new(DATABASE_FILENAME).await;
 
         assert!(Path::new(DATABASE_FILENAME).exists());
         fs::remove_file(DATABASE_FILENAME).unwrap_or(());
@@ -137,7 +152,7 @@ mod tests {
     #[serial]
     async fn should_insert_karma_and_get_new_number() {
         fs::remove_file(DATABASE_FILENAME).unwrap_or(());
-        let repo = KarmaRepository::new(DATABASE_FILENAME).await;
+        let repo = SqliteKarmaRepository::new(DATABASE_FILENAME).await;
 
         repo.upsert_karma_change(ChangeRequest::new("rAinydays", -1))
             .await;
@@ -150,7 +165,7 @@ mod tests {
     #[serial]
     async fn should_insert_two_karma_changes_and_get_new_number() {
         fs::remove_file(DATABASE_FILENAME).unwrap_or(());
-        let repo = KarmaRepository::new(DATABASE_FILENAME).await;
+        let repo = SqliteKarmaRepository::new(DATABASE_FILENAME).await;
 
         repo.upsert_karma_change(ChangeRequest::new("Sunnydays", 1))
             .await;
@@ -165,7 +180,7 @@ mod tests {
     #[serial]
     async fn should_get_top_karma_scores() {
         fs::remove_file(DATABASE_FILENAME).unwrap_or(());
-        let repo = KarmaRepository::new(DATABASE_FILENAME).await;
+        let repo = SqliteKarmaRepository::new(DATABASE_FILENAME).await;
         repo.upsert_karma_change(ChangeRequest::new("sunnydays", 1))
             .await;
         repo.upsert_karma_change(ChangeRequest::new("rainydays", -1))
@@ -189,7 +204,7 @@ mod tests {
     #[serial]
     #[traced_test]
     async fn given_database_error_upsert_should_log_error_but_not_panic() {
-        let repo = KarmaRepository::new(DATABASE_FILENAME).await;
+        let repo = SqliteKarmaRepository::new(DATABASE_FILENAME).await;
         fs::remove_file(DATABASE_FILENAME).unwrap_or(());
 
         repo.upsert_karma_change(ChangeRequest::new("rainydays", -1))
@@ -207,7 +222,7 @@ mod tests {
     #[serial]
     #[traced_test]
     async fn given_database_error_get_karma_should_log_error() {
-        let repo = KarmaRepository::new(DATABASE_FILENAME).await;
+        let repo = SqliteKarmaRepository::new(DATABASE_FILENAME).await;
         fs::remove_file(DATABASE_FILENAME).unwrap_or(());
 
         let karma = repo.get_karma_for("Rainydays").await;
@@ -225,7 +240,7 @@ mod tests {
     #[traced_test]
     async fn given_no_karma_entry_get_karma_should_return_zero_and_not_log_anything() {
         fs::remove_file(DATABASE_FILENAME).unwrap_or(());
-        let repo = KarmaRepository::new(DATABASE_FILENAME).await;
+        let repo = SqliteKarmaRepository::new(DATABASE_FILENAME).await;
 
         let karma = repo.get_karma_for("Rainydays").await;
 
