@@ -6,6 +6,7 @@ use framework::dependencies::Dependencies;
 use framework::plugins::Plugin;
 use lazy_static::lazy_static;
 use regex::Regex;
+use tracing::error;
 use crate::change_request::ChangeRequest;
 use crate::services::karma_repository::KarmaRepository;
 
@@ -44,31 +45,34 @@ impl Default for KarmaPlugin {
 impl Plugin for KarmaPlugin {
     async fn on_event(&self, event: &Event, dependencies: &Dependencies) -> Vec<Action> {
         let mut results = vec![];
-        let binding = dependencies.get_dyn::<dyn KarmaRepository + Send + Sync>()
-            .unwrap();
-        let repo = binding.read().await;
+        if let Some(binding) = dependencies.get_dyn::<dyn KarmaRepository + Send + Sync>() {
+            let repo = binding.read().await;
+            if let Event::Message(message) = event {
+                let text = message.text.clone().unwrap_or(String::new());
 
-        if let Event::Message(message) = event {
-            let text = message.text.clone().unwrap_or(String::new());
-
-            for capture in KARMA_MATCHER.captures_iter(&text[..]) {
-                let capture = capture.get(0).unwrap().as_str();
-                let thing = &capture[..capture.len() - 2];
-                let is_increment = capture[capture.len() - 2..].eq("++");
-                let emoji = if is_increment {
-                    &self.upvote_emoji
-                } else {
-                    &self.downvote_emoji
-                };
-                let value = if is_increment { 1 } else { -1 };
-                repo.upsert_karma_change(ChangeRequest::new(capture, value));
-                if let Some(value) = repo.get_karma_for(capture).await {
-                    results.push(Action::MessageChannel {
-                        channel: "".to_string(),
-                        message: MessageBody::from_text(&format!(":{emoji}: {thing}: {value}")[..]),
-                    });
+                for capture in KARMA_MATCHER.captures_iter(&text[..]) {
+                    let capture = capture.get(0).unwrap().as_str();
+                    let thing = &capture[..capture.len() - 2];
+                    let is_increment = capture[capture.len() - 2..].eq("++");
+                    let emoji = if is_increment {
+                        &self.upvote_emoji
+                    } else {
+                        &self.downvote_emoji
+                    };
+                    let value = if is_increment { 1 } else { -1 };
+                    repo.upsert_karma_change(ChangeRequest::new(capture, value));
+                    if let Some(value) = repo.get_karma_for(capture).await {
+                        results.push(Action::MessageChannel {
+                            channel: "".to_string(),
+                            message: MessageBody::from_text(&format!(":{emoji}: {thing}: {value}")[..]),
+                        });
+                    } else {
+                        error!("Error getting current karma value, DB could not find entry or failed to connect to DB.");
+                    }
                 }
             }
+        } else {
+            error!("Error getting KarmaRepository. Did you forget to add it? Check the README");
         }
 
         results
@@ -83,6 +87,7 @@ mod tests {
     use framework::dependencies::DependenciesBuilder;
     use crate::services::karma_repository::KarmaRepository;
     use crate::services::karma_repository::MockKarmaRepository;
+    use tracing_test::traced_test;
 
     fn build_mocked_dependencies(mut n: Vec<i64>) -> Dependencies {
         let mut dependencies_builder = DependenciesBuilder::default();
@@ -109,8 +114,9 @@ mod tests {
         assert_eq!(0, result.len())
     }
 
+    #[traced_test]
     #[tokio::test]
-    async fn given_repo_fails_to_get_current_karma_score_do_nothing() {
+    async fn given_repo_fails_to_get_current_karma_score_should_log_error_and_return_no_actions() {
         let mut dependencies_builder = DependenciesBuilder::default();
         let mut mock_repo = MockKarmaRepository::new();
         mock_repo.expect_upsert_karma_change()
@@ -125,7 +131,12 @@ mod tests {
 
         let result = KarmaPlugin::default().on_event(&event, &dependencies).await;
 
-        assert_eq!(0, result.len())
+        assert_eq!(0, result.len());
+        logs_assert(|lines: &[&str]| match lines.len() {
+            1 => Ok(()),
+            n => Err(format!("Expected one logs, but found {}", n)),
+        });
+        assert!(logs_contain("Error getting current karma value, DB could not find entry or failed to connect to DB."));
     }
 
     #[tokio::test]
@@ -183,8 +194,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn given_override_of_downvote_emoji_should_return_karma_changed_message_with_custom_emoji(
-    ) {
+    async fn given_override_of_downvote_emoji_should_return_karma_changed_message_with_custom_emoji() {
         let dependencies = build_mocked_dependencies(vec![-1]);
         let event = Event::new_test_text_message("rainydays--");
 
@@ -200,5 +210,23 @@ mod tests {
             },
             result.get(0).unwrap()
         );
+    }
+
+    #[traced_test]
+    #[tokio::test]
+    async fn given_repo_dependency_missing_log_error() {
+        let dependencies = DependenciesBuilder::default().build();
+        let event = Event::new_test_text_message("rainydays--");
+
+        let result = KarmaPlugin::new("up_custom", "down_custom")
+            .on_event(&event, &dependencies)
+            .await;
+
+        assert_eq!(0, result.len());
+        logs_assert(|lines: &[&str]| match lines.len() {
+            1 => Ok(()),
+            n => Err(format!("Expected one logs, but found {}", n)),
+        });
+        assert!(logs_contain("Error getting KarmaRepository. Did you forget to add it? Check the README"));
     }
 }

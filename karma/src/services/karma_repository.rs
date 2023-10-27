@@ -212,7 +212,7 @@ mod tests {
 
         logs_assert(|lines: &[&str]| match lines.len() {
             2 => Ok(()),
-            n => Err(format!("Expected one logs, but found {}", n)),
+            n => Err(format!("Expected two logs, but found {}", n)),
         });
         assert!(logs_contain("Error communicating with DB - was the file deleted or locked? Error is as follows, but do not trust it it will often be wrong or unhelpful: error returned from database: (code: 1) no such table: Entries"));
         fs::remove_file(DATABASE_FILENAME).unwrap_or(());
