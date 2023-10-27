@@ -60,10 +60,18 @@ impl Plugin for KarmaPlugin {
                         &self.downvote_emoji
                     };
                     let value = if is_increment { 1 } else { -1 };
-                    repo.upsert_karma_change(ChangeRequest::new(capture, value));
+                    repo.upsert_karma_change(ChangeRequest::new(capture, value)).await;
                     if let Some(value) = repo.get_karma_for(capture).await {
+                        let channel = if let Some(channel) = message.channel.clone() {
+                            channel
+                        } else if let Some(user) = message.user.clone() {
+                            user
+                        } else {
+                            error!("Cannot get channel from message");
+                            String::new()
+                        };
                         results.push(Action::MessageChannel {
-                            channel: "".to_string(),
+                            channel,
                             message: MessageBody::from_text(&format!(":{emoji}: {thing}: {value}")[..]),
                         });
                     } else {
