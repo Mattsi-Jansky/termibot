@@ -6,6 +6,8 @@ use framework::dependencies::Dependencies;
 use framework::plugins::Plugin;
 use lazy_static::lazy_static;
 use regex::Regex;
+use crate::change_request::ChangeRequest;
+use crate::services::karma_repository::KarmaRepository;
 
 mod change_request;
 pub mod entry;
@@ -42,6 +44,9 @@ impl Default for KarmaPlugin {
 impl Plugin for KarmaPlugin {
     async fn on_event(&self, event: &Event, dependencies: &Dependencies) -> Vec<Action> {
         let mut results = vec![];
+        let binding = dependencies.get_dyn::<dyn KarmaRepository + Send + Sync>()
+            .unwrap();
+        let repo = binding.read().await;
 
         if let Event::Message(message) = event {
             let text = message.text.clone().unwrap_or(String::new());
@@ -55,11 +60,14 @@ impl Plugin for KarmaPlugin {
                 } else {
                     &self.downvote_emoji
                 };
-                let value = if is_increment { "1" } else { "-1" };
-                results.push(Action::MessageChannel {
-                    channel: "".to_string(),
-                    message: MessageBody::from_text(&format!(":{emoji}: {thing}: {value}")[..]),
-                });
+                let value = if is_increment { 1 } else { -1 };
+                repo.upsert_karma_change(ChangeRequest::new(capture, value));
+                if let Some(value) = repo.get_karma_for(capture).await {
+                    results.push(Action::MessageChannel {
+                        channel: "".to_string(),
+                        message: MessageBody::from_text(&format!(":{emoji}: {thing}: {value}")[..]),
+                    });
+                }
             }
         }
 
@@ -69,13 +77,32 @@ impl Plugin for KarmaPlugin {
 
 #[cfg(test)]
 mod tests {
+    use std::future;
     use super::*;
     use client::models::message_body::MessageBody;
     use framework::dependencies::DependenciesBuilder;
+    use crate::services::karma_repository::KarmaRepository;
+    use crate::services::karma_repository::MockKarmaRepository;
+
+    fn build_mocked_dependencies(mut n: Vec<i64>) -> Dependencies {
+        let mut dependencies_builder = DependenciesBuilder::default();
+        let mut mock_repo = MockKarmaRepository::new();
+        mock_repo.expect_upsert_karma_change()
+            .times(n.len())
+            .returning(|_| Box::pin(future::ready(())));
+        mock_repo.expect_get_karma_for()
+            .times(n.len())
+            .returning(move |_| Box::pin(future::ready(Some(n.pop().unwrap()))));
+        dependencies_builder.add_dyn::<dyn KarmaRepository + Send + Sync>(Box::new(mock_repo));
+        dependencies_builder.build()
+    }
 
     #[tokio::test]
     async fn given_no_karma_change_do_nothing() {
-        let dependencies = DependenciesBuilder::default().build();
+        let mut dependencies_builder = DependenciesBuilder::default();
+        dependencies_builder.add_dyn::<dyn KarmaRepository + Send + Sync>(Box::new(MockKarmaRepository::new()));
+        let dependencies = dependencies_builder.build();
+
         let event = Event::new_test_text_message("test message");
 
         let result = KarmaPlugin::default().on_event(&event, &dependencies).await;
@@ -84,13 +111,12 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn given_positive_karma_change_should_return_karma_changed_message() {
-        let dependencies = DependenciesBuilder::default().build();
+    async fn given_positive_karma_change_should_return_karma_changed_message_and_record_database_change() {
+        let dependencies = build_mocked_dependencies(vec![1]);
         let event = Event::new_test_text_message("sunnydays++");
 
         let result = KarmaPlugin::default().on_event(&event, &dependencies).await;
 
-        dbg!(&result);
         assert_eq!(1, result.len());
         assert_eq!(
             &Action::MessageChannel {
@@ -104,14 +130,13 @@ mod tests {
     #[tokio::test]
     async fn given_override_of_upvote_emoji_should_return_karma_changed_message_with_custom_emoji()
     {
-        let dependencies = DependenciesBuilder::default().build();
+        let dependencies = build_mocked_dependencies(vec![1]);
         let event = Event::new_test_text_message("sunnydays++");
 
         let result = KarmaPlugin::new("up_custom", "down_custom")
             .on_event(&event, &dependencies)
             .await;
 
-        dbg!(&result);
         assert_eq!(1, result.len());
         assert_eq!(
             &Action::MessageChannel {
@@ -123,13 +148,12 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn given_negative_karma_change_should_return_karma_changed_message() {
-        let dependencies = DependenciesBuilder::default().build();
+    async fn given_negative_karma_change_should_return_karma_changed_message_and_record_database_change() {
+        let dependencies = build_mocked_dependencies(vec![-1]);
         let event = Event::new_test_text_message("rainydays--");
 
         let result = KarmaPlugin::default().on_event(&event, &dependencies).await;
 
-        dbg!(&result);
         assert_eq!(1, result.len());
         assert_eq!(
             &Action::MessageChannel {
@@ -143,14 +167,13 @@ mod tests {
     #[tokio::test]
     async fn given_override_of_downvote_emoji_should_return_karma_changed_message_with_custom_emoji(
     ) {
-        let dependencies = DependenciesBuilder::default().build();
+        let dependencies = build_mocked_dependencies(vec![-1]);
         let event = Event::new_test_text_message("rainydays--");
 
         let result = KarmaPlugin::new("up_custom", "down_custom")
             .on_event(&event, &dependencies)
             .await;
 
-        dbg!(&result);
         assert_eq!(1, result.len());
         assert_eq!(
             &Action::MessageChannel {
