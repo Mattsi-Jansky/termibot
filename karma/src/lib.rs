@@ -102,8 +102,26 @@ mod tests {
         let mut dependencies_builder = DependenciesBuilder::default();
         dependencies_builder.add_dyn::<dyn KarmaRepository + Send + Sync>(Box::new(MockKarmaRepository::new()));
         let dependencies = dependencies_builder.build();
-
         let event = Event::new_test_text_message("test message");
+
+        let result = KarmaPlugin::default().on_event(&event, &dependencies).await;
+
+        assert_eq!(0, result.len())
+    }
+
+    #[tokio::test]
+    async fn given_repo_fails_to_get_current_karma_score_do_nothing() {
+        let mut dependencies_builder = DependenciesBuilder::default();
+        let mut mock_repo = MockKarmaRepository::new();
+        mock_repo.expect_upsert_karma_change()
+            .times(1)
+            .returning(|_| Box::pin(future::ready(())));
+        mock_repo.expect_get_karma_for()
+            .times(1)
+            .returning(move |_| Box::pin(future::ready(None)));
+        dependencies_builder.add_dyn::<dyn KarmaRepository + Send + Sync>(Box::new(mock_repo));
+        let dependencies = dependencies_builder.build();
+        let event = Event::new_test_text_message("sunnydays++");
 
         let result = KarmaPlugin::default().on_event(&event, &dependencies).await;
 
