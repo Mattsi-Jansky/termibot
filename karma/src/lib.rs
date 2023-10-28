@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use client::models::message_body::MessageBody;
-use client::models::socket_message::Event;
+use client::models::socket_message::{Event, MessageEvent};
 use framework::actions::Action;
 use framework::dependencies::Dependencies;
 use framework::plugins::Plugin;
@@ -8,7 +8,7 @@ use lazy_static::lazy_static;
 use regex::{CaptureMatches, Regex};
 use tracing::error;
 use crate::change_request::ChangeRequest;
-use crate::services::karma_parser::get_captures;
+use crate::services::karma_parser::{get_captures, KarmaCapture};
 use crate::services::karma_repository::KarmaRepository;
 
 mod change_request;
@@ -27,6 +27,25 @@ impl KarmaPlugin {
             downvote_emoji: downvote_emoji.to_string(),
         }
     }
+
+    fn get_apropriate_emoji(&self, capture: &KarmaCapture) -> &String {
+        if capture.is_increment {
+            &self.upvote_emoji
+        } else {
+            &self.downvote_emoji
+        }
+    }
+
+    fn get_channel(message: &MessageEvent) -> String {
+        if let Some(channel) = message.channel.clone() {
+            channel
+        } else if let Some(user) = message.user.clone() {
+            user
+        } else {
+            error!("Cannot get channel from message");
+            String::new()
+        }
+    }
 }
 
 impl Default for KarmaPlugin {
@@ -42,28 +61,17 @@ impl Default for KarmaPlugin {
 impl Plugin for KarmaPlugin {
     async fn on_event(&self, event: &Event, dependencies: &Dependencies) -> Vec<Action> {
         let mut results = vec![];
+
         if let Some(binding) = dependencies.get_dyn::<dyn KarmaRepository + Send + Sync>() {
             let repo = binding.read().await;
             if let Event::Message(message) = event {
                 let text = message.text.clone().unwrap_or(String::new());
-
                 for capture in get_captures(&text) {
-                    let emoji = if capture.is_increment {
-                        &self.upvote_emoji
-                    } else {
-                        &self.downvote_emoji
-                    };
                     let value = if capture.is_increment { 1 } else { -1 };
                     repo.upsert_karma_change(ChangeRequest::new(capture.name.as_str(), value)).await;
                     if let Some(value) = repo.get_karma_for(capture.name.as_str()).await {
-                        let channel = if let Some(channel) = message.channel.clone() {
-                            channel
-                        } else if let Some(user) = message.user.clone() {
-                            user
-                        } else {
-                            error!("Cannot get channel from message");
-                            String::new()
-                        };
+                        let emoji = self.get_apropriate_emoji(&capture);
+                        let channel = Self::get_channel(message);
                         results.push(Action::MessageChannel {
                             channel,
                             message: MessageBody::from_text(&format!(":{emoji}: {}: {value}", capture.name)[..]),
