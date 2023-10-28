@@ -107,6 +107,11 @@ impl SlackBot {
         self.dependencies_builder.add(service);
         self
     }
+
+    pub fn with_dyn_service<T: Send + Sync + 'static + ?Sized>(mut self, service: Box<T>) -> Self {
+        self.dependencies_builder.add_dyn(service);
+        self
+    }
 }
 
 #[cfg(test)]
