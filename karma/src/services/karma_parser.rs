@@ -42,4 +42,12 @@ mod tests {
         assert_eq!(1, result.len());
         assert_eq!(result.get(0).unwrap().name, "sunnydays");
     }
+
+    #[test]
+    fn should_trim_spaces_and_minuses() {
+        let result = get_captures(" rainydays-- ");
+
+        assert_eq!(1, result.len());
+        assert_eq!(result.get(0).unwrap().name, "rainydays");
+    }
 }
