@@ -46,6 +46,16 @@ impl KarmaPlugin {
             String::new()
         }
     }
+
+    fn generate_message(&self, message: &MessageEvent, capture: &KarmaCapture, value: i64) -> Action {
+        let emoji = self.get_apropriate_emoji(&capture);
+        let channel = Self::get_channel(message);
+        let message = Action::MessageChannel {
+            channel,
+            message: MessageBody::from_text(&format!(":{emoji}: {}: {value}", capture.name)[..]),
+        };
+        message
+    }
 }
 
 impl Default for KarmaPlugin {
@@ -70,12 +80,7 @@ impl Plugin for KarmaPlugin {
                     let value = if capture.is_increment { 1 } else { -1 };
                     repo.upsert_karma_change(ChangeRequest::new(capture.name.as_str(), value)).await;
                     if let Some(value) = repo.get_karma_for(capture.name.as_str()).await {
-                        let emoji = self.get_apropriate_emoji(&capture);
-                        let channel = Self::get_channel(message);
-                        results.push(Action::MessageChannel {
-                            channel,
-                            message: MessageBody::from_text(&format!(":{emoji}: {}: {value}", capture.name)[..]),
-                        });
+                        results.push(self.generate_message(message, &capture, value));
                     } else {
                         error!("Error getting current karma value, DB could not find entry or failed to connect to DB.");
                     }
