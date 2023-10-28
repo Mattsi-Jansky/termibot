@@ -2,7 +2,7 @@ use regex::{CaptureMatches, Regex};
 use lazy_static::lazy_static;
 
 lazy_static! {
-    static ref KARMA_MATCHER: Regex = Regex::new(r"([^`\-\+\s]{2,})(--|\+\+)").unwrap();
+    static ref KARMA_MATCHER: Regex = Regex::new(r"([^`\-\+\s]{2,})(--|\+\+)(\s|$|\n|\+|\-)").unwrap();
 }
 
 #[derive(Debug,Eq,PartialEq)]
@@ -22,10 +22,10 @@ pub fn get_captures(text: &str) -> Vec<KarmaCapture> {
     let mut result = vec![];
 
     for capture in KARMA_MATCHER.captures_iter(text) {
-        let capture = capture.get(0).unwrap().as_str().trim();
+        let name = capture.get(1).unwrap().as_str().trim();
         result.push(KarmaCapture {
-            name: capture[..capture.len() - 2].to_string(),
-            is_increment: capture[capture.len() - 2..].eq("++"),
+            name: name.to_string(),
+            is_increment: capture.get(2).unwrap().as_str().trim().eq("++"),
             reason: None
         })
     }
@@ -71,6 +71,11 @@ mod tests {
         (should_isolate_at_end_of_string, "this is a matching phrase++", vec![ KarmaCapture::new("phrase".to_string(), true, None)]),
         (given_no_chars_before_pluses_should_return_empty, "++", Vec::<KarmaCapture>::new()),
         (given_no_chars_before_minuses_should_return_empty, "--", Vec::<KarmaCapture>::new()),
-        (given_newline_before_pluses_should_return_empty, "hello\n++", Vec::<KarmaCapture>::new())
+        (given_newline_before_pluses_should_return_empty, "hello\n++", Vec::<KarmaCapture>::new()),
+        (given_four_pluses_should_return_empty, "++++", Vec::<KarmaCapture>::new()),
+        (given_five_minuses_should_return_empty, "-----", Vec::<KarmaCapture>::new()),
+        (given_wrong_side_should_return_empty, "this ++is not a matching phrase", Vec::<KarmaCapture>::new()),
+        (given_no_space_should_return_empty, "this++is not a matching phrase", Vec::<KarmaCapture>::new()),
+        (given_wrong_side_at_start_should_return_empty, "++this is not a matching phrase", Vec::<KarmaCapture>::new())
     }
 }
