@@ -48,17 +48,14 @@ impl Plugin for KarmaPlugin {
                 let text = message.text.clone().unwrap_or(String::new());
 
                 for capture in get_captures(&text) {
-                    let capture = capture.get(0).unwrap().as_str();
-                    let thing = &capture[..capture.len() - 2];
-                    let is_increment = capture[capture.len() - 2..].eq("++");
-                    let emoji = if is_increment {
+                    let emoji = if capture.is_increment {
                         &self.upvote_emoji
                     } else {
                         &self.downvote_emoji
                     };
-                    let value = if is_increment { 1 } else { -1 };
-                    repo.upsert_karma_change(ChangeRequest::new(capture, value)).await;
-                    if let Some(value) = repo.get_karma_for(capture).await {
+                    let value = if capture.is_increment { 1 } else { -1 };
+                    repo.upsert_karma_change(ChangeRequest::new(capture.name.as_str(), value)).await;
+                    if let Some(value) = repo.get_karma_for(capture.name.as_str()).await {
                         let channel = if let Some(channel) = message.channel.clone() {
                             channel
                         } else if let Some(user) = message.user.clone() {
@@ -69,7 +66,7 @@ impl Plugin for KarmaPlugin {
                         };
                         results.push(Action::MessageChannel {
                             channel,
-                            message: MessageBody::from_text(&format!(":{emoji}: {thing}: {value}")[..]),
+                            message: MessageBody::from_text(&format!(":{emoji}: {}: {value}", capture.name)[..]),
                         });
                     } else {
                         error!("Error getting current karma value, DB could not find entry or failed to connect to DB.");
