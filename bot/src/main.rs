@@ -5,6 +5,8 @@ use config_file::FromConfigFile;
 use framework::SlackBot;
 use lazy_static::lazy_static;
 use serde::Deserialize;
+use karma::KarmaPlugin;
+use karma::services::karma_repository::{KarmaRepository, SqliteKarmaRepository};
 use crate::plugins::emoji_changelog::EmojiChangelogPlugin;
 
 #[tokio::main]
@@ -13,6 +15,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     SlackBot::new(&CONFIG.bot_token[..], &CONFIG.app_token[..])
         .with_plugin(Box::new(SongLinkPlugin {}))
         .with_plugin(Box::new(EmojiChangelogPlugin::new("#general".to_string())))
+        .with_dyn_service::<dyn KarmaRepository + Send + Sync>(Box::new(SqliteKarmaRepository::default().await))
+        .with_plugin(Box::new(KarmaPlugin::default()))
         .run()
         .await
         .unwrap();
