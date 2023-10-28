@@ -5,22 +5,19 @@ use framework::actions::Action;
 use framework::dependencies::Dependencies;
 use framework::plugins::Plugin;
 use lazy_static::lazy_static;
-use regex::Regex;
+use regex::{CaptureMatches, Regex};
 use tracing::error;
 use crate::change_request::ChangeRequest;
+use crate::services::karma_parser::get_captures;
 use crate::services::karma_repository::KarmaRepository;
 
 mod change_request;
 pub mod entry;
 pub mod services;
 
-lazy_static! {
-    static ref KARMA_MATCHER: Regex = Regex::new(r"([^\`\s]{2,})(--|\+\+)(^|\s|$)").unwrap();
-}
-
 pub struct KarmaPlugin {
     upvote_emoji: String,
-    downvote_emoji: String,
+    downvote_emoji: String
 }
 
 impl KarmaPlugin {
@@ -50,7 +47,7 @@ impl Plugin for KarmaPlugin {
             if let Event::Message(message) = event {
                 let text = message.text.clone().unwrap_or(String::new());
 
-                for capture in KARMA_MATCHER.captures_iter(&text[..]) {
+                for capture in get_captures(&text) {
                     let capture = capture.get(0).unwrap().as_str();
                     let thing = &capture[..capture.len() - 2];
                     let is_increment = capture[capture.len() - 2..].eq("++");
