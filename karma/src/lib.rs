@@ -61,11 +61,11 @@ impl Default for KarmaPlugin {
 impl Plugin for KarmaPlugin {
     async fn on_event(&self, event: &Event, dependencies: &Dependencies) -> Vec<Action> {
         let mut results = vec![];
-
-        if let Some(binding) = dependencies.get_dyn::<dyn KarmaRepository + Send + Sync>() {
-            let repo = binding.read().await;
-            if let Event::Message(message) = event {
+        if let Event::Message(message) = event {
+            if let Some(binding) = dependencies.get_dyn::<dyn KarmaRepository + Send + Sync>() {
+                let repo = binding.read().await;
                 let text = message.text.clone().unwrap_or(String::new());
+
                 for capture in get_captures(&text) {
                     let value = if capture.is_increment { 1 } else { -1 };
                     repo.upsert_karma_change(ChangeRequest::new(capture.name.as_str(), value)).await;
@@ -80,9 +80,9 @@ impl Plugin for KarmaPlugin {
                         error!("Error getting current karma value, DB could not find entry or failed to connect to DB.");
                     }
                 }
+            } else {
+                error!("Error getting KarmaRepository. Did you forget to add it? Check the README");
             }
-        } else {
-            error!("Error getting KarmaRepository. Did you forget to add it? Check the README");
         }
 
         results
