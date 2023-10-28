@@ -76,7 +76,7 @@ impl Plugin for KarmaPlugin {
                 let repo = binding.read().await;
                 let text = message.text.clone().unwrap_or(String::new());
 
-                for capture in get_captures(&text) {
+                for capture in get_captures(text.as_str()) {
                     let value = if capture.is_increment { 1 } else { -1 };
                     repo.upsert_karma_change(ChangeRequest::new(capture.name.as_str(), value)).await;
                     if let Some(value) = repo.get_karma_for(capture.name.as_str()).await {
