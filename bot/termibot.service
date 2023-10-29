@@ -9,7 +9,7 @@ Restart=always
 RestartSec=1
 User=admin
 WorkingDirectory=/home/admin/termibot/bot
-ExecStart=/home/admin/.cargo/bin/cargo run
+ExecStart=/home/admin/.cargo/bin/cargo run --release
 
 [Install]
 WantedBy=multi-user.target
