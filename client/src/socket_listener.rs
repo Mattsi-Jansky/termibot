@@ -49,13 +49,13 @@ impl SocketModeListener for TungsteniteSocketModeListener {
                 .send(Message::Pong("Pong from slackbot".to_string().into_bytes()))
                 .await
                 .unwrap();
-            self.next().await
+            Ok(SocketMessage::None)
         } else if !message.is_text() {
             error!(
                 "Received unexpected non-text message from WSS: {:?}",
                 message
             );
-            self.next().await
+            Ok(SocketMessage::None)
         } else {
             let text = message.into_text().unwrap();
             info!("Received message {}", text);
@@ -80,6 +80,7 @@ impl SocketModeListener for TungsteniteSocketModeListener {
 
                         SocketMessage::Hello { .. } => { /* Does not need to be ACK'd*/ }
                         SocketMessage::Disconnect { .. } => { /* Does not need to be ACK'd*/ }
+                        SocketMessage::None => { /* N/A will not happen here */ }
                     }
                     result
                 }
