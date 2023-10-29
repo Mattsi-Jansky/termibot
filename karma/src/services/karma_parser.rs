@@ -1,8 +1,10 @@
-use regex::{CaptureMatches, Regex};
+use regex::{CaptureMatches, Captures, Match, Regex};
 use lazy_static::lazy_static;
+use tracing::error;
 
 lazy_static! {
     static ref KARMA_MATCHER: Regex = Regex::new(r"([^`\-\+\s]{2,})(--|\+\+)(\s|$|\n|\+|\-)").unwrap();
+    static ref PREFORMATTED_BLOCK_MATCHER: Regex = Regex::new(r"\`[^\`]*\`").unwrap();
 }
 
 #[derive(Debug,Eq,PartialEq)]
@@ -20,14 +22,33 @@ impl KarmaCapture {
 
 pub fn get_captures(text: &str) -> Vec<KarmaCapture> {
     let mut result = vec![];
+    let preformatted_blocks = PREFORMATTED_BLOCK_MATCHER.captures_iter(text)
+        .map(|block| block.get(0).unwrap())
+        .collect::<Vec<Match>>();
 
     for capture in KARMA_MATCHER.captures_iter(text) {
-        let name = capture.get(1).unwrap().as_str().trim();
-        result.push(KarmaCapture {
-            name: name.to_string(),
-            is_increment: capture.get(2).unwrap().as_str().trim().eq("++"),
-            reason: None
-        })
+        if !is_in_preformatted_block(&preformatted_blocks, &capture) {
+            let name = capture.get(1).unwrap().as_str().trim();
+            result.push(KarmaCapture {
+                name: name.to_string(),
+                is_increment: capture.get(2).unwrap().as_str().trim().eq("++"),
+                reason: None
+            })
+        }
+    }
+
+    result
+}
+
+fn is_in_preformatted_block(preformatted_blocks: &Vec<Match>, capture: &Captures) -> bool {
+    let mut result = false;
+    let capture = capture.get(0).unwrap();
+
+    for block in preformatted_blocks {
+        println!("block {:?}\ncaptr {:?}", block, capture);
+        if capture.start() > block.start() && capture.end() < block.end() {
+            result = true;
+        }
     }
 
     result
@@ -76,6 +97,10 @@ mod tests {
         (given_five_minuses_should_return_empty, "-----", Vec::<KarmaCapture>::new()),
         (given_wrong_side_should_return_empty, "this ++is not a matching phrase", Vec::<KarmaCapture>::new()),
         (given_no_space_should_return_empty, "this++is not a matching phrase", Vec::<KarmaCapture>::new()),
-        (given_wrong_side_at_start_should_return_empty, "++this is not a matching phrase", Vec::<KarmaCapture>::new())
+        (given_wrong_side_at_start_should_return_empty, "++this is not a matching phrase", Vec::<KarmaCapture>::new()),
+        (given_preformatted_text_should_return_empty, "`preformatted++ to the max`", Vec::<KarmaCapture>::new()),
+        (given_preformatted_text_should_return_empty_2, "`preformatted`++ to the max", Vec::<KarmaCapture>::new()),
+        (given_preformatted_text_should_return_empty_3, "`preformatte`d++ to the max", Vec::<KarmaCapture>::new()),
+        (given_preformatted_multiline_text_should_return_empty, "```\nlet var = 0\nvar++\n```", Vec::<KarmaCapture>::new())
     }
 }
