@@ -78,6 +78,7 @@ impl SlackBot {
                 SocketMessage::Disconnect { .. } => {
                     break;
                 }
+                SocketMessage::None => { /* Nothing to do */ }
             }
 
             let actions: Vec<Action> = join_all(future_actions).await.into_iter().flatten().collect();
