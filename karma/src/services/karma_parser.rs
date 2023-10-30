@@ -32,8 +32,6 @@ pub fn get_captures(text: &str) -> Vec<KarmaCapture> {
             .unwrap()
             .start() == capture.get(0).unwrap().start())
     );
-    println!("reasons: {:?}", reason_captures);
-    println!("-------------------");
 
     for capture in karma_captures {
         if !is_in_preformatted_block(&preformatted_blocks, &capture) {
@@ -47,7 +45,6 @@ pub fn get_captures(text: &str) -> Vec<KarmaCapture> {
     }
 
     for capture in reason_captures {
-        println!("================= IN REASON LOOP");
         let name = capture.get(1).unwrap().as_str().trim();
         let reason = capture.get(3).unwrap().as_str().trim();
         result.push(KarmaCapture {
@@ -56,8 +53,7 @@ pub fn get_captures(text: &str) -> Vec<KarmaCapture> {
             reason: Some(reason.to_string())
         })
     }
-
-    println!("{:?}", result);
+    
     result
 }
 
