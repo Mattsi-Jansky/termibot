@@ -5,7 +5,6 @@ use client::error::SlackClientError;
 use client::models::socket_message::SocketMessage;
 use client::{ReqwestSlackClient, SlackClient};
 use futures::future::join_all;
-use futures::{FutureExt, StreamExt};
 use plugins::Plugin;
 
 use std::sync::Arc;

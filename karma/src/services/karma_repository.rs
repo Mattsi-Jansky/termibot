@@ -3,9 +3,8 @@ use crate::entry::Entry;
 use crate::reason::Reason;
 use async_trait::async_trait;
 use mockall::automock;
-use regex::internal::Input;
 
-use sqlx::{sqlite::SqliteConnectOptions, Error, Pool, Row, Sqlite, SqlitePool};
+use sqlx::{sqlite::SqliteConnectOptions, Error, Pool, Sqlite, SqlitePool};
 
 use tracing::error;
 

@@ -17,16 +17,6 @@ pub struct KarmaCapture {
     pub reason: Option<String>,
 }
 
-impl KarmaCapture {
-    pub fn new(name: String, is_increment: bool, reason: Option<String>) -> Self {
-        Self {
-            name,
-            is_increment,
-            reason,
-        }
-    }
-}
-
 pub fn get_captures(text: &str) -> Vec<KarmaCapture> {
     let mut result = vec![];
     let preformatted_blocks = PREFORMATTED_BLOCK_MATCHER

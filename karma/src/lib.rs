@@ -22,7 +22,7 @@ pub struct KarmaPlugin {
 }
 
 impl KarmaPlugin {
-    fn new(upvote_emoji: &str, downvote_emoji: &str) -> KarmaPlugin {
+    pub fn new(upvote_emoji: &str, downvote_emoji: &str) -> KarmaPlugin {
         KarmaPlugin {
             upvote_emoji: upvote_emoji.to_string(),
             downvote_emoji: downvote_emoji.to_string(),

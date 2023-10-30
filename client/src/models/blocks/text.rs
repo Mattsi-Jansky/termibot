@@ -17,6 +17,7 @@ pub struct HeaderBlock {
 }
 
 impl HeaderBlock {
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(text: &str) -> Block {
         Block::Header(HeaderBlock {
             text: Text::PlainText(TextBody {
