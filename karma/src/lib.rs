@@ -14,6 +14,7 @@ use crate::services::karma_repository::KarmaRepository;
 mod change_request;
 pub mod entry;
 pub mod services;
+pub mod reason;
 
 pub struct KarmaPlugin {
     upvote_emoji: String,

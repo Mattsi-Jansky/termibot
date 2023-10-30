@@ -7,6 +7,7 @@ use std::{future::Future, path::Path};
 use tracing::error;
 use async_trait::async_trait;
 use mockall::automock;
+use crate::reason::Reason;
 
 #[async_trait]
 #[automock]
@@ -14,6 +15,8 @@ pub trait KarmaRepository {
     async fn upsert_karma_change(&self, request: ChangeRequest);
     async fn get_karma_for(&self, name: &str) -> Option<i64>;
     async fn get_top(&self, n: i32) -> Vec<Entry>;
+    async fn insert_karma_reason(&self, name: &str, change: i32, value: &str);
+    async fn get_reasons(&self, name: &str) -> Vec<Reason>;
 }
 
 pub struct SqliteKarmaRepository {
@@ -118,6 +121,38 @@ impl KarmaRepository for SqliteKarmaRepository {
                 id_name: record.IdName,
                 display_name: record.DisplayName,
                 karma: record.Karma,
+            })
+        }
+
+        result
+    }
+
+    async fn insert_karma_reason(&self, name: &str, change: i32, value: &str) {
+        let result = sqlx::query!(
+                    "INSERT INTO Reasons (Name, Change, Value) VALUES (?, ?, ?)",
+                    name,
+                    change,
+                    value
+                )
+            .execute(&self.connection)
+            .await;
+        Self::log_if_error(result);
+    }
+
+    async fn get_reasons(&self, name: &str) -> Vec<Reason> {
+        let mut result = vec![];
+
+        let records = sqlx::query!(
+            "SELECT Value, Change FROM Reasons WHERE Name = ?",
+            name
+        )
+            .fetch_all(&self.connection)
+            .await;
+
+        for record in records.unwrap() {
+            result.push(Reason {
+                change: record.Change,
+                value: record.Value,
             })
         }
 
@@ -249,6 +284,21 @@ mod tests {
             n => Err(format!("Expected zero logs, but found {}", n)),
         });
         assert_eq!(None, karma);
+        fs::remove_file(DATABASE_FILENAME).unwrap_or(());
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn should_insert_karma_reason() {
+        fs::remove_file(DATABASE_FILENAME).unwrap_or(());
+        let repo = SqliteKarmaRepository::new(DATABASE_FILENAME).await;
+
+        repo.upsert_karma_change(ChangeRequest::new("rAinydays", -1)).await;
+        repo.insert_karma_reason("rainydays", -1, "for being warm").await;
+        let results = repo.get_reasons("rainydays").await;
+
+        assert_eq!(1, results.len());
+        assert_eq!("for being warm", results.get(0).unwrap().value);
         fs::remove_file(DATABASE_FILENAME).unwrap_or(());
     }
 }
