@@ -88,7 +88,9 @@ mod tests {
         dependencies_builder.add_dyn::<dyn TestTrait + Send + Sync>(Box::new(TestType(431)));
         let dependencies = dependencies_builder.build();
 
-        let result = dependencies.get_dyn::<dyn TestTrait + Send + Sync>().unwrap();
+        let result = dependencies
+            .get_dyn::<dyn TestTrait + Send + Sync>()
+            .unwrap();
         let result = result.read().await;
         assert_eq!(result.get_value(), 431);
     }

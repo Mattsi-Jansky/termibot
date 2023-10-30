@@ -1,13 +1,13 @@
 use crate::change_request::ChangeRequest;
 use crate::entry::Entry;
+use crate::reason::Reason;
+use async_trait::async_trait;
+use mockall::automock;
 use regex::internal::Input;
 use sqlx::sqlite::{SqliteQueryResult, SqliteRow};
 use sqlx::{sqlite::SqliteConnectOptions, Error, Pool, Row, Sqlite, SqlitePool};
 use std::{future::Future, path::Path};
 use tracing::error;
-use async_trait::async_trait;
-use mockall::automock;
-use crate::reason::Reason;
 
 #[async_trait]
 #[automock]
@@ -55,7 +55,6 @@ impl SqliteKarmaRepository {
 
 #[async_trait]
 impl KarmaRepository for SqliteKarmaRepository {
-
     async fn upsert_karma_change(&self, request: ChangeRequest) {
         let id_name = request.name.to_lowercase();
         let existing_karma = self.get_karma_for(&id_name[..]).await;
@@ -68,8 +67,8 @@ impl KarmaRepository for SqliteKarmaRepository {
                     request.name,
                     request.amount
                 )
-                    .execute(&self.connection)
-                    .await;
+                .execute(&self.connection)
+                .await;
                 Self::log_if_error(result);
             }
             Some(karma) => {
@@ -80,8 +79,8 @@ impl KarmaRepository for SqliteKarmaRepository {
                     new_karma,
                     id_name,
                 )
-                    .execute(&self.connection)
-                    .await;
+                .execute(&self.connection)
+                .await;
                 Self::log_if_error(result);
             }
         }
@@ -113,8 +112,8 @@ impl KarmaRepository for SqliteKarmaRepository {
             "SELECT IdName, DisplayName, Karma FROM Entries ORDER BY Karma DESC LIMIT ?",
             n
         )
-            .fetch_all(&self.connection)
-            .await;
+        .fetch_all(&self.connection)
+        .await;
 
         for record in records.unwrap() {
             result.push(Entry {
@@ -129,23 +128,20 @@ impl KarmaRepository for SqliteKarmaRepository {
 
     async fn insert_karma_reason(&self, name: &str, change: i64, value: &str) {
         let result = sqlx::query!(
-                    "INSERT INTO Reasons (Name, Change, Value) VALUES (?, ?, ?)",
-                    name,
-                    change,
-                    value
-                )
-            .execute(&self.connection)
-            .await;
+            "INSERT INTO Reasons (Name, Change, Value) VALUES (?, ?, ?)",
+            name,
+            change,
+            value
+        )
+        .execute(&self.connection)
+        .await;
         Self::log_if_error(result);
     }
 
     async fn get_reasons(&self, name: &str) -> Vec<Reason> {
         let mut result = vec![];
 
-        let records = sqlx::query!(
-            "SELECT Value, Change FROM Reasons WHERE Name = ?",
-            name
-        )
+        let records = sqlx::query!("SELECT Value, Change FROM Reasons WHERE Name = ?", name)
             .fetch_all(&self.connection)
             .await;
 
@@ -164,11 +160,11 @@ impl KarmaRepository for SqliteKarmaRepository {
 mod tests {
     use super::*;
     use crate::change_request::ChangeRequest;
+    use crate::services::karma_repository::KarmaRepository;
     use serial_test::serial;
     use std::fs;
     use std::path::Path;
     use tracing_test::traced_test;
-    use crate::services::karma_repository::KarmaRepository;
 
     const DATABASE_FILENAME: &'static str = "testdb.db";
 
@@ -293,8 +289,10 @@ mod tests {
         fs::remove_file(DATABASE_FILENAME).unwrap_or(());
         let repo = SqliteKarmaRepository::new(DATABASE_FILENAME).await;
 
-        repo.upsert_karma_change(ChangeRequest::new("rAinydays", -1)).await;
-        repo.insert_karma_reason("rainydays", -1, "for being warm").await;
+        repo.upsert_karma_change(ChangeRequest::new("rAinydays", -1))
+            .await;
+        repo.insert_karma_reason("rainydays", -1, "for being warm")
+            .await;
         let results = repo.get_reasons("rainydays").await;
 
         assert_eq!(1, results.len());

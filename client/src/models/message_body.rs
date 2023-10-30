@@ -1,7 +1,7 @@
 use crate::error::SlackClientError;
 use crate::models::blocks::Block;
 
-#[derive(Debug,PartialEq)]
+#[derive(Debug, PartialEq)]
 pub struct MessageBody {
     text: Option<String>,
     blocks: Vec<Block>, //attachments

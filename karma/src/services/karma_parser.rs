@@ -1,37 +1,47 @@
-use regex::{CaptureMatches, Captures, Match, Regex};
 use lazy_static::lazy_static;
+use regex::{CaptureMatches, Captures, Match, Regex};
 use tracing::error;
 
 lazy_static! {
-    static ref KARMA_MATCHER: Regex = Regex::new(r"([^`\-\+\s]{2,})(--|\+\+)(\s|$|\n|\+|\-)").unwrap();
-    static ref KARMA_REASON_MATCHER: Regex = Regex::new(r"([^`\-\+\s]{2,})(--|\+\+)\s((for|because|due to).*)($|\n)").unwrap();
+    static ref KARMA_MATCHER: Regex =
+        Regex::new(r"([^`\-\+\s]{2,})(--|\+\+)(\s|$|\n|\+|\-)").unwrap();
+    static ref KARMA_REASON_MATCHER: Regex =
+        Regex::new(r"([^`\-\+\s]{2,})(--|\+\+)\s((for|because|due to).*)($|\n)").unwrap();
     static ref PREFORMATTED_BLOCK_MATCHER: Regex = Regex::new(r"\`[^\`]*\`").unwrap();
 }
 
-#[derive(Debug,Eq,PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct KarmaCapture {
     pub name: String,
     pub is_increment: bool,
-    pub reason: Option<String>
+    pub reason: Option<String>,
 }
 
 impl KarmaCapture {
     pub fn new(name: String, is_increment: bool, reason: Option<String>) -> Self {
-        Self { name, is_increment, reason }
+        Self {
+            name,
+            is_increment,
+            reason,
+        }
     }
 }
 
 pub fn get_captures(text: &str) -> Vec<KarmaCapture> {
     let mut result = vec![];
-    let preformatted_blocks = PREFORMATTED_BLOCK_MATCHER.captures_iter(text)
+    let preformatted_blocks = PREFORMATTED_BLOCK_MATCHER
+        .captures_iter(text)
         .map(|block| block.get(0).unwrap())
         .collect::<Vec<Match>>();
     let reason_captures: Vec<Captures> = KARMA_REASON_MATCHER.captures_iter(text).collect();
-    let karma_captures: Vec<Captures> = KARMA_MATCHER.captures_iter(text).filter(
-        |capture|  !reason_captures.iter().any(|reason| reason.get(0)
-            .unwrap()
-            .start() == capture.get(0).unwrap().start())
-    ).collect();
+    let karma_captures: Vec<Captures> = KARMA_MATCHER
+        .captures_iter(text)
+        .filter(|capture| {
+            !reason_captures
+                .iter()
+                .any(|reason| reason.get(0).unwrap().start() == capture.get(0).unwrap().start())
+        })
+        .collect();
 
     for capture in karma_captures.iter() {
         if !is_in_preformatted_block(&preformatted_blocks, &capture) {
@@ -39,7 +49,7 @@ pub fn get_captures(text: &str) -> Vec<KarmaCapture> {
             result.push(KarmaCapture {
                 name: name.to_string(),
                 is_increment: capture.get(2).unwrap().as_str().trim().eq("++"),
-                reason: None
+                reason: None,
             })
         }
     }
@@ -60,7 +70,7 @@ pub fn get_captures(text: &str) -> Vec<KarmaCapture> {
         result.push(KarmaCapture {
             name: name.to_string(),
             is_increment: capture.get(2).unwrap().as_str().trim().eq("++"),
-            reason: Some(reason.to_string())
+            reason: Some(reason.to_string()),
         })
     }
 

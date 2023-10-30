@@ -13,14 +13,14 @@ pub enum Block {
     RichText(RichTextBlock),
     Divider,
     Section(SectionBlock),
-    Header(HeaderBlock)
+    Header(HeaderBlock),
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::models::blocks::Block;
-    use crate::models::blocks::objects::text::{Text, TextBody};
     use super::*;
+    use crate::models::blocks::objects::text::{Text, TextBody};
+    use crate::models::blocks::Block;
 
     const EMOJI_CHANGELOG_MESSAGE: &str = "[ { \"type\": \"header\", \"text\": { \"type\": \"plain_text\", \"text\": \"Emoji changelog\" } }, { \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \":heavy_plus_sign: :smile: `:smile:`\\n        By <@userid>\" } } ] ";
 
@@ -31,8 +31,10 @@ mod tests {
         assert_eq!(
             result,
             vec![
-                HeaderBlock::new( "Emoji changelog"),
-                SectionBlock::new_markdown(":heavy_plus_sign: :smile: `:smile:`\n        By <@userid>")
+                HeaderBlock::new("Emoji changelog"),
+                SectionBlock::new_markdown(
+                    ":heavy_plus_sign: :smile: `:smile:`\n        By <@userid>"
+                )
             ]
         )
     }

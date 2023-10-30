@@ -47,11 +47,11 @@ impl Plugin for SongLinkPlugin {
 
 #[cfg(test)]
 mod tests {
-    use regex::internal::Input;
+    use super::*;
     use client::models::message_id::MessageId;
     use client::models::socket_message::MessageEvent;
     use framework::dependencies::DependenciesBuilder;
-    use super::*;
+    use regex::internal::Input;
 
     #[tokio::test]
     async fn given_no_matching_url_do_nothing() {
@@ -65,7 +65,7 @@ mod tests {
             channel_type: None,
         });
 
-        let result = SongLinkPlugin{}.on_event(&event,&dependencies).await;
+        let result = SongLinkPlugin {}.on_event(&event, &dependencies).await;
 
         assert_eq!(0, result.len())
     }
@@ -82,7 +82,7 @@ mod tests {
             channel_type: None,
         });
 
-        let mut result = SongLinkPlugin{}.on_event(&event,&dependencies).await;
+        let mut result = SongLinkPlugin {}.on_event(&event, &dependencies).await;
 
         assert_eq!(1, result.len());
         assert_eq!(

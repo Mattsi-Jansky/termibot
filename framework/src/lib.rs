@@ -1,18 +1,18 @@
 extern crate core;
 
-use std::future::Future;
 use crate::actions::handler::{ActionHandler, DefaultActionHandler};
 use client::error::SlackClientError;
 use client::models::socket_message::SocketMessage;
 use client::{ReqwestSlackClient, SlackClient};
 use futures::future::join_all;
-use plugins::Plugin;
-use std::sync::Arc;
 use futures::{FutureExt, StreamExt};
+use plugins::Plugin;
+use std::future::Future;
+use std::sync::Arc;
 
+use crate::actions::Action;
 use crate::dependencies::DependenciesBuilder;
 use tracing::{error, info};
-use crate::actions::Action;
 
 pub mod actions;
 pub mod dependencies;
@@ -81,12 +81,17 @@ impl SlackBot {
                 SocketMessage::None => { /* Nothing to do */ }
             }
 
-            let actions: Vec<Action> = join_all(future_actions).await.into_iter().flatten().collect();
+            let actions: Vec<Action> = join_all(future_actions)
+                .await
+                .into_iter()
+                .flatten()
+                .collect();
             let results = join_all(
                 actions
                     .into_iter()
-                    .map(|action| self.action_handler.handle(action, self.client.clone()))
-            ).await;
+                    .map(|action| self.action_handler.handle(action, self.client.clone())),
+            )
+            .await;
 
             for result in results {
                 if let Err(err) = result {
@@ -198,12 +203,12 @@ mod tests {
     async fn forward_action_to_action_handler() {
         let mut mock_action_handler = Box::new(MockActionHandler::new());
         let mut mock_plugin = Box::new(MockPlugin::new());
-        mock_plugin
-            .expect_on_event()
-            .times(1)
-            .returning(|_, _| Box::pin(future::ready(vec![
-                Action::MessageChannel { channel: "".to_string(), message: MessageBody::from_text("test") }
-            ])));
+        mock_plugin.expect_on_event().times(1).returning(|_, _| {
+            Box::pin(future::ready(vec![Action::MessageChannel {
+                channel: "".to_string(),
+                message: MessageBody::from_text("test"),
+            }]))
+        });
         mock_action_handler
             .expect_handle()
             .times(1)
@@ -217,13 +222,18 @@ mod tests {
     async fn forward_multiple_actions_to_action_handler() {
         let mut mock_action_handler = Box::new(MockActionHandler::new());
         let mut mock_plugin = Box::new(MockPlugin::new());
-        mock_plugin
-            .expect_on_event()
-            .times(1)
-            .returning(|_, _| Box::pin(future::ready(vec![
-                Action::MessageChannel { channel: "".to_string(), message: MessageBody::from_text("test 1") },
-                Action::MessageChannel { channel: "".to_string(), message: MessageBody::from_text("test 2") }
-            ])));
+        mock_plugin.expect_on_event().times(1).returning(|_, _| {
+            Box::pin(future::ready(vec![
+                Action::MessageChannel {
+                    channel: "".to_string(),
+                    message: MessageBody::from_text("test 1"),
+                },
+                Action::MessageChannel {
+                    channel: "".to_string(),
+                    message: MessageBody::from_text("test 2"),
+                },
+            ]))
+        });
         mock_action_handler
             .expect_handle()
             .times(2)

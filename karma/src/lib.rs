@@ -1,3 +1,6 @@
+use crate::change_request::ChangeRequest;
+use crate::services::karma_parser::{get_captures, KarmaCapture};
+use crate::services::karma_repository::KarmaRepository;
 use async_trait::async_trait;
 use client::models::message_body::MessageBody;
 use client::models::socket_message::{Event, MessageEvent};
@@ -7,18 +10,15 @@ use framework::plugins::Plugin;
 use lazy_static::lazy_static;
 use regex::{CaptureMatches, Regex};
 use tracing::error;
-use crate::change_request::ChangeRequest;
-use crate::services::karma_parser::{get_captures, KarmaCapture};
-use crate::services::karma_repository::KarmaRepository;
 
 mod change_request;
 pub mod entry;
-pub mod services;
 pub mod reason;
+pub mod services;
 
 pub struct KarmaPlugin {
     upvote_emoji: String,
-    downvote_emoji: String
+    downvote_emoji: String,
 }
 
 impl KarmaPlugin {
@@ -48,7 +48,12 @@ impl KarmaPlugin {
         }
     }
 
-    fn generate_message(&self, message: &MessageEvent, capture: &KarmaCapture, value: i64) -> Action {
+    fn generate_message(
+        &self,
+        message: &MessageEvent,
+        capture: &KarmaCapture,
+        value: i64,
+    ) -> Action {
         let emoji = self.get_apropriate_emoji(&capture);
         let channel = Self::get_channel(message);
         let message = Action::MessageChannel {
@@ -80,9 +85,15 @@ impl Plugin for KarmaPlugin {
 
                 for capture in get_captures(text.as_str()) {
                     let value = if capture.is_increment { 1 } else { -1 };
-                    repo.upsert_karma_change(ChangeRequest::new(capture.name.as_str(), value)).await;
+                    repo.upsert_karma_change(ChangeRequest::new(capture.name.as_str(), value))
+                        .await;
                     if capture.reason.is_some() {
-                        repo.insert_karma_reason(&capture.name.clone().as_str(), value, &capture.reason.clone().unwrap().as_str()).await;
+                        repo.insert_karma_reason(
+                            &capture.name.clone().as_str(),
+                            value,
+                            &capture.reason.clone().unwrap().as_str(),
+                        )
+                        .await;
                     }
                     if let Some(value) = repo.get_karma_for(capture.name.as_str()).await {
                         results.push(self.generate_message(message, &capture, value));
@@ -101,21 +112,23 @@ impl Plugin for KarmaPlugin {
 
 #[cfg(test)]
 mod tests {
-    use std::future;
     use super::*;
-    use client::models::message_body::MessageBody;
-    use framework::dependencies::DependenciesBuilder;
     use crate::services::karma_repository::KarmaRepository;
     use crate::services::karma_repository::MockKarmaRepository;
+    use client::models::message_body::MessageBody;
+    use framework::dependencies::DependenciesBuilder;
+    use std::future;
     use tracing_test::traced_test;
 
     fn build_mocked_dependencies(mut n: Vec<i64>) -> Dependencies {
         let mut dependencies_builder = DependenciesBuilder::default();
         let mut mock_repo = MockKarmaRepository::new();
-        mock_repo.expect_upsert_karma_change()
+        mock_repo
+            .expect_upsert_karma_change()
             .times(n.len())
             .returning(|_| Box::pin(future::ready(())));
-        mock_repo.expect_get_karma_for()
+        mock_repo
+            .expect_get_karma_for()
             .times(n.len())
             .returning(move |_| Box::pin(future::ready(Some(n.pop().unwrap()))));
         dependencies_builder.add_dyn::<dyn KarmaRepository + Send + Sync>(Box::new(mock_repo));
@@ -125,7 +138,8 @@ mod tests {
     #[tokio::test]
     async fn given_no_karma_change_do_nothing() {
         let mut dependencies_builder = DependenciesBuilder::default();
-        dependencies_builder.add_dyn::<dyn KarmaRepository + Send + Sync>(Box::new(MockKarmaRepository::new()));
+        dependencies_builder
+            .add_dyn::<dyn KarmaRepository + Send + Sync>(Box::new(MockKarmaRepository::new()));
         let dependencies = dependencies_builder.build();
         let event = Event::new_test_text_message("test message");
 
@@ -139,10 +153,12 @@ mod tests {
     async fn given_repo_fails_to_get_current_karma_score_should_log_error_and_return_no_actions() {
         let mut dependencies_builder = DependenciesBuilder::default();
         let mut mock_repo = MockKarmaRepository::new();
-        mock_repo.expect_upsert_karma_change()
+        mock_repo
+            .expect_upsert_karma_change()
             .times(1)
             .returning(|_| Box::pin(future::ready(())));
-        mock_repo.expect_get_karma_for()
+        mock_repo
+            .expect_get_karma_for()
             .times(1)
             .returning(move |_| Box::pin(future::ready(None)));
         dependencies_builder.add_dyn::<dyn KarmaRepository + Send + Sync>(Box::new(mock_repo));
@@ -160,7 +176,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn given_positive_karma_change_should_return_karma_changed_message_and_record_database_change() {
+    async fn given_positive_karma_change_should_return_karma_changed_message_and_record_database_change(
+    ) {
         let dependencies = build_mocked_dependencies(vec![1]);
         let event = Event::new_test_text_message("sunnydays++");
 
@@ -197,7 +214,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn given_negative_karma_change_should_return_karma_changed_message_and_record_database_change() {
+    async fn given_negative_karma_change_should_return_karma_changed_message_and_record_database_change(
+    ) {
         let dependencies = build_mocked_dependencies(vec![-1]);
         let event = Event::new_test_text_message("rainydays--");
 
@@ -214,7 +232,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn given_override_of_downvote_emoji_should_return_karma_changed_message_with_custom_emoji() {
+    async fn given_override_of_downvote_emoji_should_return_karma_changed_message_with_custom_emoji(
+    ) {
         let dependencies = build_mocked_dependencies(vec![-1]);
         let event = Event::new_test_text_message("rainydays--");
 
@@ -247,23 +266,30 @@ mod tests {
             1 => Ok(()),
             n => Err(format!("Expected one logs, but found {}", n)),
         });
-        assert!(logs_contain("Error getting KarmaRepository. Did you forget to add it? Check the README"));
+        assert!(logs_contain(
+            "Error getting KarmaRepository. Did you forget to add it? Check the README"
+        ));
     }
 
     #[tokio::test]
     async fn given_reason_commit_reason_to_db() {
         let mut dependencies_builder = DependenciesBuilder::default();
         let mut mock_repo = MockKarmaRepository::new();
-        mock_repo.expect_upsert_karma_change()
+        mock_repo
+            .expect_upsert_karma_change()
             .times(1)
             .returning(|_| Box::pin(future::ready(())));
-        mock_repo.expect_get_karma_for()
+        mock_repo
+            .expect_get_karma_for()
             .times(1)
             .returning(move |_| Box::pin(future::ready(Some(1))));
-        mock_repo.expect_insert_karma_reason()
+        mock_repo
+            .expect_insert_karma_reason()
             .times(1)
-            .withf(|name,change,value| name == "sunnydays" && change == &1 && value == "for being sunny")
-            .returning(|_,_,_| Box::pin(future::ready(())));
+            .withf(|name, change, value| {
+                name == "sunnydays" && change == &1 && value == "for being sunny"
+            })
+            .returning(|_, _, _| Box::pin(future::ready(())));
         dependencies_builder.add_dyn::<dyn KarmaRepository + Send + Sync>(Box::new(mock_repo));
         let dependencies = dependencies_builder.build();
         let event = Event::new_test_text_message("sunnydays++ for being sunny");

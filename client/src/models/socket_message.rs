@@ -16,9 +16,13 @@ pub enum SocketMessage {
         payload: Payload,
     },
     #[serde(rename = "interactive")]
-    Interactive { envelope_id: String },
+    Interactive {
+        envelope_id: String,
+    },
     #[serde(rename = "slash_commands")]
-    SlashCommand { envelope_id: String },
+    SlashCommand {
+        envelope_id: String,
+    },
     None, // Used when ping received, not of interest to consumer so we say nothing happened.
 }
 
