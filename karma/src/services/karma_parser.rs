@@ -119,6 +119,8 @@ mod tests {
         (given_preformatted_text_should_return_empty_2, "`preformatted`++ to the max", Vec::<KarmaCapture>::new()),
         (given_preformatted_text_should_return_empty_3, "`preformatte`d++ to the max", Vec::<KarmaCapture>::new()),
         (given_preformatted_multiline_text_should_return_empty, "```\nlet var = 0\nvar++\n```", Vec::<KarmaCapture>::new()),
-        (given_reason_should_capture_reason, "sunnydays++ for being so pretty", vec![ KarmaCapture::new("sunnydays".to_string(), true, Some("for being so pretty".to_string()))])
+        (given_reason_should_capture_reason, "sunnydays++ for being so pretty", vec![ KarmaCapture::new("sunnydays".to_string(), true, Some("for being so pretty".to_string()))]),
+        (given_reason_with_because_should_capture_reason, "sunnydays++ because they are so warm", vec![ KarmaCapture::new("sunnydays".to_string(), true, Some("because they are so warm".to_string()))]),
+        (given_reason_with_due_to_should_capture_reason, "sunnydays++ because due to warmth", vec![ KarmaCapture::new("sunnydays".to_string(), true, Some("because due to warmth".to_string()))])
     }
 }
