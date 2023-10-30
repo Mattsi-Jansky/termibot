@@ -4,9 +4,9 @@ use crate::reason::Reason;
 use async_trait::async_trait;
 use mockall::automock;
 use regex::internal::Input;
-use sqlx::sqlite::{SqliteQueryResult, SqliteRow};
+
 use sqlx::{sqlite::SqliteConnectOptions, Error, Pool, Row, Sqlite, SqlitePool};
-use std::{future::Future, path::Path};
+
 use tracing::error;
 
 #[async_trait]
@@ -166,7 +166,7 @@ mod tests {
     use std::path::Path;
     use tracing_test::traced_test;
 
-    const DATABASE_FILENAME: &'static str = "testdb.db";
+    const DATABASE_FILENAME: &str = "testdb.db";
 
     #[tokio::test]
     #[serial]
@@ -256,7 +256,7 @@ mod tests {
         let repo = SqliteKarmaRepository::new(DATABASE_FILENAME).await;
         fs::remove_file(DATABASE_FILENAME).unwrap_or(());
 
-        let karma = repo.get_karma_for("Rainydays").await;
+        let _karma = repo.get_karma_for("Rainydays").await;
 
         logs_assert(|lines: &[&str]| match lines.len() {
             1 => Ok(()),

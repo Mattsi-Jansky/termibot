@@ -7,8 +7,8 @@ use client::models::socket_message::{Event, MessageEvent};
 use framework::actions::Action;
 use framework::dependencies::Dependencies;
 use framework::plugins::Plugin;
-use lazy_static::lazy_static;
-use regex::{CaptureMatches, Regex};
+
+
 use tracing::error;
 
 mod change_request;
@@ -54,13 +54,13 @@ impl KarmaPlugin {
         capture: &KarmaCapture,
         value: i64,
     ) -> Action {
-        let emoji = self.get_apropriate_emoji(&capture);
+        let emoji = self.get_apropriate_emoji(capture);
         let channel = Self::get_channel(message);
-        let message = Action::MessageChannel {
+        
+        Action::MessageChannel {
             channel,
             message: MessageBody::from_text(&format!(":{emoji}: {}: {value}", capture.name)[..]),
-        };
-        message
+        }
     }
 }
 
@@ -89,9 +89,9 @@ impl Plugin for KarmaPlugin {
                         .await;
                     if capture.reason.is_some() {
                         repo.insert_karma_reason(
-                            &capture.name.clone().as_str(),
+                            capture.name.clone().as_str(),
                             value,
-                            &capture.reason.clone().unwrap().as_str(),
+                            capture.reason.clone().unwrap().as_str(),
                         )
                         .await;
                     }

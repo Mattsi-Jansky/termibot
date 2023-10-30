@@ -1,6 +1,6 @@
 use lazy_static::lazy_static;
-use regex::{CaptureMatches, Captures, Match, Regex};
-use tracing::error;
+use regex::{Captures, Match, Regex};
+
 
 lazy_static! {
     static ref KARMA_MATCHER: Regex =
@@ -44,7 +44,7 @@ pub fn get_captures(text: &str) -> Vec<KarmaCapture> {
         .collect();
 
     for capture in karma_captures.iter() {
-        if !is_in_preformatted_block(&preformatted_blocks, &capture) {
+        if !is_in_preformatted_block(&preformatted_blocks, capture) {
             let name = capture.get(1).unwrap().as_str().trim();
             result.push(KarmaCapture {
                 name: name.to_string(),

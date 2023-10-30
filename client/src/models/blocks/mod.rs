@@ -19,7 +19,7 @@ pub enum Block {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::blocks::objects::text::{Text, TextBody};
+    
     use crate::models::blocks::Block;
 
     const EMOJI_CHANGELOG_MESSAGE: &str = "[ { \"type\": \"header\", \"text\": { \"type\": \"plain_text\", \"text\": \"Emoji changelog\" } }, { \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \":heavy_plus_sign: :smile: `:smile:`\\n        By <@userid>\" } } ] ";

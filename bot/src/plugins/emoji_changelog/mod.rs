@@ -21,7 +21,7 @@ impl EmojiChangelogPlugin {
 
 #[async_trait]
 impl Plugin for EmojiChangelogPlugin {
-    async fn on_event(&self, event: &Event, dependencies: &Dependencies) -> Vec<Action> {
+    async fn on_event(&self, event: &Event, _dependencies: &Dependencies) -> Vec<Action> {
         match event {
             Event::EmojiChanged(emoji_event) => match emoji_event {
                 EmojiChangedEvent::Add(add_event) => {

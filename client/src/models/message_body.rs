@@ -24,7 +24,7 @@ impl MessageBody {
     }
 
     pub fn get_text(&self) -> String {
-        self.text.clone().unwrap_or(String::new())
+        self.text.clone().unwrap_or_default()
     }
 
     pub fn get_blocks(&self) -> &Vec<Block> {

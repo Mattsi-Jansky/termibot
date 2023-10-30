@@ -18,7 +18,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .with_dyn_service::<dyn KarmaRepository + Send + Sync>(Box::new(
             SqliteKarmaRepository::default().await,
         ))
-        .with_plugin(Box::new(KarmaPlugin::default()))
+        .with_plugin(Box::<KarmaPlugin>::default())
         .run()
         .await
         .unwrap();

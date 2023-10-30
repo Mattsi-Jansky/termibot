@@ -7,7 +7,7 @@ use client::{ReqwestSlackClient, SlackClient};
 use futures::future::join_all;
 use futures::{FutureExt, StreamExt};
 use plugins::Plugin;
-use std::future::Future;
+
 use std::sync::Arc;
 
 use crate::actions::Action;
@@ -176,7 +176,7 @@ mod tests {
 
     #[tokio::test]
     async fn forward_event_message_to_plugin() {
-        let mut mock_action_handler = Box::new(MockActionHandler::new());
+        let mock_action_handler = Box::new(MockActionHandler::new());
         let mut mock_plugin = Box::new(MockPlugin::new());
         mock_plugin
             .expect_on_event()
@@ -189,7 +189,7 @@ mod tests {
 
     #[tokio::test]
     async fn forward_service_to_plugin() {
-        let mut mock_action_handler = Box::new(MockActionHandler::new());
+        let mock_action_handler = Box::new(MockActionHandler::new());
         let mock_plugin_asserts_dependencies_passed =
             Box::new(MockPluginAssertDependencyIsPassed());
         let bot = SlackBot::from(mock_client(), mock_action_handler)
@@ -246,7 +246,7 @@ mod tests {
     struct MockPluginAssertDependencyIsPassed();
     #[async_trait]
     impl Plugin for MockPluginAssertDependencyIsPassed {
-        async fn on_event(&self, event: &Event, dependencies: &Dependencies) -> Vec<Action> {
+        async fn on_event(&self, _event: &Event, dependencies: &Dependencies) -> Vec<Action> {
             assert_eq!(12, *dependencies.get::<i32>().unwrap().read().await);
             vec![]
         }
