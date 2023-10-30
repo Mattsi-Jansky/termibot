@@ -15,7 +15,7 @@ pub trait KarmaRepository {
     async fn upsert_karma_change(&self, request: ChangeRequest);
     async fn get_karma_for(&self, name: &str) -> Option<i64>;
     async fn get_top(&self, n: i32) -> Vec<Entry>;
-    async fn insert_karma_reason(&self, name: &str, change: i32, value: &str);
+    async fn insert_karma_reason(&self, name: &str, change: i64, value: &str);
     async fn get_reasons(&self, name: &str) -> Vec<Reason>;
 }
 
@@ -127,7 +127,7 @@ impl KarmaRepository for SqliteKarmaRepository {
         result
     }
 
-    async fn insert_karma_reason(&self, name: &str, change: i32, value: &str) {
+    async fn insert_karma_reason(&self, name: &str, change: i64, value: &str) {
         let result = sqlx::query!(
                     "INSERT INTO Reasons (Name, Change, Value) VALUES (?, ?, ?)",
                     name,

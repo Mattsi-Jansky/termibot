@@ -72,6 +72,7 @@ impl Default for KarmaPlugin {
 impl Plugin for KarmaPlugin {
     async fn on_event(&self, event: &Event, dependencies: &Dependencies) -> Vec<Action> {
         let mut results = vec![];
+
         if let Event::Message(message) = event {
             if let Some(binding) = dependencies.get_dyn::<dyn KarmaRepository + Send + Sync>() {
                 let repo = binding.read().await;
@@ -80,6 +81,9 @@ impl Plugin for KarmaPlugin {
                 for capture in get_captures(text.as_str()) {
                     let value = if capture.is_increment { 1 } else { -1 };
                     repo.upsert_karma_change(ChangeRequest::new(capture.name.as_str(), value)).await;
+                    if capture.reason.is_some() {
+                        repo.insert_karma_reason(&capture.name.clone().as_str(), value, &capture.reason.clone().unwrap().as_str()).await;
+                    }
                     if let Some(value) = repo.get_karma_for(capture.name.as_str()).await {
                         results.push(self.generate_message(message, &capture, value));
                     } else {
@@ -230,7 +234,7 @@ mod tests {
 
     #[traced_test]
     #[tokio::test]
-    async fn given_repo_dependency_missing_log_error() {
+    async fn given_repo_dependency_should_log_error() {
         let dependencies = DependenciesBuilder::default().build();
         let event = Event::new_test_text_message("rainydays--");
 
@@ -244,5 +248,35 @@ mod tests {
             n => Err(format!("Expected one logs, but found {}", n)),
         });
         assert!(logs_contain("Error getting KarmaRepository. Did you forget to add it? Check the README"));
+    }
+
+    #[tokio::test]
+    async fn given_reason_commit_reason_to_db() {
+        let mut dependencies_builder = DependenciesBuilder::default();
+        let mut mock_repo = MockKarmaRepository::new();
+        mock_repo.expect_upsert_karma_change()
+            .times(1)
+            .returning(|_| Box::pin(future::ready(())));
+        mock_repo.expect_get_karma_for()
+            .times(1)
+            .returning(move |_| Box::pin(future::ready(Some(1))));
+        mock_repo.expect_insert_karma_reason()
+            .times(1)
+            .withf(|name,change,value| name == "sunnydays" && change == &1 && value == "for being sunny")
+            .returning(|_,_,_| Box::pin(future::ready(())));
+        dependencies_builder.add_dyn::<dyn KarmaRepository + Send + Sync>(Box::new(mock_repo));
+        let dependencies = dependencies_builder.build();
+        let event = Event::new_test_text_message("sunnydays++ for being sunny");
+
+        let result = KarmaPlugin::default().on_event(&event, &dependencies).await;
+
+        assert_eq!(1, result.len());
+        assert_eq!(
+            &Action::MessageChannel {
+                channel: "".to_string(),
+                message: MessageBody::from_text(":upboat: sunnydays: 1"),
+            },
+            result.get(0).unwrap()
+        );
     }
 }
