@@ -4,7 +4,7 @@ use tracing::error;
 
 lazy_static! {
     static ref KARMA_MATCHER: Regex = Regex::new(r"([^`\-\+\s]{2,})(--|\+\+)(\s|$|\n|\+|\-)").unwrap();
-    static ref KARMA_REASON_MATCHER: Regex = Regex::new(r"([^`\-\+\s]{2,})(--|\+\+)\s((for|because|due to).*)$").unwrap();
+    static ref KARMA_REASON_MATCHER: Regex = Regex::new(r"([^`\-\+\s]{2,})(--|\+\+)\s((for|because|due to).*)($|\n)").unwrap();
     static ref PREFORMATTED_BLOCK_MATCHER: Regex = Regex::new(r"\`[^\`]*\`").unwrap();
 }
 
@@ -32,6 +32,8 @@ pub fn get_captures(text: &str) -> Vec<KarmaCapture> {
             .unwrap()
             .start() == capture.get(0).unwrap().start())
     );
+    println!("reasons: {:?}", reason_captures);
+    println!("-------------------");
 
     for capture in karma_captures {
         if !is_in_preformatted_block(&preformatted_blocks, &capture) {
@@ -45,7 +47,7 @@ pub fn get_captures(text: &str) -> Vec<KarmaCapture> {
     }
 
     for capture in reason_captures {
-        println!("reason: {:?}", capture);
+        println!("================= IN REASON LOOP");
         let name = capture.get(1).unwrap().as_str().trim();
         let reason = capture.get(3).unwrap().as_str().trim();
         result.push(KarmaCapture {
@@ -55,6 +57,7 @@ pub fn get_captures(text: &str) -> Vec<KarmaCapture> {
         })
     }
 
+    println!("{:?}", result);
     result
 }
 
@@ -121,6 +124,14 @@ mod tests {
         (given_preformatted_multiline_text_should_return_empty, "```\nlet var = 0\nvar++\n```", Vec::<KarmaCapture>::new()),
         (given_reason_should_capture_reason, "sunnydays++ for being so pretty", vec![ KarmaCapture::new("sunnydays".to_string(), true, Some("for being so pretty".to_string()))]),
         (given_reason_with_because_should_capture_reason, "sunnydays++ because they are so warm", vec![ KarmaCapture::new("sunnydays".to_string(), true, Some("because they are so warm".to_string()))]),
-        (given_reason_with_due_to_should_capture_reason, "sunnydays++ because due to warmth", vec![ KarmaCapture::new("sunnydays".to_string(), true, Some("because due to warmth".to_string()))])
+        (given_reason_with_due_to_should_capture_reason, "sunnydays++ due to warmth", vec![ KarmaCapture::new("sunnydays".to_string(), true, Some("due to warmth".to_string()))]),
+        (given_multiple_karma_changes_should_capture_all, "sunnydays++ for warmth\nrainydays-- foggydays--\nrust++ for strong type systems",
+            vec![
+                KarmaCapture::new("rainydays".to_string(), false, None),
+                KarmaCapture::new("foggydays".to_string(), false, None),
+                KarmaCapture::new("sunnydays".to_string(), true, Some("for warmth".to_string())),
+                KarmaCapture::new("rust".to_string(), true, Some("for strong type systems".to_string()))
+            ]
+        )
     }
 }
