@@ -4,6 +4,7 @@ use tracing::error;
 
 lazy_static! {
     static ref KARMA_MATCHER: Regex = Regex::new(r"([^`\-\+\s]{2,})(--|\+\+)(\s|$|\n|\+|\-)").unwrap();
+    static ref KARMA_REASON_MATCHER: Regex = Regex::new(r"([^`\-\+\s]{2,})(--|\+\+)\s((for|because|due to).*)$").unwrap();
     static ref PREFORMATTED_BLOCK_MATCHER: Regex = Regex::new(r"\`[^\`]*\`").unwrap();
 }
 
@@ -25,8 +26,14 @@ pub fn get_captures(text: &str) -> Vec<KarmaCapture> {
     let preformatted_blocks = PREFORMATTED_BLOCK_MATCHER.captures_iter(text)
         .map(|block| block.get(0).unwrap())
         .collect::<Vec<Match>>();
+    let reason_captures: Vec<Captures> = KARMA_REASON_MATCHER.captures_iter(text).collect();
+    let karma_captures = KARMA_MATCHER.captures_iter(text).filter(
+        |capture|  !reason_captures.iter().any(|reason| reason.get(0)
+            .unwrap()
+            .start() == capture.get(0).unwrap().start())
+    );
 
-    for capture in KARMA_MATCHER.captures_iter(text) {
+    for capture in karma_captures {
         if !is_in_preformatted_block(&preformatted_blocks, &capture) {
             let name = capture.get(1).unwrap().as_str().trim();
             result.push(KarmaCapture {
@@ -37,6 +44,17 @@ pub fn get_captures(text: &str) -> Vec<KarmaCapture> {
         }
     }
 
+    for capture in reason_captures {
+        println!("reason: {:?}", capture);
+        let name = capture.get(1).unwrap().as_str().trim();
+        let reason = capture.get(3).unwrap().as_str().trim();
+        result.push(KarmaCapture {
+            name: name.to_string(),
+            is_increment: capture.get(2).unwrap().as_str().trim().eq("++"),
+            reason: Some(reason.to_string())
+        })
+    }
+
     result
 }
 
@@ -45,7 +63,6 @@ fn is_in_preformatted_block(preformatted_blocks: &Vec<Match>, capture: &Captures
     let capture = capture.get(0).unwrap();
 
     for block in preformatted_blocks {
-        println!("block {:?}\ncaptr {:?}", block, capture);
         if capture.start() > block.start() && capture.end() < block.end() {
             result = true;
         }
@@ -101,6 +118,7 @@ mod tests {
         (given_preformatted_text_should_return_empty, "`preformatted++ to the max`", Vec::<KarmaCapture>::new()),
         (given_preformatted_text_should_return_empty_2, "`preformatted`++ to the max", Vec::<KarmaCapture>::new()),
         (given_preformatted_text_should_return_empty_3, "`preformatte`d++ to the max", Vec::<KarmaCapture>::new()),
-        (given_preformatted_multiline_text_should_return_empty, "```\nlet var = 0\nvar++\n```", Vec::<KarmaCapture>::new())
+        (given_preformatted_multiline_text_should_return_empty, "```\nlet var = 0\nvar++\n```", Vec::<KarmaCapture>::new()),
+        (given_reason_should_capture_reason, "sunnydays++ for being so pretty", vec![ KarmaCapture::new("sunnydays".to_string(), true, Some("for being so pretty".to_string()))])
     }
 }
