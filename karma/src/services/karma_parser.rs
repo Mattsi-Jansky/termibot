@@ -27,13 +27,13 @@ pub fn get_captures(text: &str) -> Vec<KarmaCapture> {
         .map(|block| block.get(0).unwrap())
         .collect::<Vec<Match>>();
     let reason_captures: Vec<Captures> = KARMA_REASON_MATCHER.captures_iter(text).collect();
-    let karma_captures = KARMA_MATCHER.captures_iter(text).filter(
+    let karma_captures: Vec<Captures> = KARMA_MATCHER.captures_iter(text).filter(
         |capture|  !reason_captures.iter().any(|reason| reason.get(0)
             .unwrap()
             .start() == capture.get(0).unwrap().start())
-    );
+    ).collect();
 
-    for capture in karma_captures {
+    for capture in karma_captures.iter() {
         if !is_in_preformatted_block(&preformatted_blocks, &capture) {
             let name = capture.get(1).unwrap().as_str().trim();
             result.push(KarmaCapture {
@@ -46,14 +46,24 @@ pub fn get_captures(text: &str) -> Vec<KarmaCapture> {
 
     for capture in reason_captures {
         let name = capture.get(1).unwrap().as_str().trim();
-        let reason = capture.get(3).unwrap().as_str().trim();
+        let reason_match = capture.get(3).unwrap();
+        let reason_start = reason_match.start();
+        let mut reason_end = reason_match.end();
+        for karma_capture in karma_captures.iter() {
+            let capture = karma_capture.get(0).unwrap();
+            if capture.start() > reason_start && capture.start() < reason_end {
+                reason_end = capture.start() - 1;
+            }
+        }
+
+        let reason = &text[reason_start..reason_end].trim();
         result.push(KarmaCapture {
             name: name.to_string(),
             is_increment: capture.get(2).unwrap().as_str().trim().eq("++"),
             reason: Some(reason.to_string())
         })
     }
-    
+
     result
 }
 
@@ -127,6 +137,13 @@ mod tests {
                 KarmaCapture::new("foggydays".to_string(), false, None),
                 KarmaCapture::new("sunnydays".to_string(), true, Some("for warmth".to_string())),
                 KarmaCapture::new("rust".to_string(), true, Some("for strong type systems".to_string()))
+            ]
+        ),
+        (given_multiple_karma_changes_in_same_line_should_capture_all, "sunnydays++ for warmth rainydays-- foggydays--",
+            vec![
+                KarmaCapture::new("rainydays".to_string(), false, None),
+                KarmaCapture::new("foggydays".to_string(), false, None),
+                KarmaCapture::new("sunnydays".to_string(), true, Some("for warmth".to_string()))
             ]
         )
     }
