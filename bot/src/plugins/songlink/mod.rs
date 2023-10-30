@@ -51,7 +51,6 @@ mod tests {
     use client::models::message_id::MessageId;
     use client::models::socket_message::MessageEvent;
     use framework::dependencies::DependenciesBuilder;
-    use regex::internal::Input;
 
     #[tokio::test]
     async fn given_no_matching_url_do_nothing() {
