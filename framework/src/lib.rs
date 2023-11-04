@@ -54,7 +54,9 @@ impl SlackBot {
         loop {
             let message = listener.next().await?;
             let mut future_actions = vec![];
-            info!("Received message: {message:?}");
+            if message != SocketMessage::None {
+                info!("Received message: {message:?}");
+            }
 
             match &message {
                 SocketMessage::Event {
