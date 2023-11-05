@@ -4,9 +4,9 @@ use regex::{Captures, Match, Regex};
 
 lazy_static! {
     static ref KARMA_MATCHER: Regex =
-        Regex::new(r"([^`\-\+\s]{2,})(--|\+\+)(\s|$|\n|\+|\-)").unwrap();
+        Regex::new(r"([^\s`]{2,}[^\+\-\s`])(--|\+\+|–)(?:\s|$|\n|\+|-)").unwrap();
     static ref KARMA_REASON_MATCHER: Regex =
-        Regex::new(r"([^`\-\+\s]{2,})(--|\+\+)\s((for|because|due to).*)($|\n)").unwrap();
+        Regex::new(r"([^\s`]{2,}[^\+\-\s`])(--|\+\+)\s((for|because|due to).*)($|\n)").unwrap();
     static ref PREFORMATTED_BLOCK_MATCHER: Regex = Regex::new(r"\`[^\`]*\`").unwrap();
 }
 
@@ -128,6 +128,7 @@ mod tests {
         (given_preformatted_text_should_return_empty_2, "`preformatted`++ to the max", Vec::<KarmaCapture>::new()),
         (given_preformatted_text_should_return_empty_3, "`preformatte`d++ to the max", Vec::<KarmaCapture>::new()),
         (given_preformatted_multiline_text_should_return_empty, "```\nlet var = 0\nvar++\n```", Vec::<KarmaCapture>::new()),
+        (given_space_before_should_return_empty, "sunnydays ++", Vec::<KarmaCapture>::new()),
         (given_reason_should_capture_reason, "sunnydays++ for being so pretty", vec![ KarmaCapture::new("sunnydays".to_string(), true, Some("for being so pretty".to_string()))]),
         (given_reason_with_because_should_capture_reason, "sunnydays++ because they are so warm", vec![ KarmaCapture::new("sunnydays".to_string(), true, Some("because they are so warm".to_string()))]),
         (given_reason_with_due_to_should_capture_reason, "sunnydays++ due to warmth", vec![ KarmaCapture::new("sunnydays".to_string(), true, Some("due to warmth".to_string()))]),
@@ -145,6 +146,8 @@ mod tests {
                 KarmaCapture::new("foggydays".to_string(), false, None),
                 KarmaCapture::new("sunnydays".to_string(), true, Some("for warmth".to_string()))
             ]
-        )
+        ),
+        (given_dash_in_name_should_parse, ":mild-panic:++", vec![ KarmaCapture::new(":mild-panic:".to_string(), true, None)]),
+        (given_plus_in_name_should_parse, ":big+:++", vec![ KarmaCapture::new(":big+:".to_string(), true, None)])
     }
 }
