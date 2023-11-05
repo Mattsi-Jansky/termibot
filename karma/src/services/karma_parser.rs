@@ -148,6 +148,7 @@ mod tests {
             ]
         ),
         (given_dash_in_name_should_parse, ":mild-panic:++", vec![ KarmaCapture::new(":mild-panic:".to_string(), true, None)]),
-        (given_plus_in_name_should_parse, ":big+:++", vec![ KarmaCapture::new(":big+:".to_string(), true, None)])
+        (given_plus_in_name_should_parse, ":big+:++", vec![ KarmaCapture::new(":big+:".to_string(), true, None)]),
+        (should_support_three_letter_words, "sam++", vec![ KarmaCapture::new("sam".to_string(), true, None)])
     }
 }
