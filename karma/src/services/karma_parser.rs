@@ -4,7 +4,7 @@ use regex::{Captures, Match, Regex};
 
 lazy_static! {
     static ref KARMA_MATCHER: Regex =
-        Regex::new(r"([^\s`]{2,}[^\+\-\s`])(--|\+\+|–)(?:\s|$|\n|\+|-)").unwrap();
+        Regex::new(r"([^\s`]{2,}[^\+\-\s`])(--|\+\+|—)(?:\s|$|\n|\+|-)").unwrap();
     static ref KARMA_REASON_MATCHER: Regex =
         Regex::new(r"([^\s`]{2,}[^\+\-\s`])(--|\+\+)\s((for|because|due to).*)($|\n)").unwrap();
     static ref PREFORMATTED_BLOCK_MATCHER: Regex = Regex::new(r"\`[^\`]*\`").unwrap();
@@ -149,6 +149,8 @@ mod tests {
         ),
         (given_dash_in_name_should_parse, ":mild-panic:++", vec![ KarmaCapture::new(":mild-panic:".to_string(), true, None)]),
         (given_plus_in_name_should_parse, ":big+:++", vec![ KarmaCapture::new(":big+:".to_string(), true, None)]),
-        (should_support_three_letter_words, "sam++", vec![ KarmaCapture::new("sam".to_string(), true, None)])
+        (should_support_three_letter_words, "sam++", vec![ KarmaCapture::new("sam".to_string(), true, None)]),
+        //iOS auto-replaces two dashes (--) with an em dash (—). So, we treat it as -- to make iOS interaction easier.
+        (should_see_em_dash_as_three_dashes, "apple—", vec![ KarmaCapture::new("apple".to_string(), false, None)])
     }
 }
