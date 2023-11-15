@@ -77,6 +77,7 @@ impl SlackBot {
 
                 SocketMessage::Hello { .. } => { /* Nothing to do */ }
                 SocketMessage::Disconnect { .. } => {
+                    info!("Disconnect message received");
                     break;
                 }
                 SocketMessage::None => { /* Nothing to do */ }
