@@ -68,15 +68,14 @@ impl SocketModeListener for TungsteniteSocketModeListener {
                             envelope_id,
                             payload: _,
                         } => {
-                            self.stream
-                                .send(Message::Text(
-                                    json!({ "envelope_id": envelope_id }).to_string(),
-                                ))
-                                .await
-                                .unwrap();
+                            self.send_ack(envelope_id).await;
                         }
-                        SocketMessage::Interactive { .. } => { /*Not implemented*/ }
-                        SocketMessage::SlashCommand { .. } => { /*Not implemented*/ }
+                        SocketMessage::Interactive { envelope_id } => {
+                            self.send_ack(envelope_id).await;
+                        }
+                        SocketMessage::SlashCommand { envelope_id } => {
+                            self.send_ack(envelope_id).await;
+                        }
 
                         SocketMessage::Hello { .. } => { /* Does not need to be ACK'd*/ }
                         SocketMessage::Disconnect { .. } => { /* Does not need to be ACK'd*/ }
@@ -90,5 +89,16 @@ impl SocketModeListener for TungsteniteSocketModeListener {
                 }
             }
         }
+    }
+}
+
+impl TungsteniteSocketModeListener {
+    async fn send_ack(&mut self, envelope_id: &String) {
+        self.stream
+            .send(Message::Text(
+                json!({ "envelope_id": envelope_id }).to_string(),
+            ))
+            .await
+            .unwrap();
     }
 }
