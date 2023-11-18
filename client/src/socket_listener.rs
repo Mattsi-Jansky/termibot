@@ -3,7 +3,7 @@ use crate::models::socket_message::SocketMessage;
 use async_trait::async_trait;
 use futures_util::{SinkExt, StreamExt};
 use serde::Deserialize;
-use serde_json::json;
+use serde_json::{Error, json};
 use tokio::net::TcpStream;
 use tokio_tungstenite::tungstenite::Message;
 use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
@@ -42,53 +42,60 @@ pub struct TungsteniteSocketModeListener {
 #[async_trait]
 impl SocketModeListener for TungsteniteSocketModeListener {
     async fn next(&mut self) -> serde_json::error::Result<SocketMessage> {
-        let message = self.stream.next().await.unwrap().unwrap();
+        let mut parsed_message = None;
 
-        if message.is_ping() {
-            self.stream
-                .send(Message::Pong("Pong from slackbot".to_string().into_bytes()))
-                .await
-                .unwrap();
-            Ok(SocketMessage::None)
-        } else if !message.is_text() {
-            error!(
-                "Received unexpected non-text message from WSS: {:?}",
-                message
-            );
-            Ok(SocketMessage::None)
-        } else {
-            let text = message.into_text().unwrap();
-            info!("Received message {}", text);
-            let result = serde_json::from_str(&text);
+        loop {
+            let message = self.stream.next().await.unwrap().unwrap();
 
-            match &result {
-                Ok(inner) => {
-                    match inner {
-                        SocketMessage::Event {
-                            envelope_id,
-                            payload: _,
-                        } => {
-                            self.send_ack(envelope_id).await;
-                        }
-                        SocketMessage::Interactive { envelope_id } => {
-                            self.send_ack(envelope_id).await;
-                        }
-                        SocketMessage::SlashCommand { envelope_id } => {
-                            self.send_ack(envelope_id).await;
-                        }
+            if message.is_ping() {
+                self.stream
+                    .send(Message::Pong("Pong from slackbot".to_string().into_bytes()))
+                    .await
+                    .unwrap();
+                continue;
+            } else if !message.is_text() {
+                error!(
+                    "Received unexpected non-text message from WSS: {:?}",
+                    message
+                );
+                continue;
+            } else {
+                let text = message.into_text().unwrap();
+                info!("Received message {}", text);
+                let result = serde_json::from_str(&text);
 
-                        SocketMessage::Hello { .. } => { /* Does not need to be ACK'd*/ }
-                        SocketMessage::Disconnect { .. } => { /* Does not need to be ACK'd*/ }
-                        SocketMessage::None => { /* N/A will not happen here */ }
+                match &result {
+                    Ok(inner) => {
+                        match inner {
+                            SocketMessage::Event {
+                                envelope_id,
+                                payload: _,
+                            } => {
+                                self.send_ack(envelope_id).await;
+                            }
+                            SocketMessage::Interactive { envelope_id } => {
+                                self.send_ack(envelope_id).await;
+                            }
+                            SocketMessage::SlashCommand { envelope_id } => {
+                                self.send_ack(envelope_id).await;
+                            }
+
+                            SocketMessage::Hello { .. } => { /* Does not need to be ACK'd*/ }
+                            SocketMessage::Disconnect { .. } => { /* Does not need to be ACK'd*/ }
+                        }
+                        parsed_message = Some(result);
+                        break;
                     }
-                    result
-                }
-                Err(err) => {
-                    warn!("Could not parse previous message from Slack (socket mode), probably an unsupported type not yet implemented. Caused by: `{}`", err);
-                    self.next().await
+                    Err(err) => {
+                        warn!("Could not parse previous message from Slack (socket mode), probably an unsupported type not yet implemented. Caused by: `{}`", err);
+                        parsed_message = Some(self.next().await);
+                        break;
+                    }
                 }
             }
         }
+
+        parsed_message.unwrap()
     }
 }
 

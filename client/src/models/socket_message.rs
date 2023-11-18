@@ -22,8 +22,7 @@ pub enum SocketMessage {
     #[serde(rename = "slash_commands")]
     SlashCommand {
         envelope_id: String,
-    },
-    None, // Used when ping received, not of interest to consumer so we say nothing happened.
+    }
 }
 
 // Ignores the type field, because it seems to always be `event_callback`

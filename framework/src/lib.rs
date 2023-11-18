@@ -54,9 +54,7 @@ impl SlackBot {
         loop {
             let message = listener.next().await?;
             let mut future_actions = vec![];
-            if message != SocketMessage::None {
-                info!("Received message: {message:?}");
-            }
+            info!("Received message: {message:?}");
 
             match &message {
                 SocketMessage::Event {
@@ -80,7 +78,6 @@ impl SlackBot {
                     info!("Disconnect message received");
                     break;
                 }
-                SocketMessage::None => { /* Nothing to do */ }
             }
 
             let actions: Vec<Action> = join_all(future_actions)
