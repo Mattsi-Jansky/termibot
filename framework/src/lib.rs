@@ -12,6 +12,7 @@ use std::sync::Arc;
 use crate::actions::Action;
 use crate::dependencies::DependenciesBuilder;
 use tracing::{error, info};
+use tracing::log::warn;
 
 pub mod actions;
 pub mod dependencies;
@@ -67,10 +68,10 @@ impl SlackBot {
                     }
                 }
                 SocketMessage::Interactive { .. } => {
-                    info!("Cannot handle interactive events yet, not implemented.")
+                    warn!("Received an interactive message but cannot handle interactive events yet, not implemented.")
                 }
                 SocketMessage::SlashCommand { .. } => {
-                    info!("Cannot handle slash commands yet, not implemented.")
+                    warn!("Received a slash command message but cannot handle slash commands yet, not implemented.")
                 }
 
                 SocketMessage::Hello { .. } => { /* Nothing to do */ }
