@@ -128,7 +128,7 @@ mod tests {
     use async_trait::async_trait;
     use client::models::message_body::MessageBody;
     use client::models::message_id::MessageId;
-    use client::models::socket_message::{Event, MessageEvent, Payload, SocketMessage};
+    use client::models::socket_message::{Authorization, Event, MessageEvent, Payload, SocketMessage};
     use client::socket_listener::SocketModeListener;
     use client::MockSlackClient;
     use plugins::MockPlugin;
@@ -158,6 +158,11 @@ mod tests {
                             channel: None,
                             channel_type: None,
                         }),
+                        authorizations: vec![
+                            Authorization {
+                                user_id: "F4K3U53R1D".to_string(),
+                            }
+                        ],
                     },
                 })
             } else {

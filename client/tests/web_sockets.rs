@@ -6,7 +6,7 @@ use client::models::blocks::elements::BlockElement;
 use client::models::blocks::objects::text::TextBody;
 use client::models::blocks::text::RichTextBlock;
 use client::models::blocks::Block;
-use client::models::socket_message::{Event, MessageEvent};
+use client::models::socket_message::{Authorization, Event, MessageEvent};
 use client::models::socket_message::{Payload, SocketMessage};
 use client::SlackClient;
 use futures_util::{SinkExt, StreamExt};
@@ -70,7 +70,12 @@ async fn should_initiate_socket_mode_connection() {
                     )]),
                     channel: Some("F4K3CH4NN3L1D".to_string()),
                     channel_type: Some("im".to_string()),
-                })
+                }),
+                authorizations: vec![
+                    Authorization {
+                        user_id: "F4K3USER1D".to_string(),
+                    }
+                ],
             }
         }
     );

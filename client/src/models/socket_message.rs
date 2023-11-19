@@ -29,6 +29,12 @@ pub enum SocketMessage {
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub struct Payload {
     pub event: Event,
+    pub authorizations: Vec<Authorization>
+}
+
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
+pub struct Authorization {
+    pub user_id: String
 }
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
