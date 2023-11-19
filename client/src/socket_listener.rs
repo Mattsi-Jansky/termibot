@@ -53,6 +53,9 @@ impl SocketModeListener for TungsteniteSocketModeListener {
                     .await
                     .unwrap();
                 continue;
+            } else if message.is_close() {
+                warn!("Close message received");
+                continue;
             } else if !message.is_text() {
                 error!(
                     "Received unexpected non-text message from WSS: {:?}",
