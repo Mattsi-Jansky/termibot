@@ -13,6 +13,7 @@ use crate::actions::Action;
 use crate::dependencies::DependenciesBuilder;
 use tracing::{error, info};
 use tracing::log::warn;
+use client::socket_listener::{TungsteniteSocketModeListener, SocketModeListener};
 
 pub mod actions;
 pub mod dependencies;
@@ -23,32 +24,46 @@ pub struct SlackBot {
     plugins: Vec<Box<dyn Plugin>>,
     action_handler: Box<dyn ActionHandler>,
     dependencies_builder: DependenciesBuilder,
+    listener: Option<Box<dyn SocketModeListener + Send + Sync>>
 }
 
 impl SlackBot {
     pub fn new(bot_token: &str, app_token: &str) -> Self {
+        let client = Arc::new(ReqwestSlackClient::new(bot_token, app_token));
         Self {
-            client: Arc::new(ReqwestSlackClient::new(bot_token, app_token)),
+            client,
             plugins: vec![],
             action_handler: Box::new(DefaultActionHandler {}),
             dependencies_builder: DependenciesBuilder::default(),
+            listener: None
         }
     }
 
     pub fn from(
         client: Arc<dyn SlackClient + Send + Sync>,
         handler: Box<dyn ActionHandler>,
+        listener: Box<dyn SocketModeListener + Send + Sync>
     ) -> SlackBot {
         SlackBot {
             client,
             plugins: vec![],
             action_handler: handler,
             dependencies_builder: DependenciesBuilder::default(),
+            listener: Some(listener)
         }
     }
 
     pub async fn run(self) -> Result<(), SlackClientError> {
-        let mut listener = self.client.connect_to_socket_mode().await?;
+        let mut listener = match self.listener {
+            None => {
+                Box::new(match TungsteniteSocketModeListener::new(self.client.clone()).await
+                {
+                    Ok(listener) => listener,
+                    Err(err) => { panic!("Failed to start socket mode listener: {:?}", err) }
+                })
+            }
+            Some(listener) => listener
+        };
         let dependencies = self.dependencies_builder.build();
         info!("Slack bot starting");
 
@@ -174,7 +189,7 @@ mod tests {
 
     #[tokio::test]
     async fn disconnect_after_disconnect_message_received() {
-        let bot = SlackBot::from(mock_client(), Box::new(MockActionHandler::new()));
+        let bot = SlackBot::from(mock_client(), Box::new(MockActionHandler::new()), Box::<TestSocketModeListener>::default());
 
         bot.run().await.unwrap();
     }
@@ -187,7 +202,7 @@ mod tests {
             .expect_on_event()
             .times(1)
             .returning(|_, _| Box::pin(future::ready(vec![])));
-        let bot = SlackBot::from(mock_client(), mock_action_handler).with_plugin(mock_plugin);
+        let bot = SlackBot::from(mock_client(), mock_action_handler, Box::<TestSocketModeListener>::default()).with_plugin(mock_plugin);
 
         bot.run().await.unwrap();
     }
@@ -197,7 +212,7 @@ mod tests {
         let mock_action_handler = Box::new(MockActionHandler::new());
         let mock_plugin_asserts_dependencies_passed =
             Box::new(MockPluginAssertDependencyIsPassed());
-        let bot = SlackBot::from(mock_client(), mock_action_handler)
+        let bot = SlackBot::from(mock_client(), mock_action_handler, Box::<TestSocketModeListener>::default())
             .with_service(12)
             .with_plugin(mock_plugin_asserts_dependencies_passed);
 
@@ -218,7 +233,7 @@ mod tests {
             .expect_handle()
             .times(1)
             .returning(|_, _| Box::pin(future::ready(Ok(()))));
-        let bot = SlackBot::from(mock_client(), mock_action_handler).with_plugin(mock_plugin);
+        let bot = SlackBot::from(mock_client(), mock_action_handler, Box::<TestSocketModeListener>::default()).with_plugin(mock_plugin);
 
         bot.run().await.unwrap();
     }
@@ -243,7 +258,7 @@ mod tests {
             .expect_handle()
             .times(2)
             .returning(|_, _| Box::pin(future::ready(Ok(()))));
-        let bot = SlackBot::from(mock_client(), mock_action_handler).with_plugin(mock_plugin);
+        let bot = SlackBot::from(mock_client(), mock_action_handler, Box::<TestSocketModeListener>::default()).with_plugin(mock_plugin);
 
         bot.run().await.unwrap();
     }
@@ -277,17 +292,13 @@ mod tests {
                 _ => false,
             })
             .returning(|_, _| Box::pin(future::ready(Ok(()))));
-        let bot = SlackBot::from(mock_client(), mock_action_handler).with_plugin(mock_plugin);
+        let bot = SlackBot::from(mock_client(), mock_action_handler, Box::<TestSocketModeListener>::default()).with_plugin(mock_plugin);
 
         bot.run().await.unwrap();
     }
 
     fn mock_client() -> Arc<MockSlackClient> {
         let mut mock_slack_client = MockSlackClient::new();
-        mock_slack_client
-            .expect_connect_to_socket_mode()
-            .times(1)
-            .returning(|| Ok(Box::<TestSocketModeListener>::default()));
         Arc::new(mock_slack_client)
     }
 }

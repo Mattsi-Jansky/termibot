@@ -26,6 +26,7 @@ secrecy = "0.8.0"
 mockall = "0.11.4"
 rvstruct = "0.3.2"
 builder-pattern = "0.4.2"
+async-timer = "0.7.4"
 
 [dev-dependencies]
 config-file = "0.2.3"

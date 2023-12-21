@@ -6,10 +6,11 @@ use models::http_response::HttpApiResponse;
 use reqwest::Client;
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use secrecy::{ExposeSecret, Secret};
-use socket_listener::TungsteniteSocketModeListenerBuilder;
 use tracing::info;
+use url::Url;
 
 use crate::models::message_id::MessageId;
+use crate::models::WebsocketUrlMessage::WebsocketUrlMessage;
 use crate::rate_limiter::RateLimitingMiddleware;
 use crate::socket_listener::SocketModeListener;
 
@@ -39,11 +40,8 @@ pub trait SlackClient {
         message: &MessageBody,
     ) -> Result<HttpApiResponse, SlackClientError>;
 
-    /// Open a Socket Mode connection
-    ///
-    /// Gets the websocket address from the Slack API and returns a connected `SlackSocketModeListener`.
-    async fn connect_to_socket_mode(&self)
-        -> Result<Box<dyn SocketModeListener>, SlackClientError>;
+    /// Get a URL for opening a new Websocket connection
+    async fn get_websocket_url(&self) -> Result<Url, SlackClientError>;
 }
 
 /// A client for talking to the Slack API
@@ -179,11 +177,11 @@ impl SlackClient for ReqwestSlackClient {
     }
 
     #[tracing::instrument]
-    async fn connect_to_socket_mode(
+    async fn get_websocket_url(
         &self,
-    ) -> Result<Box<dyn SocketModeListener>, SlackClientError> {
+    ) -> Result<Url, SlackClientError> {
         info!("Connecting to socket mode");
-        let builder = self
+        let response = self
             .http
             .post("https://slack.com/api/apps.connections.open")
             .header(
@@ -195,9 +193,9 @@ impl SlackClient for ReqwestSlackClient {
             .header("Content-type", "application/x-www-form-urlencoded")
             .send()
             .await?
-            .json::<TungsteniteSocketModeListenerBuilder>()
+            .json::<WebsocketUrlMessage>()
             .await?;
 
-        Ok(Box::new(builder.connect().await?))
+        Url::parse(response.url.as_str()).map_err(SlackClientError::from)
     }
 }

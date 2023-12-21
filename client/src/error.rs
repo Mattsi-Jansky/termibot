@@ -1,5 +1,6 @@
 use tokio::io;
 use tokio_tungstenite::tungstenite;
+use url::ParseError;
 
 #[derive(Debug)]
 pub struct SlackClientError(pub String);
@@ -34,5 +35,11 @@ impl From<tungstenite::Error> for SlackClientError {
 impl From<serde_json::error::Error> for SlackClientError {
     fn from(value: serde_json::error::Error) -> Self {
         SlackClientError(format!("Serde ([de]serialization) error: {}", value))
+    }
+}
+
+impl From<url::ParseError> for SlackClientError {
+    fn from(value: ParseError) -> Self {
+        SlackClientError(format!("Error parsing websocket URL: {}", value))
     }
 }

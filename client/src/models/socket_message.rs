@@ -202,6 +202,11 @@ pub struct RenameEmojiEvent {
     pub new_name: String,
 }
 
+pub enum MaybeRelevantSocketMessage {
+    Relevant(serde_json::error::Result<SocketMessage>),
+    Irrelevant
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
