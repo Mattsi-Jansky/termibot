@@ -1,0 +1,8 @@
+[workspace]
+
+members = [
+    "bot",
+    "client",
+    "framework",
+    "karma"
+]

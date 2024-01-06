@@ -1,0 +1,1076 @@
+{
+  "http_interactions": [
+    {
+      "response": {
+        "body": {
+          "encoding": null,
+          "string": "{\"ok\":true,\"channel\":\"C2J0AD99Q\",\"ts\":\"1687437685.219669\",\"message\":{\"bot_id\":\"BE0LGNB1Q\",\"type\":\"message\",\"text\":\"foobar\",\"user\":\"UE02Q1FTK\",\"ts\":\"1687437685.219669\",\"app_id\":\"AE0L6R0BU\",\"blocks\":[{\"type\":\"rich_text\",\"block_id\":\"MO3Vf\",\"elements\":[{\"type\":\"rich_text_section\",\"elements\":[{\"type\":\"text\",\"text\":\"foobar\"}]}]}],\"team\":\"T0G5PM4NR\",\"bot_profile\":{\"id\":\"BE0LGNB1Q\",\"app_id\":\"AE0L6R0BU\",\"name\":\"termibot\",\"icons\":{\"image_36\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_36.png\",\"image_48\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_48.png\",\"image_72\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_72.png\"},\"deleted\":false,\"updated\":1686039611,\"team_id\":\"T0G5PM4NR\"}},\"warning\":\"missing_charset\",\"response_metadata\":{\"warnings\":[\"missing_charset\"]}}"
+        },
+        "http_version": "1.1",
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "headers": {
+          "content-type": [
+            "application/json; charset=utf-8"
+          ],
+          "date": [
+            "Thu, 22 Jun 2023 12:41:25 GMT"
+          ],
+          "x-slack-req-id": [
+            "593a99cb69632ceabf5e3701ada07067"
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "pragma": [
+            "no-cache"
+          ],
+          "server": [
+            "Apache"
+          ],
+          "vary": [
+            "Accept-Encoding"
+          ],
+          "x-slack-unique-id": [
+            "ZJRBdUP5Me-wtdfA7D5wbgAAACg"
+          ],
+          "x-envoy-upstream-service-time": [
+            "132"
+          ],
+          "x-backend": [
+            "main_normal main_canary_with_overflow main_control_with_overflow"
+          ],
+          "x-server": [
+            "slack-www-hhvm-main-iad-wuve"
+          ],
+          "via": [
+            "1.1 slack-prod.tinyspeck.com, envoy-www-iad-uzgfpjbn, envoy-edge-lhr-vjaqiwbk"
+          ],
+          "content-length": [
+            "868"
+          ],
+          "x-slack-edge-shared-secret-outcome": [
+            "no-match"
+          ],
+          "expires": [
+            "Sat, 26 Jul 1997 05:00:00 GMT"
+          ],
+          "referrer-policy": [
+            "no-referrer"
+          ],
+          "cache-control": [
+            "private, no-cache, no-store, must-revalidate"
+          ],
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "access-control-allow-headers": [
+            "slack-route, x-slack-version-ts, x-b3-traceid, x-b3-spanid, x-b3-parentspanid, x-b3-sampled, x-b3-flags"
+          ],
+          "x-slack-backend": [
+            "r"
+          ],
+          "x-slack-shared-secret-outcome": [
+            "no-match"
+          ],
+          "strict-transport-security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "x-edge-backend": [
+            "envoy-www"
+          ],
+          "x-oauth-scopes": [
+            "app_mentions:read,bookmarks:read,bookmarks:write,calls:read,calls:write,channels:history,channels:join,channels:manage,channels:read,chat:write,chat:write.customize,chat:write.public,commands,conversations.connect:manage,conversations.connect:read,conversations.connect:write,dnd:read,emoji:read,files:read,files:write,groups:history,groups:read,groups:write,im:history,im:read,im:write,incoming-webhook,links.embed:write,links:read,links:write,metadata.message:read,mpim:history,mpim:read,mpim:write,pins:read,pins:write,reactions:read,reactions:write,reminders:read,reminders:write,remote_files:read,remote_files:share,remote_files:write,team.billing:read,team.preferences:read,team:read,usergroups:read,usergroups:write,users.profile:read,users:read,users:read.email,users:write,workflow.steps:execute"
+          ],
+          "access-control-expose-headers": [
+            "x-slack-req-id, retry-after"
+          ],
+          "x-accepted-oauth-scopes": [
+            "chat:write"
+          ],
+          "x-xss-protection": [
+            "0"
+          ]
+        }
+      },
+      "request": {
+        "uri": "https://slack.com/api/chat.postMessage",
+        "body": {
+          "encoding": null,
+          "string": "{\"blocks\":[],\"channel\":\"#bots\",\"text\":\"foobar\"}"
+        },
+        "method": "post",
+        "headers": {
+          "content-type": [
+            "application/json"
+          ],
+          "user-agent": [
+            "slackbot-client"
+          ],
+          "authorization": [
+            "Bearer xoxn-not-a-real-token"
+          ],
+          "accept": [
+            "application/json"
+          ]
+        }
+      },
+      "recorded_at": "Thu, 22 Jun 2023 12:41:25 +0000"
+    },
+    {
+      "response": {
+        "body": {
+          "encoding": null,
+          "string": "{\"ok\":true,\"channel\":\"C2J0AD99Q\",\"ts\":\"1687437685.365279\",\"message\":{\"bot_id\":\"BE0LGNB1Q\",\"type\":\"message\",\"text\":\"foobar\",\"user\":\"UE02Q1FTK\",\"ts\":\"1687437685.365279\",\"app_id\":\"AE0L6R0BU\",\"blocks\":[{\"type\":\"rich_text\",\"block_id\":\"=X+5Y\",\"elements\":[{\"type\":\"rich_text_section\",\"elements\":[{\"type\":\"text\",\"text\":\"foobar\"}]}]}],\"team\":\"T0G5PM4NR\",\"bot_profile\":{\"id\":\"BE0LGNB1Q\",\"app_id\":\"AE0L6R0BU\",\"name\":\"termibot\",\"icons\":{\"image_36\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_36.png\",\"image_48\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_48.png\",\"image_72\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_72.png\"},\"deleted\":false,\"updated\":1686039611,\"team_id\":\"T0G5PM4NR\"}},\"warning\":\"missing_charset\",\"response_metadata\":{\"warnings\":[\"missing_charset\"]}}"
+        },
+        "http_version": "1.1",
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "headers": {
+          "x-slack-backend": [
+            "r"
+          ],
+          "content-type": [
+            "application/json; charset=utf-8"
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "access-control-allow-headers": [
+            "slack-route, x-slack-version-ts, x-b3-traceid, x-b3-spanid, x-b3-parentspanid, x-b3-sampled, x-b3-flags"
+          ],
+          "content-length": [
+            "868"
+          ],
+          "access-control-expose-headers": [
+            "x-slack-req-id, retry-after"
+          ],
+          "server": [
+            "Apache"
+          ],
+          "x-slack-unique-id": [
+            "ZJRBdfPjIkojVhadAwVJ8AAAICs"
+          ],
+          "x-oauth-scopes": [
+            "app_mentions:read,bookmarks:read,bookmarks:write,calls:read,calls:write,channels:history,channels:join,channels:manage,channels:read,chat:write,chat:write.customize,chat:write.public,commands,conversations.connect:manage,conversations.connect:read,conversations.connect:write,dnd:read,emoji:read,files:read,files:write,groups:history,groups:read,groups:write,im:history,im:read,im:write,incoming-webhook,links.embed:write,links:read,links:write,metadata.message:read,mpim:history,mpim:read,mpim:write,pins:read,pins:write,reactions:read,reactions:write,reminders:read,reminders:write,remote_files:read,remote_files:share,remote_files:write,team.billing:read,team.preferences:read,team:read,usergroups:read,usergroups:write,users.profile:read,users:read,users:read.email,users:write,workflow.steps:execute"
+          ],
+          "expires": [
+            "Sat, 26 Jul 1997 05:00:00 GMT"
+          ],
+          "x-accepted-oauth-scopes": [
+            "chat:write"
+          ],
+          "date": [
+            "Thu, 22 Jun 2023 12:41:25 GMT"
+          ],
+          "vary": [
+            "Accept-Encoding"
+          ],
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "x-envoy-upstream-service-time": [
+            "150"
+          ],
+          "pragma": [
+            "no-cache"
+          ],
+          "via": [
+            "1.1 slack-prod.tinyspeck.com, envoy-www-iad-vtsqkfae, envoy-edge-lhr-vjaqiwbk"
+          ],
+          "referrer-policy": [
+            "no-referrer"
+          ],
+          "x-xss-protection": [
+            "0"
+          ],
+          "x-slack-req-id": [
+            "e7ecb71a722ca8ce075b477456e4ae77"
+          ],
+          "cache-control": [
+            "private, no-cache, no-store, must-revalidate"
+          ],
+          "x-backend": [
+            "main_normal main_canary_with_overflow main_control_with_overflow"
+          ],
+          "x-server": [
+            "slack-www-hhvm-main-iad-wydq"
+          ],
+          "x-slack-shared-secret-outcome": [
+            "no-match"
+          ],
+          "strict-transport-security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "x-edge-backend": [
+            "envoy-www"
+          ],
+          "x-slack-edge-shared-secret-outcome": [
+            "no-match"
+          ]
+        }
+      },
+      "request": {
+        "uri": "https://slack.com/api/chat.postMessage",
+        "body": {
+          "encoding": null,
+          "string": "{\"blocks\":[],\"channel\":\"#bots\",\"text\":\"foobar\"}"
+        },
+        "method": "post",
+        "headers": {
+          "accept": [
+            "application/json"
+          ],
+          "user-agent": [
+            "slackbot-client"
+          ],
+          "content-type": [
+            "application/json"
+          ],
+          "authorization": [
+            "Bearer xoxn-not-a-real-token"
+          ]
+        }
+      },
+      "recorded_at": "Thu, 22 Jun 2023 12:41:25 +0000"
+    },
+    {
+      "response": {
+        "body": {
+          "encoding": null,
+          "string": "{\"ok\":true,\"channel\":\"C2J0AD99Q\",\"ts\":\"1687437685.517109\",\"message\":{\"bot_id\":\"BE0LGNB1Q\",\"type\":\"message\",\"text\":\"foobar\",\"user\":\"UE02Q1FTK\",\"ts\":\"1687437685.517109\",\"app_id\":\"AE0L6R0BU\",\"blocks\":[{\"type\":\"rich_text\",\"block_id\":\"8Zdc\\/\",\"elements\":[{\"type\":\"rich_text_section\",\"elements\":[{\"type\":\"text\",\"text\":\"foobar\"}]}]}],\"team\":\"T0G5PM4NR\",\"bot_profile\":{\"id\":\"BE0LGNB1Q\",\"app_id\":\"AE0L6R0BU\",\"name\":\"termibot\",\"icons\":{\"image_36\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_36.png\",\"image_48\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_48.png\",\"image_72\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_72.png\"},\"deleted\":false,\"updated\":1686039611,\"team_id\":\"T0G5PM4NR\"}},\"warning\":\"missing_charset\",\"response_metadata\":{\"warnings\":[\"missing_charset\"]}}"
+        },
+        "http_version": "1.1",
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "headers": {
+          "referrer-policy": [
+            "no-referrer"
+          ],
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "vary": [
+            "Accept-Encoding"
+          ],
+          "x-slack-req-id": [
+            "cea07a12aebe66dfad70ef177c929edb"
+          ],
+          "pragma": [
+            "no-cache"
+          ],
+          "content-type": [
+            "application/json; charset=utf-8"
+          ],
+          "cache-control": [
+            "private, no-cache, no-store, must-revalidate"
+          ],
+          "access-control-expose-headers": [
+            "x-slack-req-id, retry-after"
+          ],
+          "x-slack-unique-id": [
+            "ZJRBdf4uJKQR7cNIlzpxgQAAEBI"
+          ],
+          "content-length": [
+            "869"
+          ],
+          "x-envoy-upstream-service-time": [
+            "124"
+          ],
+          "x-backend": [
+            "main_normal main_canary_with_overflow main_control_with_overflow"
+          ],
+          "x-slack-shared-secret-outcome": [
+            "no-match"
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "x-edge-backend": [
+            "envoy-www"
+          ],
+          "via": [
+            "1.1 slack-prod.tinyspeck.com, envoy-www-iad-vyphulkd, envoy-edge-lhr-vjaqiwbk"
+          ],
+          "x-accepted-oauth-scopes": [
+            "chat:write"
+          ],
+          "expires": [
+            "Sat, 26 Jul 1997 05:00:00 GMT"
+          ],
+          "x-oauth-scopes": [
+            "app_mentions:read,bookmarks:read,bookmarks:write,calls:read,calls:write,channels:history,channels:join,channels:manage,channels:read,chat:write,chat:write.customize,chat:write.public,commands,conversations.connect:manage,conversations.connect:read,conversations.connect:write,dnd:read,emoji:read,files:read,files:write,groups:history,groups:read,groups:write,im:history,im:read,im:write,incoming-webhook,links.embed:write,links:read,links:write,metadata.message:read,mpim:history,mpim:read,mpim:write,pins:read,pins:write,reactions:read,reactions:write,reminders:read,reminders:write,remote_files:read,remote_files:share,remote_files:write,team.billing:read,team.preferences:read,team:read,usergroups:read,usergroups:write,users.profile:read,users:read,users:read.email,users:write,workflow.steps:execute"
+          ],
+          "x-slack-backend": [
+            "r"
+          ],
+          "date": [
+            "Thu, 22 Jun 2023 12:41:25 GMT"
+          ],
+          "access-control-allow-headers": [
+            "slack-route, x-slack-version-ts, x-b3-traceid, x-b3-spanid, x-b3-parentspanid, x-b3-sampled, x-b3-flags"
+          ],
+          "x-slack-edge-shared-secret-outcome": [
+            "no-match"
+          ],
+          "x-server": [
+            "slack-www-hhvm-main-iad-tfic"
+          ],
+          "strict-transport-security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "x-xss-protection": [
+            "0"
+          ],
+          "server": [
+            "Apache"
+          ]
+        }
+      },
+      "request": {
+        "uri": "https://slack.com/api/chat.postMessage",
+        "body": {
+          "encoding": null,
+          "string": "{\"blocks\":[],\"channel\":\"#bots\",\"text\":\"foobar\"}"
+        },
+        "method": "post",
+        "headers": {
+          "user-agent": [
+            "slackbot-client"
+          ],
+          "accept": [
+            "application/json"
+          ],
+          "authorization": [
+            "Bearer xoxn-not-a-real-token"
+          ],
+          "content-type": [
+            "application/json"
+          ]
+        }
+      },
+      "recorded_at": "Thu, 22 Jun 2023 12:41:25 +0000"
+    },
+    {
+      "response": {
+        "body": {
+          "encoding": null,
+          "string": "{\"ok\":true,\"channel\":\"C2J0AD99Q\",\"ts\":\"1687437685.680339\",\"message\":{\"bot_id\":\"BE0LGNB1Q\",\"type\":\"message\",\"text\":\"foobar\",\"user\":\"UE02Q1FTK\",\"ts\":\"1687437685.680339\",\"app_id\":\"AE0L6R0BU\",\"blocks\":[{\"type\":\"rich_text\",\"block_id\":\"HRgKJ\",\"elements\":[{\"type\":\"rich_text_section\",\"elements\":[{\"type\":\"text\",\"text\":\"foobar\"}]}]}],\"team\":\"T0G5PM4NR\",\"bot_profile\":{\"id\":\"BE0LGNB1Q\",\"app_id\":\"AE0L6R0BU\",\"name\":\"termibot\",\"icons\":{\"image_36\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_36.png\",\"image_48\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_48.png\",\"image_72\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_72.png\"},\"deleted\":false,\"updated\":1686039611,\"team_id\":\"T0G5PM4NR\"}},\"warning\":\"missing_charset\",\"response_metadata\":{\"warnings\":[\"missing_charset\"]}}"
+        },
+        "http_version": "1.1",
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "headers": {
+          "access-control-allow-headers": [
+            "slack-route, x-slack-version-ts, x-b3-traceid, x-b3-spanid, x-b3-parentspanid, x-b3-sampled, x-b3-flags"
+          ],
+          "x-slack-unique-id": [
+            "ZJRBddD2lucPTJXWtsiIwAAAEDg"
+          ],
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "via": [
+            "1.1 slack-prod.tinyspeck.com, envoy-www-iad-whzwterj, envoy-edge-lhr-vjaqiwbk"
+          ],
+          "x-envoy-upstream-service-time": [
+            "202"
+          ],
+          "expires": [
+            "Sat, 26 Jul 1997 05:00:00 GMT"
+          ],
+          "vary": [
+            "Accept-Encoding"
+          ],
+          "x-backend": [
+            "main_normal main_canary_with_overflow main_control_with_overflow"
+          ],
+          "x-edge-backend": [
+            "envoy-www"
+          ],
+          "x-server": [
+            "slack-www-hhvm-main-iad-goqe"
+          ],
+          "x-slack-edge-shared-secret-outcome": [
+            "no-match"
+          ],
+          "access-control-expose-headers": [
+            "x-slack-req-id, retry-after"
+          ],
+          "strict-transport-security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "content-length": [
+            "868"
+          ],
+          "pragma": [
+            "no-cache"
+          ],
+          "x-slack-shared-secret-outcome": [
+            "no-match"
+          ],
+          "x-slack-req-id": [
+            "6e00d1967b624b5fe6a1cbfe0765433d"
+          ],
+          "x-xss-protection": [
+            "0"
+          ],
+          "content-type": [
+            "application/json; charset=utf-8"
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "x-accepted-oauth-scopes": [
+            "chat:write"
+          ],
+          "cache-control": [
+            "private, no-cache, no-store, must-revalidate"
+          ],
+          "server": [
+            "Apache"
+          ],
+          "x-oauth-scopes": [
+            "app_mentions:read,bookmarks:read,bookmarks:write,calls:read,calls:write,channels:history,channels:join,channels:manage,channels:read,chat:write,chat:write.customize,chat:write.public,commands,conversations.connect:manage,conversations.connect:read,conversations.connect:write,dnd:read,emoji:read,files:read,files:write,groups:history,groups:read,groups:write,im:history,im:read,im:write,incoming-webhook,links.embed:write,links:read,links:write,metadata.message:read,mpim:history,mpim:read,mpim:write,pins:read,pins:write,reactions:read,reactions:write,reminders:read,reminders:write,remote_files:read,remote_files:share,remote_files:write,team.billing:read,team.preferences:read,team:read,usergroups:read,usergroups:write,users.profile:read,users:read,users:read.email,users:write,workflow.steps:execute"
+          ],
+          "x-slack-backend": [
+            "r"
+          ],
+          "referrer-policy": [
+            "no-referrer"
+          ],
+          "date": [
+            "Thu, 22 Jun 2023 12:41:25 GMT"
+          ]
+        }
+      },
+      "request": {
+        "uri": "https://slack.com/api/chat.postMessage",
+        "body": {
+          "encoding": null,
+          "string": "{\"blocks\":[],\"channel\":\"#bots\",\"text\":\"foobar\"}"
+        },
+        "method": "post",
+        "headers": {
+          "user-agent": [
+            "slackbot-client"
+          ],
+          "authorization": [
+            "Bearer xoxn-not-a-real-token"
+          ],
+          "content-type": [
+            "application/json"
+          ],
+          "accept": [
+            "application/json"
+          ]
+        }
+      },
+      "recorded_at": "Thu, 22 Jun 2023 12:41:25 +0000"
+    },
+    {
+      "response": {
+        "body": {
+          "encoding": null,
+          "string": "{\"ok\":true,\"channel\":\"C2J0AD99Q\",\"ts\":\"1687437685.869669\",\"message\":{\"bot_id\":\"BE0LGNB1Q\",\"type\":\"message\",\"text\":\"foobar\",\"user\":\"UE02Q1FTK\",\"ts\":\"1687437685.869669\",\"app_id\":\"AE0L6R0BU\",\"blocks\":[{\"type\":\"rich_text\",\"block_id\":\"efANV\",\"elements\":[{\"type\":\"rich_text_section\",\"elements\":[{\"type\":\"text\",\"text\":\"foobar\"}]}]}],\"team\":\"T0G5PM4NR\",\"bot_profile\":{\"id\":\"BE0LGNB1Q\",\"app_id\":\"AE0L6R0BU\",\"name\":\"termibot\",\"icons\":{\"image_36\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_36.png\",\"image_48\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_48.png\",\"image_72\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_72.png\"},\"deleted\":false,\"updated\":1686039611,\"team_id\":\"T0G5PM4NR\"}},\"warning\":\"missing_charset\",\"response_metadata\":{\"warnings\":[\"missing_charset\"]}}"
+        },
+        "http_version": "1.1",
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "headers": {
+          "access-control-expose-headers": [
+            "x-slack-req-id, retry-after"
+          ],
+          "date": [
+            "Thu, 22 Jun 2023 12:41:25 GMT"
+          ],
+          "x-accepted-oauth-scopes": [
+            "chat:write"
+          ],
+          "x-slack-unique-id": [
+            "ZJRBdZGqE-YIglYi_oXDkQAAEBw"
+          ],
+          "strict-transport-security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "x-slack-backend": [
+            "r"
+          ],
+          "x-server": [
+            "slack-www-hhvm-main-iad-qvvs"
+          ],
+          "x-backend": [
+            "main_normal main_canary_with_overflow main_control_with_overflow"
+          ],
+          "x-slack-req-id": [
+            "ca8bdf6958530a5171ad461a0cb9d931"
+          ],
+          "x-slack-edge-shared-secret-outcome": [
+            "no-match"
+          ],
+          "expires": [
+            "Sat, 26 Jul 1997 05:00:00 GMT"
+          ],
+          "cache-control": [
+            "private, no-cache, no-store, must-revalidate"
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "x-edge-backend": [
+            "envoy-www"
+          ],
+          "x-xss-protection": [
+            "0"
+          ],
+          "content-type": [
+            "application/json; charset=utf-8"
+          ],
+          "pragma": [
+            "no-cache"
+          ],
+          "vary": [
+            "Accept-Encoding"
+          ],
+          "via": [
+            "1.1 slack-prod.tinyspeck.com, envoy-www-iad-wrbmyddf, envoy-edge-lhr-vjaqiwbk"
+          ],
+          "x-oauth-scopes": [
+            "app_mentions:read,bookmarks:read,bookmarks:write,calls:read,calls:write,channels:history,channels:join,channels:manage,channels:read,chat:write,chat:write.customize,chat:write.public,commands,conversations.connect:manage,conversations.connect:read,conversations.connect:write,dnd:read,emoji:read,files:read,files:write,groups:history,groups:read,groups:write,im:history,im:read,im:write,incoming-webhook,links.embed:write,links:read,links:write,metadata.message:read,mpim:history,mpim:read,mpim:write,pins:read,pins:write,reactions:read,reactions:write,reminders:read,reminders:write,remote_files:read,remote_files:share,remote_files:write,team.billing:read,team.preferences:read,team:read,usergroups:read,usergroups:write,users.profile:read,users:read,users:read.email,users:write,workflow.steps:execute"
+          ],
+          "x-envoy-upstream-service-time": [
+            "134"
+          ],
+          "content-length": [
+            "868"
+          ],
+          "referrer-policy": [
+            "no-referrer"
+          ],
+          "access-control-allow-headers": [
+            "slack-route, x-slack-version-ts, x-b3-traceid, x-b3-spanid, x-b3-parentspanid, x-b3-sampled, x-b3-flags"
+          ],
+          "server": [
+            "Apache"
+          ],
+          "x-slack-shared-secret-outcome": [
+            "no-match"
+          ]
+        }
+      },
+      "request": {
+        "uri": "https://slack.com/api/chat.postMessage",
+        "body": {
+          "encoding": null,
+          "string": "{\"blocks\":[],\"channel\":\"#bots\",\"text\":\"foobar\"}"
+        },
+        "method": "post",
+        "headers": {
+          "user-agent": [
+            "slackbot-client"
+          ],
+          "content-type": [
+            "application/json"
+          ],
+          "authorization": [
+            "Bearer xoxn-not-a-real-token"
+          ],
+          "accept": [
+            "application/json"
+          ]
+        }
+      },
+      "recorded_at": "Thu, 22 Jun 2023 12:41:25 +0000"
+    },
+    {
+      "response": {
+        "body": {
+          "encoding": null,
+          "string": "{\"ok\":true,\"channel\":\"C2J0AD99Q\",\"ts\":\"1687437686.028829\",\"message\":{\"bot_id\":\"BE0LGNB1Q\",\"type\":\"message\",\"text\":\"foobar\",\"user\":\"UE02Q1FTK\",\"ts\":\"1687437686.028829\",\"app_id\":\"AE0L6R0BU\",\"blocks\":[{\"type\":\"rich_text\",\"block_id\":\"P2v+f\",\"elements\":[{\"type\":\"rich_text_section\",\"elements\":[{\"type\":\"text\",\"text\":\"foobar\"}]}]}],\"team\":\"T0G5PM4NR\",\"bot_profile\":{\"id\":\"BE0LGNB1Q\",\"app_id\":\"AE0L6R0BU\",\"name\":\"termibot\",\"icons\":{\"image_36\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_36.png\",\"image_48\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_48.png\",\"image_72\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_72.png\"},\"deleted\":false,\"updated\":1686039611,\"team_id\":\"T0G5PM4NR\"}},\"warning\":\"missing_charset\",\"response_metadata\":{\"warnings\":[\"missing_charset\"]}}"
+        },
+        "http_version": "1.1",
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "headers": {
+          "strict-transport-security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "x-server": [
+            "slack-www-hhvm-main-iad-mgac"
+          ],
+          "x-slack-shared-secret-outcome": [
+            "no-match"
+          ],
+          "x-edge-backend": [
+            "envoy-www"
+          ],
+          "x-slack-edge-shared-secret-outcome": [
+            "no-match"
+          ],
+          "x-oauth-scopes": [
+            "app_mentions:read,bookmarks:read,bookmarks:write,calls:read,calls:write,channels:history,channels:join,channels:manage,channels:read,chat:write,chat:write.customize,chat:write.public,commands,conversations.connect:manage,conversations.connect:read,conversations.connect:write,dnd:read,emoji:read,files:read,files:write,groups:history,groups:read,groups:write,im:history,im:read,im:write,incoming-webhook,links.embed:write,links:read,links:write,metadata.message:read,mpim:history,mpim:read,mpim:write,pins:read,pins:write,reactions:read,reactions:write,reminders:read,reminders:write,remote_files:read,remote_files:share,remote_files:write,team.billing:read,team.preferences:read,team:read,usergroups:read,usergroups:write,users.profile:read,users:read,users:read.email,users:write,workflow.steps:execute"
+          ],
+          "referrer-policy": [
+            "no-referrer"
+          ],
+          "cache-control": [
+            "private, no-cache, no-store, must-revalidate"
+          ],
+          "via": [
+            "1.1 slack-prod.tinyspeck.com, envoy-www-iad-fcqmhqtk, envoy-edge-lhr-vjaqiwbk"
+          ],
+          "x-slack-req-id": [
+            "b91058a072399d92de7c83fd40af3e94"
+          ],
+          "date": [
+            "Thu, 22 Jun 2023 12:41:26 GMT"
+          ],
+          "content-type": [
+            "application/json; charset=utf-8"
+          ],
+          "x-slack-backend": [
+            "r"
+          ],
+          "server": [
+            "Apache"
+          ],
+          "x-slack-unique-id": [
+            "ZJRBdah-W93AeEdNS_jXuAAAEAE"
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "x-accepted-oauth-scopes": [
+            "chat:write"
+          ],
+          "access-control-expose-headers": [
+            "x-slack-req-id, retry-after"
+          ],
+          "expires": [
+            "Sat, 26 Jul 1997 05:00:00 GMT"
+          ],
+          "vary": [
+            "Accept-Encoding"
+          ],
+          "x-xss-protection": [
+            "0"
+          ],
+          "access-control-allow-headers": [
+            "slack-route, x-slack-version-ts, x-b3-traceid, x-b3-spanid, x-b3-parentspanid, x-b3-sampled, x-b3-flags"
+          ],
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "content-length": [
+            "868"
+          ],
+          "x-envoy-upstream-service-time": [
+            "170"
+          ],
+          "x-backend": [
+            "main_normal main_canary_with_overflow main_control_with_overflow"
+          ],
+          "pragma": [
+            "no-cache"
+          ]
+        }
+      },
+      "request": {
+        "uri": "https://slack.com/api/chat.postMessage",
+        "body": {
+          "encoding": null,
+          "string": "{\"blocks\":[],\"channel\":\"#bots\",\"text\":\"foobar\"}"
+        },
+        "method": "post",
+        "headers": {
+          "user-agent": [
+            "slackbot-client"
+          ],
+          "content-type": [
+            "application/json"
+          ],
+          "accept": [
+            "application/json"
+          ],
+          "authorization": [
+            "Bearer xoxn-not-a-real-token"
+          ]
+        }
+      },
+      "recorded_at": "Thu, 22 Jun 2023 12:41:26 +0000"
+    },
+    {
+      "response": {
+        "body": {
+          "encoding": null,
+          "string": "{\"ok\":true,\"channel\":\"C2J0AD99Q\",\"ts\":\"1687437686.215359\",\"message\":{\"bot_id\":\"BE0LGNB1Q\",\"type\":\"message\",\"text\":\"foobar\",\"user\":\"UE02Q1FTK\",\"ts\":\"1687437686.215359\",\"app_id\":\"AE0L6R0BU\",\"blocks\":[{\"type\":\"rich_text\",\"block_id\":\"jL9\\/\",\"elements\":[{\"type\":\"rich_text_section\",\"elements\":[{\"type\":\"text\",\"text\":\"foobar\"}]}]}],\"team\":\"T0G5PM4NR\",\"bot_profile\":{\"id\":\"BE0LGNB1Q\",\"app_id\":\"AE0L6R0BU\",\"name\":\"termibot\",\"icons\":{\"image_36\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_36.png\",\"image_48\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_48.png\",\"image_72\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_72.png\"},\"deleted\":false,\"updated\":1686039611,\"team_id\":\"T0G5PM4NR\"}},\"warning\":\"missing_charset\",\"response_metadata\":{\"warnings\":[\"missing_charset\"]}}"
+        },
+        "http_version": "1.1",
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "headers": {
+          "x-oauth-scopes": [
+            "app_mentions:read,bookmarks:read,bookmarks:write,calls:read,calls:write,channels:history,channels:join,channels:manage,channels:read,chat:write,chat:write.customize,chat:write.public,commands,conversations.connect:manage,conversations.connect:read,conversations.connect:write,dnd:read,emoji:read,files:read,files:write,groups:history,groups:read,groups:write,im:history,im:read,im:write,incoming-webhook,links.embed:write,links:read,links:write,metadata.message:read,mpim:history,mpim:read,mpim:write,pins:read,pins:write,reactions:read,reactions:write,reminders:read,reminders:write,remote_files:read,remote_files:share,remote_files:write,team.billing:read,team.preferences:read,team:read,usergroups:read,usergroups:write,users.profile:read,users:read,users:read.email,users:write,workflow.steps:execute"
+          ],
+          "strict-transport-security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "referrer-policy": [
+            "no-referrer"
+          ],
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "access-control-expose-headers": [
+            "x-slack-req-id, retry-after"
+          ],
+          "x-envoy-upstream-service-time": [
+            "156"
+          ],
+          "x-backend": [
+            "main_normal main_canary_with_overflow main_control_with_overflow"
+          ],
+          "pragma": [
+            "no-cache"
+          ],
+          "x-server": [
+            "slack-www-hhvm-main-iad-tblt"
+          ],
+          "x-edge-backend": [
+            "envoy-www"
+          ],
+          "content-length": [
+            "868"
+          ],
+          "x-slack-edge-shared-secret-outcome": [
+            "no-match"
+          ],
+          "x-slack-shared-secret-outcome": [
+            "no-match"
+          ],
+          "expires": [
+            "Sat, 26 Jul 1997 05:00:00 GMT"
+          ],
+          "cache-control": [
+            "private, no-cache, no-store, must-revalidate"
+          ],
+          "vary": [
+            "Accept-Encoding"
+          ],
+          "x-xss-protection": [
+            "0"
+          ],
+          "x-slack-backend": [
+            "r"
+          ],
+          "via": [
+            "1.1 slack-prod.tinyspeck.com, envoy-www-iad-wwfnhxgf, envoy-edge-lhr-vjaqiwbk"
+          ],
+          "x-slack-req-id": [
+            "1f02ca4c565e452586ec0b3ae334ab1b"
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "server": [
+            "Apache"
+          ],
+          "x-accepted-oauth-scopes": [
+            "chat:write"
+          ],
+          "date": [
+            "Thu, 22 Jun 2023 12:41:26 GMT"
+          ],
+          "x-slack-unique-id": [
+            "ZJRBdif-xwEfp5ML-SyWhAAAAAw"
+          ],
+          "content-type": [
+            "application/json; charset=utf-8"
+          ],
+          "access-control-allow-headers": [
+            "slack-route, x-slack-version-ts, x-b3-traceid, x-b3-spanid, x-b3-parentspanid, x-b3-sampled, x-b3-flags"
+          ]
+        }
+      },
+      "request": {
+        "uri": "https://slack.com/api/chat.postMessage",
+        "body": {
+          "encoding": null,
+          "string": "{\"blocks\":[],\"channel\":\"#bots\",\"text\":\"foobar\"}"
+        },
+        "method": "post",
+        "headers": {
+          "accept": [
+            "application/json"
+          ],
+          "authorization": [
+            "Bearer xoxn-not-a-real-token"
+          ],
+          "user-agent": [
+            "slackbot-client"
+          ],
+          "content-type": [
+            "application/json"
+          ]
+        }
+      },
+      "recorded_at": "Thu, 22 Jun 2023 12:41:26 +0000"
+    },
+    {
+      "response": {
+        "body": {
+          "encoding": null,
+          "string": "{\"ok\":true,\"channel\":\"C2J0AD99Q\",\"ts\":\"1687437686.377489\",\"message\":{\"bot_id\":\"BE0LGNB1Q\",\"type\":\"message\",\"text\":\"foobar\",\"user\":\"UE02Q1FTK\",\"ts\":\"1687437686.377489\",\"app_id\":\"AE0L6R0BU\",\"blocks\":[{\"type\":\"rich_text\",\"block_id\":\"cfH\\/S\",\"elements\":[{\"type\":\"rich_text_section\",\"elements\":[{\"type\":\"text\",\"text\":\"foobar\"}]}]}],\"team\":\"T0G5PM4NR\",\"bot_profile\":{\"id\":\"BE0LGNB1Q\",\"app_id\":\"AE0L6R0BU\",\"name\":\"termibot\",\"icons\":{\"image_36\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_36.png\",\"image_48\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_48.png\",\"image_72\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_72.png\"},\"deleted\":false,\"updated\":1686039611,\"team_id\":\"T0G5PM4NR\"}},\"warning\":\"missing_charset\",\"response_metadata\":{\"warnings\":[\"missing_charset\"]}}"
+        },
+        "http_version": "1.1",
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "headers": {
+          "vary": [
+            "Accept-Encoding"
+          ],
+          "content-type": [
+            "application/json; charset=utf-8"
+          ],
+          "access-control-expose-headers": [
+            "x-slack-req-id, retry-after"
+          ],
+          "pragma": [
+            "no-cache"
+          ],
+          "access-control-allow-headers": [
+            "slack-route, x-slack-version-ts, x-b3-traceid, x-b3-spanid, x-b3-parentspanid, x-b3-sampled, x-b3-flags"
+          ],
+          "via": [
+            "1.1 slack-prod.tinyspeck.com, envoy-www-iad-fgxtehvw, envoy-edge-lhr-vjaqiwbk"
+          ],
+          "x-slack-unique-id": [
+            "ZJRBdt0nGdnDODiWbmoiegAAEB8"
+          ],
+          "x-server": [
+            "slack-www-hhvm-main-iad-mwds"
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "cache-control": [
+            "private, no-cache, no-store, must-revalidate"
+          ],
+          "x-accepted-oauth-scopes": [
+            "chat:write"
+          ],
+          "content-length": [
+            "869"
+          ],
+          "date": [
+            "Thu, 22 Jun 2023 12:41:26 GMT"
+          ],
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "x-envoy-upstream-service-time": [
+            "147"
+          ],
+          "x-slack-shared-secret-outcome": [
+            "no-match"
+          ],
+          "x-slack-edge-shared-secret-outcome": [
+            "no-match"
+          ],
+          "x-slack-backend": [
+            "r"
+          ],
+          "server": [
+            "Apache"
+          ],
+          "strict-transport-security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "x-xss-protection": [
+            "0"
+          ],
+          "x-slack-req-id": [
+            "0888f623c6ceb46aa693efd1f2965bbd"
+          ],
+          "x-oauth-scopes": [
+            "app_mentions:read,bookmarks:read,bookmarks:write,calls:read,calls:write,channels:history,channels:join,channels:manage,channels:read,chat:write,chat:write.customize,chat:write.public,commands,conversations.connect:manage,conversations.connect:read,conversations.connect:write,dnd:read,emoji:read,files:read,files:write,groups:history,groups:read,groups:write,im:history,im:read,im:write,incoming-webhook,links.embed:write,links:read,links:write,metadata.message:read,mpim:history,mpim:read,mpim:write,pins:read,pins:write,reactions:read,reactions:write,reminders:read,reminders:write,remote_files:read,remote_files:share,remote_files:write,team.billing:read,team.preferences:read,team:read,usergroups:read,usergroups:write,users.profile:read,users:read,users:read.email,users:write,workflow.steps:execute"
+          ],
+          "expires": [
+            "Sat, 26 Jul 1997 05:00:00 GMT"
+          ],
+          "referrer-policy": [
+            "no-referrer"
+          ],
+          "x-backend": [
+            "main_normal main_canary_with_overflow main_control_with_overflow"
+          ],
+          "x-edge-backend": [
+            "envoy-www"
+          ]
+        }
+      },
+      "request": {
+        "uri": "https://slack.com/api/chat.postMessage",
+        "body": {
+          "encoding": null,
+          "string": "{\"blocks\":[],\"channel\":\"#bots\",\"text\":\"foobar\"}"
+        },
+        "method": "post",
+        "headers": {
+          "user-agent": [
+            "slackbot-client"
+          ],
+          "accept": [
+            "application/json"
+          ],
+          "content-type": [
+            "application/json"
+          ],
+          "authorization": [
+            "Bearer xoxn-not-a-real-token"
+          ]
+        }
+      },
+      "recorded_at": "Thu, 22 Jun 2023 12:41:26 +0000"
+    },
+    {
+      "response": {
+        "body": {
+          "encoding": null,
+          "string": "{\"ok\":true,\"channel\":\"C2J0AD99Q\",\"ts\":\"1687437686.524639\",\"message\":{\"bot_id\":\"BE0LGNB1Q\",\"type\":\"message\",\"text\":\"foobar\",\"user\":\"UE02Q1FTK\",\"ts\":\"1687437686.524639\",\"app_id\":\"AE0L6R0BU\",\"blocks\":[{\"type\":\"rich_text\",\"block_id\":\"8BRk\",\"elements\":[{\"type\":\"rich_text_section\",\"elements\":[{\"type\":\"text\",\"text\":\"foobar\"}]}]}],\"team\":\"T0G5PM4NR\",\"bot_profile\":{\"id\":\"BE0LGNB1Q\",\"app_id\":\"AE0L6R0BU\",\"name\":\"termibot\",\"icons\":{\"image_36\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_36.png\",\"image_48\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_48.png\",\"image_72\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_72.png\"},\"deleted\":false,\"updated\":1686039611,\"team_id\":\"T0G5PM4NR\"}},\"warning\":\"missing_charset\",\"response_metadata\":{\"warnings\":[\"missing_charset\"]}}"
+        },
+        "http_version": "1.1",
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "headers": {
+          "x-slack-edge-shared-secret-outcome": [
+            "no-match"
+          ],
+          "pragma": [
+            "no-cache"
+          ],
+          "x-slack-backend": [
+            "r"
+          ],
+          "x-slack-unique-id": [
+            "ZJRBdl0QHQZqv9MGfPSuqgAAABc"
+          ],
+          "content-length": [
+            "867"
+          ],
+          "access-control-allow-headers": [
+            "slack-route, x-slack-version-ts, x-b3-traceid, x-b3-spanid, x-b3-parentspanid, x-b3-sampled, x-b3-flags"
+          ],
+          "cache-control": [
+            "private, no-cache, no-store, must-revalidate"
+          ],
+          "strict-transport-security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "expires": [
+            "Sat, 26 Jul 1997 05:00:00 GMT"
+          ],
+          "server": [
+            "Apache"
+          ],
+          "vary": [
+            "Accept-Encoding"
+          ],
+          "x-slack-req-id": [
+            "45ae973f63323e3abfdfe94117606cb5"
+          ],
+          "via": [
+            "1.1 slack-prod.tinyspeck.com, envoy-www-iad-zkqmmjkq, envoy-edge-lhr-vjaqiwbk"
+          ],
+          "x-slack-shared-secret-outcome": [
+            "no-match"
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "content-type": [
+            "application/json; charset=utf-8"
+          ],
+          "x-envoy-upstream-service-time": [
+            "135"
+          ],
+          "referrer-policy": [
+            "no-referrer"
+          ],
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "x-backend": [
+            "main_normal main_canary_with_overflow main_control_with_overflow"
+          ],
+          "x-server": [
+            "slack-www-hhvm-main-iad-azgc"
+          ],
+          "x-oauth-scopes": [
+            "app_mentions:read,bookmarks:read,bookmarks:write,calls:read,calls:write,channels:history,channels:join,channels:manage,channels:read,chat:write,chat:write.customize,chat:write.public,commands,conversations.connect:manage,conversations.connect:read,conversations.connect:write,dnd:read,emoji:read,files:read,files:write,groups:history,groups:read,groups:write,im:history,im:read,im:write,incoming-webhook,links.embed:write,links:read,links:write,metadata.message:read,mpim:history,mpim:read,mpim:write,pins:read,pins:write,reactions:read,reactions:write,reminders:read,reminders:write,remote_files:read,remote_files:share,remote_files:write,team.billing:read,team.preferences:read,team:read,usergroups:read,usergroups:write,users.profile:read,users:read,users:read.email,users:write,workflow.steps:execute"
+          ],
+          "date": [
+            "Thu, 22 Jun 2023 12:41:26 GMT"
+          ],
+          "x-xss-protection": [
+            "0"
+          ],
+          "x-edge-backend": [
+            "envoy-www"
+          ],
+          "x-accepted-oauth-scopes": [
+            "chat:write"
+          ],
+          "access-control-expose-headers": [
+            "x-slack-req-id, retry-after"
+          ]
+        }
+      },
+      "request": {
+        "uri": "https://slack.com/api/chat.postMessage",
+        "body": {
+          "encoding": null,
+          "string": "{\"blocks\":[],\"channel\":\"#bots\",\"text\":\"foobar\"}"
+        },
+        "method": "post",
+        "headers": {
+          "user-agent": [
+            "slackbot-client"
+          ],
+          "authorization": [
+            "Bearer xoxn-not-a-real-token"
+          ],
+          "content-type": [
+            "application/json"
+          ],
+          "accept": [
+            "application/json"
+          ]
+        }
+      },
+      "recorded_at": "Thu, 22 Jun 2023 12:41:26 +0000"
+    }
+  ],
+  "recorded_with": "rVCR 0.1.1"
+}

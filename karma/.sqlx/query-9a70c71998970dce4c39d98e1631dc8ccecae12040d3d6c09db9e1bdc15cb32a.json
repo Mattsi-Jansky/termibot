@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE Entries SET Karma = ?WHERE IdName = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "9a70c71998970dce4c39d98e1631dc8ccecae12040d3d6c09db9e1bdc15cb32a"
+}

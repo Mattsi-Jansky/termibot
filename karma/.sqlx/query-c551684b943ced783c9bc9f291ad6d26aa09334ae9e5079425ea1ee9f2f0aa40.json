@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO Reasons (Name, Change, Value) VALUES (?, ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "c551684b943ced783c9bc9f291ad6d26aa09334ae9e5079425ea1ee9f2f0aa40"
+}

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO Entries (IdName, DisplayName, Karma) VALUES (?, ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "a6a637cb2ee3153de424843702924ccdd7cf4111f70931f69dbc1e3e3ea0ee4a"
+}

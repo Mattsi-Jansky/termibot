@@ -1,17 +1,38 @@
-# TermiBot
+# Termibot v3
 
-## Prerequisites
+We're going to Rust town, baby!
 
- * dotnet core: https://dotnet.microsoft.com/download
+# Dependencies
 
-## Run tests
+* [Rust](https://www.rust-lang.org/tools/install)
+* `sudo apt install libssl-dev libsqlite3-dev`
 
- * `dotnet test termibot.karma.tests`
+## How to use
 
- ## Setup & Run
+* Ensure dependencies are installed
+* If you haven't already, [create a Slack app](https://api.slack.com/authentication/basics)
+  * Enable socket mode
+  * Enable events API and give it access to all the bot messing read/write events, reactions and threads
+  * Enable OAuth2 and give it access to all the same bot events
+  * Only needs "bot" events, not "user" events
+* Get the bot's "app token" from the "basic info" tab of the app's page, toward the bottom
+* Get the bot's "bot token" from the OAuth tab of the app's page
+* Copy `config/template.toml` into `config/config.toml`
+  * Note this directory is gitignored to prevent inadvertently pushing secure tokens
+* Add the app token and bot token to `config/config.toml`
+* `cargo run`
 
- * If needed add a new bot to your workspace, following Noobot's instructions here: https://github.com/noobot/noobot/wiki/Getting-Started-With-Noobot#get-noobot-up-and-running-quickly
- * Download a copy of `config.default.json` here: https://github.com/noobot/noobot/blob/master/src/Noobot.Console/Configuration/config.default.json
- * Move it to `TermiBot.Console/Configuration/config.json` file and replce `slack:apiToken` with your bot's API token
-   * To find a copy of your bot's API token go to https://api.slack.com/apps, select your bot, go to "Install App" and copy the "Bot User OAuth Access Token". It should start with `xoxb`.
- * `dotnet run --project TermiBot.Console/TermiBot.Console.csproj`
+## Goals
+
+* Extensible architecture
+* Karma tracker
+
+## Stretch Goals
+
+* Create some sort of DSL to make creating blocks API messages easier
+  * A simple solution: Write it in JSON, use `format!` to inject values and `serde` to deserialise it?
+* Convert non-Songlink links to Songlink
+  * Give output similar to Songlink app itself?
+* Generate previews for Mastodon
+ * Currently Slack only shows first image of toots that have multiple images, would be great to be able to add the other images
+ * Would require matching against a long list of Mastoon instance URLs, can never be comprehensive.

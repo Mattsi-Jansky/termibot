@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT Value, Change FROM Reasons WHERE Name = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "Value",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "Change",
+        "ordinal": 1,
+        "type_info": "Int64"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "f476ea72460f7f16b9623f4e40df91512923d681742914f3092aeaea8207fd51"
+}
