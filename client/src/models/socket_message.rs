@@ -246,13 +246,9 @@ mod tests {
     fn should_parse_new_emoji_event() {
         let result: Event = serde_json::from_str(FAKE_NEW_EMOJI_EVENT).unwrap();
 
-        if let Event::EmojiChanged(result) = result {
-            if let EmojiChangedEvent::Add(result) = result {
-                assert_eq!(result.id, "1687458875.040100".into());
-                assert_eq!(result.name, "blobcat_knife".to_string());
-            } else {
-                panic!("Wrong type of event")
-            }
+        if let Event::EmojiChanged(EmojiChangedEvent::Add(result)) = result {
+            assert_eq!(result.id, "1687458875.040100".into());
+            assert_eq!(result.name, "blobcat_knife".to_string());
         } else {
             panic!("Wrong type of event")
         }
@@ -262,13 +258,9 @@ mod tests {
     fn should_parse_removed_emoji_event() {
         let result: Event = serde_json::from_str(FAKE_REMOVED_EMOJI_EVENT).unwrap();
 
-        if let Event::EmojiChanged(result) = result {
-            if let EmojiChangedEvent::Remove(result) = result {
-                assert_eq!(result.id, "1361482916.000004".into());
-                assert_eq!(result.names, vec!["picard_facepalm".to_string()]);
-            } else {
-                panic!("Wrong type of event")
-            }
+        if let Event::EmojiChanged(EmojiChangedEvent::Remove(result)) = result {
+            assert_eq!(result.id, "1361482916.000004".into());
+            assert_eq!(result.names, vec!["picard_facepalm".to_string()]);
         } else {
             panic!("Wrong type of event")
         }
@@ -278,12 +270,10 @@ mod tests {
     fn should_parse_renamed_emoji_event() {
         let result: Event = serde_json::from_str(FAKE_RENAMED_EMOJI_EVENT).unwrap();
 
-        if let Event::EmojiChanged(result) = result {
-            if let EmojiChangedEvent::Rename(result) = result {
-                assert_eq!(result.id, "1361482916.000004".into());
-                assert_eq!(result.old_name, "grin".to_string());
-                assert_eq!(result.new_name, "cheese-grin".to_string())
-            }
+        if let Event::EmojiChanged(EmojiChangedEvent::Rename(result)) = result {
+            assert_eq!(result.id, "1361482916.000004".into());
+            assert_eq!(result.old_name, "grin".to_string());
+            assert_eq!(result.new_name, "cheese-grin".to_string())
         }
     }
 }

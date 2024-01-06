@@ -327,7 +327,7 @@ mod tests {
     }
 
     fn mock_client() -> Arc<MockSlackClient> {
-        let mut mock_slack_client = MockSlackClient::new();
+        let mock_slack_client = MockSlackClient::new();
         Arc::new(mock_slack_client)
     }
 }

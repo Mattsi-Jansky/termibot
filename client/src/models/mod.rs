@@ -1,4 +1,4 @@
-pub(crate) mod WebsocketUrlMessage;
+pub(crate) mod websocket_url_message;
 pub mod blocks;
 pub mod http_response;
 pub mod message_body;

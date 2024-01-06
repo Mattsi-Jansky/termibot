@@ -6,15 +6,15 @@ use async_timer::oneshot::Timer;
 use async_timer::Oneshot;
 use async_trait::async_trait;
 use futures_util::{SinkExt, StreamExt};
-use serde::Deserialize;
-use serde_json::{json, Error};
+
+use serde_json::{json};
 use std::sync::Arc;
 use std::time;
 use tokio::net::TcpStream;
-use tokio_tungstenite::tungstenite::{client, Message};
+use tokio_tungstenite::tungstenite::{Message};
 use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
 use tracing::{error, info, warn};
-use url::Url;
+
 
 #[async_trait]
 pub trait SocketModeListener {
@@ -42,7 +42,7 @@ impl SocketModeListener for TungsteniteSocketModeListener {
                         Irrelevant => { continue; }
                     }
                 }
-                timeout = Timer::new(time::Duration::from_secs(15)) => {
+                _timeout = Timer::new(time::Duration::from_secs(15)) => {
                     info!("Timed out awaiting message from Slack API. Restarting Websockets connection.");
                     let stream_result = Self::init_stream(self.client.clone()).await;
                     match stream_result {
@@ -54,7 +54,6 @@ impl SocketModeListener for TungsteniteSocketModeListener {
                             panic!("Failed to re-establish Websocket connection after timeout: {:?}", err);
                         }
                     }
-                    continue;
                 }
             }
         }

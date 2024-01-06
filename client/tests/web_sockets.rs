@@ -9,7 +9,7 @@ use client::models::blocks::Block;
 use client::models::socket_message::{Authorization, Event, MessageEvent};
 use client::models::socket_message::{Payload, SocketMessage};
 use client::socket_listener::{SocketModeListener, TungsteniteSocketModeListener};
-use client::SlackClient;
+
 use futures_util::{SinkExt, StreamExt};
 use serial_test::serial;
 use std::sync::Arc;

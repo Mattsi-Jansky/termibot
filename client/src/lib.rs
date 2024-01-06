@@ -10,9 +10,8 @@ use tracing::info;
 use url::Url;
 
 use crate::models::message_id::MessageId;
-use crate::models::WebsocketUrlMessage::WebsocketUrlMessage;
+use crate::models::websocket_url_message::WebsocketUrlMessage;
 use crate::rate_limiter::RateLimitingMiddleware;
-use crate::socket_listener::SocketModeListener;
 
 pub mod error;
 pub mod models;
