@@ -1,8 +1,11 @@
 # Termibot v3
 
-We're going to Rust town, baby!
+[![Tests](https://github.com/Mattsi-Jansky/termibot/actions/workflows/main.yml/badge.svg)](https://github.com/Mattsi-Jansky/termibot/actions/workflows/main.yml)
+[![Security audit](https://github.com/Mattsi-Jansky/termibot/actions/workflows/audit.yml/badge.svg)](https://github.com/Mattsi-Jansky/termibot/actions/workflows/audit.yml)
 
-# Dependencies
+A bot for a private Slack.
+
+## Dependencies
 
 * [Rust](https://www.rust-lang.org/tools/install)
 * `sudo apt install libssl-dev libsqlite3-dev`
@@ -22,16 +25,11 @@ We're going to Rust town, baby!
 * Add the app token and bot token to `config/config.toml`
 * `cargo run`
 
-## Goals
-
-* Extensible architecture
-* Karma tracker
-
 ## Stretch Goals
 
 * Create some sort of DSL to make creating blocks API messages easier
   * A simple solution: Write it in JSON, use `format!` to inject values and `serde` to deserialise it?
-* Convert non-Songlink links to Songlink
+* Improve the Songlink plugin
   * Give output similar to Songlink app itself?
 * Generate previews for Mastodon
  * Currently Slack only shows first image of toots that have multiple images, would be great to be able to add the other images
