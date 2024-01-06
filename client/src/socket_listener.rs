@@ -28,8 +28,7 @@ pub struct TungsteniteSocketModeListener {
 #[async_trait]
 impl SocketModeListener for TungsteniteSocketModeListener {
     async fn next(&mut self) -> serde_json::Result<SocketMessage> {
-        #[allow(unused_assignments)]
-        let mut parsed_message = None;
+        let parsed_message;
 
         loop {
             tokio::select! {
