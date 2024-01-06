@@ -4,23 +4,19 @@ version = "3.0.0"
 edition = "2021"
 
 [dependencies]
-http = "0.2.9"
-hyper = { version = "0.14.25", features = ["full"] }
-serde = { version = "1.0.152", features = ["derive"] }
-slack-morphism = { version = "1.8.0", features = ["axum", "hyper"] }
-tokio = { version = "1.25.0", features = ["full"] }
-tracing = "0.1.37"
-tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
-regex = "1.7.2"
+serde = { version = "1.0.195", features = ["derive"] }
+tokio = { version = "1.35.1", features = ["full"] }
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+regex = "1.10.2"
 config-file = "0.2.3"
 lazy_static = "1.4.0"
-async-trait = "0.1.68"
-hyper-rustls = "0.23.2"
+async-trait = "0.1.77"
 framework = { path = "../framework" }
 client = { path = "../client" }
 karma = { path = "../karma" }
 
 [dev-dependencies]
-chrono = "0.4.20"
+chrono = "0.4.31"
 futures-locks = "0.7.1"
-mockall = "0.11.3"
+mockall = "0.11.4"
