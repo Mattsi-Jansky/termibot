@@ -8,7 +8,6 @@ use framework::actions::Action;
 use framework::dependencies::Dependencies;
 use framework::plugins::Plugin;
 
-
 use tracing::error;
 
 mod change_request;
@@ -56,7 +55,7 @@ impl KarmaPlugin {
     ) -> Action {
         let emoji = self.get_apropriate_emoji(capture);
         let channel = Self::get_channel(message);
-        
+
         Action::MessageChannel {
             channel,
             message: MessageBody::from_text(&format!(":{emoji}: {}: {value}", capture.name)[..]),

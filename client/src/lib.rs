@@ -177,9 +177,7 @@ impl SlackClient for ReqwestSlackClient {
     }
 
     #[tracing::instrument]
-    async fn get_websocket_url(
-        &self,
-    ) -> Result<Url, SlackClientError> {
+    async fn get_websocket_url(&self) -> Result<Url, SlackClientError> {
         info!("Connecting to socket mode");
         let response = self
             .http

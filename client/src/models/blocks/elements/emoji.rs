@@ -3,5 +3,5 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Builder)]
 pub struct EmojiElement {
-    pub name: String
+    pub name: String,
 }

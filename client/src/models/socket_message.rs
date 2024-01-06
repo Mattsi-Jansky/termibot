@@ -16,25 +16,21 @@ pub enum SocketMessage {
         payload: Payload,
     },
     #[serde(rename = "interactive")]
-    Interactive {
-        envelope_id: String,
-    },
+    Interactive { envelope_id: String },
     #[serde(rename = "slash_commands")]
-    SlashCommand {
-        envelope_id: String,
-    }
+    SlashCommand { envelope_id: String },
 }
 
 // Ignores the type field, because it seems to always be `event_callback`
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub struct Payload {
     pub event: Event,
-    pub authorizations: Vec<Authorization>
+    pub authorizations: Vec<Authorization>,
 }
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub struct Authorization {
-    pub user_id: String
+    pub user_id: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
@@ -141,7 +137,7 @@ pub enum Event {
     WorkflowPublished,
     WorkflowStepDeleted,
     WorkflowStepExecute,
-    WorkflowUnpublished
+    WorkflowUnpublished,
 }
 
 impl Event {
@@ -204,7 +200,7 @@ pub struct RenameEmojiEvent {
 
 pub enum MaybeRelevantSocketMessage {
     Relevant(serde_json::error::Result<SocketMessage>),
-    Irrelevant
+    Irrelevant,
 }
 
 #[cfg(test)]

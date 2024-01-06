@@ -1,20 +1,20 @@
-use std::sync::Arc;
-use std::time;
-use async_timer::Oneshot;
-use async_timer::oneshot::Timer;
 use crate::error::SlackClientError;
 use crate::models::socket_message::{MaybeRelevantSocketMessage, SocketMessage};
+use crate::socket_listener::MaybeRelevantSocketMessage::{Irrelevant, Relevant};
+use crate::SlackClient;
+use async_timer::oneshot::Timer;
+use async_timer::Oneshot;
 use async_trait::async_trait;
 use futures_util::{SinkExt, StreamExt};
 use serde::Deserialize;
-use serde_json::{Error, json};
+use serde_json::{json, Error};
+use std::sync::Arc;
+use std::time;
 use tokio::net::TcpStream;
 use tokio_tungstenite::tungstenite::{client, Message};
 use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
 use tracing::{error, info, warn};
 use url::Url;
-use crate::SlackClient;
-use crate::socket_listener::MaybeRelevantSocketMessage::{Relevant,Irrelevant};
 
 #[async_trait]
 pub trait SocketModeListener {
@@ -64,14 +64,16 @@ impl SocketModeListener for TungsteniteSocketModeListener {
 }
 
 impl TungsteniteSocketModeListener {
-    pub async fn new(client: Arc<dyn SlackClient + Send + Sync>) -> Result<Self,SlackClientError> {
+    pub async fn new(client: Arc<dyn SlackClient + Send + Sync>) -> Result<Self, SlackClientError> {
         Ok(TungsteniteSocketModeListener {
             client: client.clone(),
-            stream: Self::init_stream(client).await?
+            stream: Self::init_stream(client).await?,
         })
     }
 
-    async fn init_stream(client: Arc<dyn SlackClient + Send + Sync>) -> Result<WebSocketStream<MaybeTlsStream<TcpStream>>, SlackClientError> {
+    async fn init_stream(
+        client: Arc<dyn SlackClient + Send + Sync>,
+    ) -> Result<WebSocketStream<MaybeTlsStream<TcpStream>>, SlackClientError> {
         let url = client.get_websocket_url().await?;
         let (stream, _) = connect_async(url).await?;
         Ok(stream)

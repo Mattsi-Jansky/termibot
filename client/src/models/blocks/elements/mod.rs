@@ -1,12 +1,12 @@
+use crate::models::blocks::elements::emoji::EmojiElement;
 use crate::models::blocks::elements::text::LinkElement;
+use crate::models::blocks::elements::user::UserElement;
 use crate::models::blocks::objects::text::TextBody;
 use serde::{Deserialize, Serialize};
 use text::RichTextSectionElement;
-use crate::models::blocks::elements::emoji::EmojiElement;
-use crate::models::blocks::elements::user::UserElement;
 
-pub mod text;
 pub mod emoji;
+pub mod text;
 pub mod user;
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
@@ -16,5 +16,5 @@ pub enum BlockElement {
     Text(TextBody),
     Link(LinkElement),
     Emoji(EmojiElement),
-    User(UserElement)
+    User(UserElement),
 }

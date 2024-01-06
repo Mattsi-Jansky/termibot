@@ -1,7 +1,6 @@
 use lazy_static::lazy_static;
 use regex::{Captures, Match, Regex};
 
-
 lazy_static! {
     static ref KARMA_MATCHER: Regex =
         Regex::new(r"([^\s`]{2,}[^\+\-\s`])(--|\+\+|—)(?:\s|$|\n|\+|-)").unwrap();

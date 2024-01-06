@@ -166,18 +166,22 @@ impl KarmaRepository for SqliteKarmaRepository {
 mod tests {
     use super::*;
     use crate::change_request::ChangeRequest;
+    use crate::services::karma_parser::KarmaCapture;
     use crate::services::karma_repository::KarmaRepository;
     use serial_test::serial;
     use std::fs;
     use std::path::Path;
     use tracing_test::traced_test;
-    use crate::services::karma_parser::KarmaCapture;
 
     const DATABASE_FILENAME: &str = "testdb.db";
 
     impl KarmaCapture {
         pub fn new(name: String, is_increment: bool, reason: Option<String>) -> Self {
-            Self { name, is_increment, reason }
+            Self {
+                name,
+                is_increment,
+                reason,
+            }
         }
     }
 
