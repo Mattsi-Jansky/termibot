@@ -19,4 +19,4 @@ karma = { path = "../karma" }
 [dev-dependencies]
 chrono = "0.4.31"
 futures-locks = "0.7.1"
-mockall = "0.11.4"
+mockall = "0.12.1"
