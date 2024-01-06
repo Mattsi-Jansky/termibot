@@ -16,7 +16,7 @@ async-trait = "0.1.68"
 task-local-extensions = "0.1.4"
 governor = "0.5.1"
 nonzero = "0.1.0"
-tokio-tungstenite = { version = "0.19.0", features = ["native-tls"] }
+tokio-tungstenite = { version = "0.21.0", features = ["native-tls"] }
 url = "2.4.0"
 futures-util = { version = "0.3.28", features = ["sink", "std"] }
 serde_with = "3.0.0"
