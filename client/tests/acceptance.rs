@@ -76,3 +76,13 @@ async fn given_blocks_api_used_should_send_blocks_message() {
 
     assert!(result.unwrap().ok);
 }
+
+#[tokio::test]
+async fn should_get_bot_user_details() {
+    let builder = TestClientBuilder::new("should_get_bot_user_details");
+    let client = builder.new_client();
+
+    let id = client.get_user_id().await.unwrap();
+
+    assert_eq!(id, String::from("UE02Q1FTK"))
+}

@@ -10,6 +10,7 @@ use tracing::info;
 use url::Url;
 
 use crate::models::message_id::MessageId;
+use crate::models::user_message::UserDetailsMessage;
 use crate::models::websocket_url_message::WebsocketUrlMessage;
 use crate::rate_limiter::RateLimitingMiddleware;
 
@@ -41,6 +42,8 @@ pub trait SlackClient {
 
     /// Get a URL for opening a new Websocket connection
     async fn get_websocket_url(&self) -> Result<Url, SlackClientError>;
+
+    async fn get_user_id(&self) -> Result<String, SlackClientError>;
 }
 
 /// A client for talking to the Slack API
@@ -194,5 +197,26 @@ impl SlackClient for ReqwestSlackClient {
             .await?;
 
         Url::parse(response.url.as_str()).map_err(SlackClientError::from)
+    }
+
+    #[tracing::instrument]
+    async fn get_user_id(&self) -> Result<String, SlackClientError> {
+        info!("Fetching user id from Slack API");
+        let response = self
+            .http
+            .post("https://slack.com/api/auth.test")
+            .header(
+                "Authorization",
+                format!("Bearer {}", self.bot_token.expose_secret()),
+            )
+            .header("User-Agent", "slackbot-client")
+            .header("Accept", "application/json")
+            .header("Content-type", "application/x-www-form-urlencoded")
+            .send()
+            .await?
+            .json::<UserDetailsMessage>()
+            .await?;
+
+        Ok(response.user_id)
     }
 }

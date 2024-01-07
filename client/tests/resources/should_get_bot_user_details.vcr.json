@@ -1,0 +1,124 @@
+{
+  "http_interactions": [
+    {
+      "response": {
+        "body": {
+          "encoding": null,
+          "string": "{\"ok\":true,\"url\":\"ws://localhost:12345/\",\"team\":\"TermiSoc\",\"user\":\"termibot\",\"team_id\":\"T0G5PM4NR\",\"user_id\":\"UE02Q1FTK\",\"bot_id\":\"BE0LGNB1Q\",\"is_enterprise_install\":false}"
+        },
+        "http_version": "1.1",
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "headers": {
+          "x-slack-backend": [
+            "r"
+          ],
+          "content-length": [
+            "181"
+          ],
+          "x-edge-backend": [
+            "envoy-www"
+          ],
+          "x-backend": [
+            "main_normal main_canary_with_overflow main_control_with_overflow"
+          ],
+          "date": [
+            "Sun, 07 Jan 2024 17:14:39 GMT"
+          ],
+          "x-slack-edge-shared-secret-outcome": [
+            "no-match"
+          ],
+          "x-oauth-scopes": [
+            "app_mentions:read,bookmarks:read,bookmarks:write,calls:read,calls:write,channels:history,channels:join,channels:manage,channels:read,chat:write,chat:write.customize,chat:write.public,commands,conversations.connect:manage,conversations.connect:read,conversations.connect:write,dnd:read,emoji:read,files:read,files:write,groups:history,groups:read,groups:write,im:history,im:read,im:write,incoming-webhook,links.embed:write,links:read,links:write,metadata.message:read,mpim:history,mpim:read,mpim:write,pins:read,pins:write,reactions:read,reactions:write,reminders:read,reminders:write,remote_files:read,remote_files:share,remote_files:write,team.billing:read,team.preferences:read,team:read,usergroups:read,usergroups:write,users.profile:read,users:read,users:read.email,users:write,workflow.steps:execute"
+          ],
+          "access-control-expose-headers": [
+            "x-slack-req-id, retry-after"
+          ],
+          "via": [
+            "1.1 slack-prod.tinyspeck.com, envoy-www-iad-exjrleru, envoy-edge-lhr-jtkvahlo"
+          ],
+          "x-envoy-upstream-service-time": [
+            "90"
+          ],
+          "content-type": [
+            "application/json; charset=utf-8"
+          ],
+          "x-slack-req-id": [
+            "f51972c8bcc3c9d51e1d0e481cd26a26"
+          ],
+          "x-xss-protection": [
+            "0"
+          ],
+          "expires": [
+            "Sat, 26 Jul 1997 05:00:00 GMT"
+          ],
+          "access-control-allow-headers": [
+            "slack-route, x-slack-version-ts, x-b3-traceid, x-b3-spanid, x-b3-parentspanid, x-b3-sampled, x-b3-flags"
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "pragma": [
+            "no-cache"
+          ],
+          "x-envoy-attempt-count": [
+            "1"
+          ],
+          "x-server": [
+            "slack-www-hhvm-main-iad-ewrm"
+          ],
+          "x-slack-unique-id": [
+            "ZZrb_zzMU1ZT1gjnrmYCeAAAEBY"
+          ],
+          "x-slack-shared-secret-outcome": [
+            "no-match"
+          ],
+          "cache-control": [
+            "private, no-cache, no-store, must-revalidate"
+          ],
+          "strict-transport-security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "vary": [
+            "Accept-Encoding"
+          ],
+          "referrer-policy": [
+            "no-referrer"
+          ],
+          "server": [
+            "Apache"
+          ]
+        }
+      },
+      "request": {
+        "uri": "https://slack.com/api/auth.test",
+        "body": {
+          "encoding": null,
+          "string": ""
+        },
+        "method": "post",
+        "headers": {
+          "authorization": [
+            "Bearer xoxn-not-a-real-token"
+          ],
+          "accept": [
+            "application/json"
+          ],
+          "content-type": [
+            "application/x-www-form-urlencoded"
+          ],
+          "user-agent": [
+            "slackbot-client"
+          ]
+        }
+      },
+      "recorded_at": "Sun, 7 Jan 2024 17:14:39 +0000"
+    }
+  ],
+  "recorded_with": "rVCR 0.1.5"
+}
