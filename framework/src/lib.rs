@@ -16,6 +16,7 @@ use tracing::log::warn;
 use tracing::{error, info};
 
 pub mod actions;
+pub mod command_interface;
 pub mod dependencies;
 pub mod plugins;
 
@@ -54,6 +55,7 @@ impl SlackBot {
     }
 
     pub async fn run(self) -> Result<(), SlackClientError> {
+        let _user_id = self.client.get_user_id();
         let mut listener = match self.listener {
             None => Box::new(
                 match TungsteniteSocketModeListener::new(self.client.clone()).await {
