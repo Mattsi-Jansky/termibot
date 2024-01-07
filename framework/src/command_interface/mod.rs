@@ -1,6 +1,8 @@
 use client::models::socket_message::Event;
 
 pub(crate) fn parse_commands(event: &Event, user_id: String) -> Option<BotCommand> {
+    let mut result = None;
+
     if let Event::Message(message) = event {
         let text = message.text.clone().unwrap_or(String::new());
         if text.starts_with(format!("<@{user_id}>").as_str()) {
@@ -8,19 +10,15 @@ pub(crate) fn parse_commands(event: &Event, user_id: String) -> Option<BotComman
             words.remove(0);
             if !words.is_empty() {
                 let command = words.remove(0);
-                Some(BotCommand {
+                result = Some(BotCommand {
                     command,
                     arguments: words,
-                })
-            } else {
-                None
+                });
             }
-        } else {
-            None
         }
-    } else {
-        None
     }
+
+    result
 }
 
 #[derive(Debug, PartialEq, Clone)]
