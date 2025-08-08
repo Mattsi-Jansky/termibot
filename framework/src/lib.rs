@@ -18,6 +18,8 @@ use tracing::{error, info};
 pub mod actions;
 pub mod dependencies;
 pub mod plugins;
+mod enriched_event;
+mod event_processor;
 
 pub struct SlackBot {
     client: Arc<dyn SlackClient + Send + Sync>,
