@@ -1,4 +1,4 @@
-pub mod AuthTestResponse;
+pub mod auth_test_response;
 pub mod blocks;
 pub mod http_response;
 pub mod message_body;

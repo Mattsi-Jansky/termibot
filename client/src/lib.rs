@@ -1,7 +1,7 @@
 use crate::models::message_body::MessageBody;
 use crate::models::message_id::MessageId;
 use crate::models::websocket_url_message::WebsocketUrlMessage;
-use crate::models::AuthTestResponse::AuthTestResponse;
+use crate::models::auth_test_response::AuthTestResponse;
 use crate::rate_limiter::RateLimitingMiddleware;
 use async_trait::async_trait;
 use error::SlackClientError;
