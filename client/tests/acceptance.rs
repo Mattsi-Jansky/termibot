@@ -76,3 +76,13 @@ async fn given_blocks_api_used_should_send_blocks_message() {
 
     assert!(result.unwrap().ok);
 }
+
+#[tokio::test]
+async fn should_get_identity() {
+    let builder = TestClientBuilder::new("should_get_identity");
+    let client = builder.new_client();
+
+    let response = client.get_identity().await;
+
+    assert!(response.unwrap().ok);
+}

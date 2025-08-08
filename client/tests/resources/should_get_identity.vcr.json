@@ -1,0 +1,124 @@
+{
+  "http_interactions": [
+    {
+      "response": {
+        "body": {
+          "encoding": null,
+          "string": "{\"ok\":true,\"url\":\"ws://localhost:12345/\",\"team\":\"TermiSoc\",\"user\":\"termibot\",\"team_id\":\"T0G5PM4NR\",\"user_id\":\"UE02Q1FTK\",\"bot_id\":\"BE0LGNB1Q\",\"is_enterprise_install\":false}"
+        },
+        "http_version": "1.1",
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "headers": {
+          "x-backend": [
+            "main_normal main_canary_with_overflow main_control_with_overflow"
+          ],
+          "x-server": [
+            "slack-www-hhvm-main-iad-oxmn"
+          ],
+          "x-slack-edge-shared-secret-outcome": [
+            "no-match"
+          ],
+          "server": [
+            "Apache"
+          ],
+          "strict-transport-security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "pragma": [
+            "no-cache"
+          ],
+          "access-control-expose-headers": [
+            "x-slack-req-id, retry-after"
+          ],
+          "via": [
+            "1.1 slack-prod.tinyspeck.com, envoy-www-iad-epaiufwb,envoy-edge-lhr-wkkusjqp"
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "referrer-policy": [
+            "no-referrer"
+          ],
+          "x-slack-req-id": [
+            "642c1cfadb1c80cff9fc88bdeced59b2"
+          ],
+          "x-slack-unique-id": [
+            "aJXW6YBTNWp1TTNndYVmiQAAADc"
+          ],
+          "x-slack-backend": [
+            "r"
+          ],
+          "expires": [
+            "Sat, 26 Jul 1997 05:00:00 GMT"
+          ],
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "x-edge-backend": [
+            "envoy-www"
+          ],
+          "x-slack-shared-secret-outcome": [
+            "no-match"
+          ],
+          "access-control-allow-headers": [
+            "slack-route, x-slack-version-ts, x-b3-traceid, x-b3-spanid, x-b3-parentspanid, x-b3-sampled, x-b3-flags"
+          ],
+          "timing-allow-origin": [
+            "*"
+          ],
+          "x-xss-protection": [
+            "0"
+          ],
+          "date": [
+            "Fri, 08 Aug 2025 10:52:25 GMT"
+          ],
+          "vary": [
+            "Accept-Encoding"
+          ],
+          "content-type": [
+            "application/json; charset=utf-8"
+          ],
+          "x-oauth-scopes": [
+            "app_mentions:read,bookmarks:read,bookmarks:write,calls:read,calls:write,channels:history,channels:join,channels:manage,channels:read,chat:write,chat:write.customize,chat:write.public,commands,conversations.connect:manage,conversations.connect:read,conversations.connect:write,dnd:read,emoji:read,files:read,files:write,groups:history,groups:read,groups:write,im:history,im:read,im:write,incoming-webhook,links.embed:write,links:read,links:write,metadata.message:read,mpim:history,mpim:read,mpim:write,pins:read,pins:write,reactions:read,reactions:write,reminders:read,reminders:write,remote_files:read,remote_files:share,remote_files:write,team.billing:read,team.preferences:read,team:read,usergroups:read,usergroups:write,users.profile:read,users:read,users:read.email,users:write,workflow.steps:execute"
+          ],
+          "content-length": [
+            "181"
+          ],
+          "x-envoy-attempt-count": [
+            "1"
+          ],
+          "cache-control": [
+            "private, no-cache, no-store, must-revalidate"
+          ],
+          "x-envoy-upstream-service-time": [
+            "91"
+          ]
+        }
+      },
+      "request": {
+        "uri": "https://slack.com/api/auth.test",
+        "body": {
+          "encoding": null,
+          "string": ""
+        },
+        "method": "post",
+        "headers": {
+          "accept": [
+            "application/json"
+          ],
+          "user-agent": [
+            "slackbot-client"
+          ],
+          "authorization": [
+            "Bearer xoxn-not-a-real-token"
+          ]
+        }
+      },
+      "recorded_at": "Fri, 8 Aug 2025 10:52:25 +0000"
+    }
+  ],
+  "recorded_with": "rVCR 0.1.5"
+}

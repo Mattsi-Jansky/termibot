@@ -3,12 +3,12 @@ use async_trait::async_trait;
 use error::SlackClientError;
 use mockall::automock;
 use models::http_response::HttpApiResponse;
-use reqwest::Client;
+use reqwest::{Client};
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use secrecy::{ExposeSecret, Secret};
 use tracing::info;
 use url::Url;
-
+use crate::models::AuthTestResponse::AuthTestResponse;
 use crate::models::message_id::MessageId;
 use crate::models::websocket_url_message::WebsocketUrlMessage;
 use crate::rate_limiter::RateLimitingMiddleware;
@@ -23,6 +23,9 @@ pub mod socket_listener;
 #[automock]
 #[async_trait]
 pub trait SlackClient {
+    /// Get the name and id of the bot and the Slack instance
+    async fn get_identity(&self) -> Result<AuthTestResponse, SlackClientError>;
+
     async fn message_channel(
         &self,
         channel: &str,
@@ -106,6 +109,24 @@ impl ReqwestSlackClient {
 
 #[async_trait]
 impl SlackClient for ReqwestSlackClient {
+
+    async fn get_identity(&self) -> Result<AuthTestResponse, SlackClientError> {
+        self
+            .http
+            .post("https://slack.com/api/auth.test")
+            .header(
+                "Authorization",
+                format!("Bearer {}", self.bot_token.expose_secret()),
+            )
+            .header("User-Agent", "slackbot-client")
+            .header("Accept", "application/json")
+            .send()
+            .await?
+            .json::<AuthTestResponse>()
+            .await
+            .map_err(SlackClientError::from)
+    }
+
     #[tracing::instrument]
     async fn message_channel(
         &self,
