@@ -8,5 +8,5 @@ pub struct AuthTestResponse {
     pub user: String,
     pub team_id: String,
     pub user_id: String,
-    pub is_enterprise_install: bool // not in documentation, but is in response
+    pub is_enterprise_install: bool, // not in documentation, but is in response
 }

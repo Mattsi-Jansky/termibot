@@ -1,17 +1,17 @@
 use crate::models::message_body::MessageBody;
+use crate::models::message_id::MessageId;
+use crate::models::websocket_url_message::WebsocketUrlMessage;
+use crate::models::AuthTestResponse::AuthTestResponse;
+use crate::rate_limiter::RateLimitingMiddleware;
 use async_trait::async_trait;
 use error::SlackClientError;
 use mockall::automock;
 use models::http_response::HttpApiResponse;
-use reqwest::{Client};
+use reqwest::Client;
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use secrecy::{ExposeSecret, Secret};
 use tracing::info;
 use url::Url;
-use crate::models::AuthTestResponse::AuthTestResponse;
-use crate::models::message_id::MessageId;
-use crate::models::websocket_url_message::WebsocketUrlMessage;
-use crate::rate_limiter::RateLimitingMiddleware;
 
 pub mod error;
 pub mod models;
@@ -109,10 +109,8 @@ impl ReqwestSlackClient {
 
 #[async_trait]
 impl SlackClient for ReqwestSlackClient {
-
     async fn get_identity(&self) -> Result<AuthTestResponse, SlackClientError> {
-        self
-            .http
+        self.http
             .post("https://slack.com/api/auth.test")
             .header(
                 "Authorization",
