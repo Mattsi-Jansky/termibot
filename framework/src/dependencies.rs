@@ -36,6 +36,7 @@ impl DependenciesBuilder {
     }
 }
 
+#[derive(Default)]
 pub struct Dependencies {
     values: HashMap<TypeId, Arc<dyn Any + Send + Sync>>,
 }

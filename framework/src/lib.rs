@@ -14,6 +14,7 @@ use crate::dependencies::DependenciesBuilder;
 use client::socket_listener::{SocketModeListener, TungsteniteSocketModeListener};
 use tracing::log::warn;
 use tracing::{error, info};
+use crate::event_processor::EventProcessor;
 
 pub mod actions;
 pub mod dependencies;
@@ -32,12 +33,13 @@ pub struct SlackBot {
 impl SlackBot {
     pub fn new(bot_token: &str, app_token: &str) -> Self {
         let client = Arc::new(ReqwestSlackClient::new(bot_token, app_token));
+
         Self {
             client,
             plugins: vec![],
             action_handler: Box::new(DefaultActionHandler {}),
             dependencies_builder: DependenciesBuilder::default(),
-            listener: None,
+            listener: None
         }
     }
 
@@ -56,6 +58,9 @@ impl SlackBot {
     }
 
     pub async fn run(self) -> Result<(), SlackClientError> {
+        let identity = self.client.get_identity().await.unwrap();
+        let event_processor = EventProcessor::new(identity.user, identity.user_id);
+        
         let mut listener = match self.listener {
             None => Box::new(
                 match TungsteniteSocketModeListener::new(self.client.clone()).await {
