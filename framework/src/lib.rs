@@ -107,7 +107,7 @@ impl SlackBot {
                     if let Some(ref enriched) = &enriched_event {
                         debug!("Successfully enriched event: {:?}", enriched);
                         let matching_plugins =
-                            self.plugin_registry.find_matching_plugins(&enriched);
+                            self.plugin_registry.find_matching_plugins(enriched);
 
                         if !matching_plugins.is_empty() {
                             info!(
@@ -193,7 +193,7 @@ mod tests {
     use super::*;
     use crate::actions::Action;
     use crate::dependencies::Dependencies;
-    use crate::enriched_event::{CommandData, EnrichedEvent};
+    use crate::enriched_event::{EnrichedEvent};
     use crate::plugins::Subscription;
     use actions::handler::MockActionHandler;
     use async_trait::async_trait;
@@ -299,7 +299,7 @@ mod tests {
         let mock_action_handler = Box::new(MockActionHandler::new());
         let mut mock_plugin = Box::new(MockPlugin::new());
 
-        mock_plugin.expect_subscriptions().returning(|| vec![]);
+        mock_plugin.expect_subscriptions().returning(std::vec::Vec::new);
         mock_plugin.expect_on_enriched_event().times(0);
         mock_plugin
             .expect_on_event()

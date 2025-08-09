@@ -98,8 +98,8 @@ macro_rules! subscriptions {
 mod tests {
     use super::*;
     use crate::enriched_event::{CommandData, EnrichedEvent};
-    use client::models::message_id::MessageId;
-    use client::models::socket_message::MessageEvent;
+    
+    
 
     #[test]
     fn should_match_exact_subscription() {

@@ -1,4 +1,4 @@
-use crate::enriched_event::{CommandData, EnrichedEvent};
+use crate::enriched_event::{EnrichedEvent};
 use crate::plugins::{Plugin, Subscription};
 use tracing::{debug, trace};
 
@@ -10,6 +10,12 @@ struct PluginEntry {
 /// Registry that manages plugins and routes events to them based on subscriptions
 pub struct PluginRegistry {
     plugins: Vec<PluginEntry>,
+}
+
+impl Default for PluginRegistry {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl PluginRegistry {
@@ -121,7 +127,8 @@ mod tests {
     use crate::actions::Action;
     use crate::dependencies::Dependencies;
     use async_trait::async_trait;
-    use client::models::socket_message::{Event, MessageEvent};
+    use client::models::socket_message::{Event};
+    use crate::enriched_event::CommandData;
 
     struct TestPlugin {
         name: String,
