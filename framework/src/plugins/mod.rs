@@ -99,8 +99,6 @@ mod tests {
     use super::*;
     use crate::enriched_event::{CommandData, EnrichedEvent};
 
-
-
     #[test]
     fn should_match_exact_subscription() {
         let sub = Subscription::exact("help");

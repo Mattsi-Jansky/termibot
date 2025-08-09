@@ -1,4 +1,3 @@
-
 #[derive(Debug, PartialEq)]
 pub struct CommandData {
     /// The parsed command (first word after bot mention)
