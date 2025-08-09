@@ -1,3 +1,5 @@
+pub mod registry;
+
 use crate::actions::Action;
 use crate::dependencies::Dependencies;
 use crate::enriched_event::EnrichedEvent;
@@ -129,8 +131,7 @@ mod tests {
 
     #[test]
     fn should_match_subscription_with_description() {
-        let sub = Subscription::exact("help")
-            .with_description("Shows help information");
+        let sub = Subscription::exact("help").with_description("Shows help information");
         assert_eq!(sub.description, Some("Shows help information".to_string()));
     }
 
@@ -188,7 +189,7 @@ mod tests {
             args: vec![],
             raw_args: String::new(),
             channel: "#general".to_string(),
-            user: "U123".to_string()
+            user: "U123".to_string(),
         });
 
         let actions = plugin.on_enriched_event(&event, &deps).await;

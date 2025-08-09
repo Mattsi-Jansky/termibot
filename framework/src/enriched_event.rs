@@ -1,6 +1,5 @@
-
-use client::models::socket_message::{Event, MessageEvent};
 use client::models::message_id::MessageId;
+use client::models::socket_message::{Event, MessageEvent};
 
 #[derive(Debug, PartialEq)]
 pub struct CommandData {

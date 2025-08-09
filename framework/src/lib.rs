@@ -11,20 +11,21 @@ use std::sync::Arc;
 
 use crate::actions::Action;
 use crate::dependencies::DependenciesBuilder;
+use crate::event_processor::EventProcessor;
+use crate::plugins::registry::PluginRegistry;
 use client::socket_listener::{SocketModeListener, TungsteniteSocketModeListener};
 use tracing::log::warn;
-use tracing::{error, info};
-use crate::event_processor::EventProcessor;
+use tracing::{debug, error, info};
 
 pub mod actions;
 pub mod dependencies;
+pub mod enriched_event;
+pub mod event_processor;
 pub mod plugins;
-mod enriched_event;
-mod event_processor;
 
 pub struct SlackBot {
     client: Arc<dyn SlackClient + Send + Sync>,
-    plugins: Vec<Box<dyn Plugin>>,
+    plugin_registry: PluginRegistry,
     action_handler: Box<dyn ActionHandler>,
     dependencies_builder: DependenciesBuilder,
     listener: Option<Box<dyn SocketModeListener + Send + Sync>>,
@@ -33,13 +34,12 @@ pub struct SlackBot {
 impl SlackBot {
     pub fn new(bot_token: &str, app_token: &str) -> Self {
         let client = Arc::new(ReqwestSlackClient::new(bot_token, app_token));
-
         Self {
             client,
-            plugins: vec![],
+            plugin_registry: PluginRegistry::new(),
             action_handler: Box::new(DefaultActionHandler {}),
             dependencies_builder: DependenciesBuilder::default(),
-            listener: None
+            listener: None,
         }
     }
 
@@ -50,7 +50,7 @@ impl SlackBot {
     ) -> SlackBot {
         SlackBot {
             client,
-            plugins: vec![],
+            plugin_registry: PluginRegistry::new(),
             action_handler: handler,
             dependencies_builder: DependenciesBuilder::default(),
             listener: Some(listener),
@@ -58,9 +58,9 @@ impl SlackBot {
     }
 
     pub async fn run(self) -> Result<(), SlackClientError> {
-        let identity = self.client.get_identity().await.unwrap();
+        let identity = self.client.get_identity().await?;
         let event_processor = EventProcessor::new(identity.user, identity.user_id);
-        
+
         let mut listener = match self.listener {
             None => Box::new(
                 match TungsteniteSocketModeListener::new(self.client.clone()).await {
@@ -75,8 +75,25 @@ impl SlackBot {
         let dependencies = self.dependencies_builder.build();
         info!("Slack bot starting");
 
+        let registry_info = self.plugin_registry.get_registry_info();
+        info!("Registered {} plugins", registry_info.len());
+        for (i, plugin_info) in registry_info.iter().enumerate() {
+            debug!(
+                "Plugin {}: {} subscriptions",
+                i + 1,
+                plugin_info.subscriptions.len()
+            );
+            for sub in &plugin_info.subscriptions {
+                debug!(
+                    "  - Pattern: {}, Description: {:?}",
+                    sub.pattern, sub.description
+                );
+            }
+        }
+
         loop {
             let message = listener.next().await?;
+            let mut enriched_event = None;
             let mut future_actions = vec![];
             info!("Received message: {message:?}");
 
@@ -85,7 +102,32 @@ impl SlackBot {
                     envelope_id: _,
                     payload,
                 } => {
-                    for plugin in &self.plugins {
+                    enriched_event = event_processor.process(&payload.event);
+
+                    if let Some(ref enriched) = &enriched_event {
+                        debug!("Successfully enriched event: {:?}", enriched);
+                        let matching_plugins =
+                            self.plugin_registry.find_matching_plugins(&enriched);
+
+                        if !matching_plugins.is_empty() {
+                            info!(
+                                "Found {} plugin(s) matching enriched event",
+                                matching_plugins.len()
+                            );
+
+                            for plugin in matching_plugins {
+                                let action_future =
+                                    plugin.on_enriched_event(enriched, &dependencies);
+                                future_actions.push(action_future);
+                            }
+                        } else {
+                            debug!("No plugins subscribed to this enriched event");
+                        }
+                    } else {
+                        debug!("Event was not enriched (bot not addressed or not a message)");
+                    }
+
+                    for plugin in self.plugin_registry.all() {
                         let action_future = plugin.on_event(&payload.event, &dependencies);
                         future_actions.push(action_future);
                     }
@@ -96,7 +138,6 @@ impl SlackBot {
                 SocketMessage::SlashCommand { .. } => {
                     warn!("Received a slash command message but cannot handle slash commands yet, not implemented.")
                 }
-
                 SocketMessage::Hello { .. } => { /* Nothing to do */ }
                 SocketMessage::Disconnect { .. } => {
                     info!("Disconnect message received");
@@ -109,6 +150,10 @@ impl SlackBot {
                 .into_iter()
                 .flatten()
                 .collect();
+            if !actions.is_empty() {
+                debug!("Executing {} action(s)", actions.len());
+            }
+
             let results = join_all(
                 actions
                     .into_iter()
@@ -128,7 +173,7 @@ impl SlackBot {
     }
 
     pub fn with_plugin(mut self, plugin: Box<dyn Plugin>) -> Self {
-        self.plugins.push(plugin);
+        self.plugin_registry.register(plugin);
         self
     }
 
@@ -148,8 +193,11 @@ mod tests {
     use super::*;
     use crate::actions::Action;
     use crate::dependencies::Dependencies;
+    use crate::enriched_event::{CommandData, EnrichedEvent};
+    use crate::plugins::Subscription;
     use actions::handler::MockActionHandler;
     use async_trait::async_trait;
+    use client::models::auth_test_response::AuthTestResponse;
     use client::models::message_body::MessageBody;
     use client::models::message_id::MessageId;
     use client::models::socket_message::{
@@ -163,6 +211,14 @@ mod tests {
     #[derive(Default)]
     struct TestSocketModeListener {
         call_count: usize,
+        include_bot_mention: bool,
+    }
+
+    impl TestSocketModeListener {
+        fn with_bot_mention(mut self) -> Self {
+            self.include_bot_mention = true;
+            self
+        }
     }
 
     #[async_trait]
@@ -173,16 +229,22 @@ mod tests {
             if self.call_count == 1 {
                 Ok(SocketMessage::Hello {})
             } else if self.call_count == 2 {
+                let text = if self.include_bot_mention {
+                    Some("@testbot hello world".to_string())
+                } else {
+                    Some("this is your secret message".to_string())
+                };
+
                 Ok(SocketMessage::Event {
                     envelope_id: "fake-envelope-id".to_string(),
                     payload: Payload {
                         event: Event::Message(MessageEvent {
                             id: MessageId("fake-id".to_string()),
-                            text: Some("this is your secret message".to_string()),
-                            user: None,
+                            text,
+                            user: Some("U789".to_string()),
                             blocks: Some(vec![]),
-                            channel: None,
-                            channel_type: None,
+                            channel: Some("#general".to_string()),
+                            channel_type: Some("channel".to_string()),
                         }),
                         authorizations: vec![Authorization {
                             user_id: "F4K3U53R1D".to_string(),
@@ -207,9 +269,17 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn forward_event_message_to_plugin() {
+    async fn plugin_receives_both_raw_and_enriched_events() {
         let mock_action_handler = Box::new(MockActionHandler::new());
         let mut mock_plugin = Box::new(MockPlugin::new());
+        mock_plugin
+            .expect_subscriptions()
+            .returning(|| vec![Subscription::exact("hello")]);
+        mock_plugin
+            .expect_on_enriched_event()
+            .times(1)
+            .returning(|_, _| Box::pin(future::ready(vec![])));
+
         mock_plugin
             .expect_on_event()
             .times(1)
@@ -217,7 +287,7 @@ mod tests {
         let bot = SlackBot::from(
             mock_client(),
             mock_action_handler,
-            Box::<TestSocketModeListener>::default(),
+            Box::new(TestSocketModeListener::default().with_bot_mention()),
         )
         .with_plugin(mock_plugin);
 
@@ -225,39 +295,21 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn forward_service_to_plugin() {
+    async fn plugin_with_no_subscriptions_only_receives_raw_events() {
         let mock_action_handler = Box::new(MockActionHandler::new());
-        let mock_plugin_asserts_dependencies_passed =
-            Box::new(MockPluginAssertDependencyIsPassed());
-        let bot = SlackBot::from(
-            mock_client(),
-            mock_action_handler,
-            Box::<TestSocketModeListener>::default(),
-        )
-        .with_service(12)
-        .with_plugin(mock_plugin_asserts_dependencies_passed);
-
-        bot.run().await.unwrap();
-    }
-
-    #[tokio::test]
-    async fn forward_action_to_action_handler() {
-        let mut mock_action_handler = Box::new(MockActionHandler::new());
         let mut mock_plugin = Box::new(MockPlugin::new());
-        mock_plugin.expect_on_event().times(1).returning(|_, _| {
-            Box::pin(future::ready(vec![Action::MessageChannel {
-                channel: "".to_string(),
-                message: MessageBody::from_text("test"),
-            }]))
-        });
-        mock_action_handler
-            .expect_handle()
+
+        mock_plugin.expect_subscriptions().returning(|| vec![]);
+        mock_plugin.expect_on_enriched_event().times(0);
+        mock_plugin
+            .expect_on_event()
             .times(1)
-            .returning(|_, _| Box::pin(future::ready(Ok(()))));
+            .returning(|_, _| Box::pin(future::ready(vec![])));
+
         let bot = SlackBot::from(
             mock_client(),
             mock_action_handler,
-            Box::<TestSocketModeListener>::default(),
+            Box::new(TestSocketModeListener::default().with_bot_mention()),
         )
         .with_plugin(mock_plugin);
 
@@ -265,76 +317,112 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn forward_multiple_actions_to_action_handler() {
-        let mut mock_action_handler = Box::new(MockActionHandler::new());
+    async fn non_addressed_messages_only_trigger_raw_event() {
+        let mock_action_handler = Box::new(MockActionHandler::new());
         let mut mock_plugin = Box::new(MockPlugin::new());
-        mock_plugin.expect_on_event().times(1).returning(|_, _| {
-            Box::pin(future::ready(vec![
-                Action::MessageChannel {
-                    channel: "".to_string(),
-                    message: MessageBody::from_text("test 1"),
-                },
-                Action::MessageChannel {
-                    channel: "".to_string(),
-                    message: MessageBody::from_text("test 2"),
-                },
-            ]))
-        });
-        mock_action_handler
-            .expect_handle()
-            .times(2)
-            .returning(|_, _| Box::pin(future::ready(Ok(()))));
+
+        mock_plugin
+            .expect_subscriptions()
+            .returning(|| vec![Subscription::exact("hello")]);
+        mock_plugin.expect_on_enriched_event().times(0);
+        mock_plugin
+            .expect_on_event()
+            .times(1)
+            .returning(|_, _| Box::pin(future::ready(vec![])));
+
         let bot = SlackBot::from(
             mock_client(),
             mock_action_handler,
-            Box::<TestSocketModeListener>::default(),
+            Box::new(TestSocketModeListener::default()),
         )
         .with_plugin(mock_plugin);
 
         bot.run().await.unwrap();
     }
 
-    struct MockPluginAssertDependencyIsPassed();
+    #[tokio::test]
+    async fn multiple_plugins_with_same_subscription() {
+        let mock_action_handler = Box::new(MockActionHandler::new());
+
+        let mut plugin1 = Box::new(MockPlugin::new());
+        plugin1
+            .expect_subscriptions()
+            .returning(|| vec![Subscription::exact("hello")]);
+        plugin1
+            .expect_on_enriched_event()
+            .times(1)
+            .returning(|_, _| Box::pin(future::ready(vec![])));
+        plugin1
+            .expect_on_event()
+            .times(1)
+            .returning(|_, _| Box::pin(future::ready(vec![])));
+
+        let mut plugin2 = Box::new(MockPlugin::new());
+        plugin2
+            .expect_subscriptions()
+            .returning(|| vec![Subscription::exact("hello")]);
+        plugin2
+            .expect_on_enriched_event()
+            .times(1)
+            .returning(|_, _| Box::pin(future::ready(vec![])));
+        plugin2
+            .expect_on_event()
+            .times(1)
+            .returning(|_, _| Box::pin(future::ready(vec![])));
+
+        let bot = SlackBot::from(
+            mock_client(),
+            mock_action_handler,
+            Box::new(TestSocketModeListener::default().with_bot_mention()),
+        )
+        .with_plugin(plugin1)
+        .with_plugin(plugin2);
+
+        bot.run().await.unwrap();
+    }
+
+    struct TestEnrichedPlugin;
+
     #[async_trait]
-    impl Plugin for MockPluginAssertDependencyIsPassed {
-        async fn on_event(&self, _event: &Event, dependencies: &Dependencies) -> Vec<Action> {
-            assert_eq!(12, *dependencies.get::<i32>().unwrap().read().await);
-            vec![]
+    impl Plugin for TestEnrichedPlugin {
+        fn subscriptions(&self) -> Vec<Subscription> {
+            vec![Subscription::exact("test")]
+        }
+
+        async fn on_enriched_event(
+            &self,
+            event: &EnrichedEvent,
+            _dependencies: &Dependencies,
+        ) -> Vec<Action> {
+            if let EnrichedEvent::Command(cmd) = event {
+                vec![Action::MessageChannel {
+                    channel: cmd.channel.clone(),
+                    message: MessageBody::from_text("Handled enriched event"),
+                }]
+            } else {
+                vec![]
+            }
         }
     }
 
-    #[tokio::test]
-    async fn forward_event_outcome_to_action_handler() {
-        let mut mock_plugin = Box::new(MockPlugin::new());
-        mock_plugin.expect_on_event().returning(|_, _| {
-            Box::pin(future::ready(vec![Action::MessageChannel {
-                channel: String::from("my test channel"),
-                message: MessageBody::from_text("my test message"),
-            }]))
-        });
-        let mut mock_action_handler = Box::new(MockActionHandler::new());
-        mock_action_handler
-            .expect_handle()
-            .times(1)
-            .withf(|action, _client| match action {
-                Action::MessageChannel { channel, message } => {
-                    channel == "my test channel" && message.get_text() == "my test message"
-                }
-                _ => false,
-            })
-            .returning(|_, _| Box::pin(future::ready(Ok(()))));
-        let bot = SlackBot::from(
-            mock_client(),
-            mock_action_handler,
-            Box::<TestSocketModeListener>::default(),
-        )
-        .with_plugin(mock_plugin);
-
-        bot.run().await.unwrap();
-    }
-
     fn mock_client() -> Arc<MockSlackClient> {
-        let mock_slack_client = MockSlackClient::new();
+        let mut mock_slack_client = MockSlackClient::new();
+
+        mock_slack_client
+            .expect_get_identity()
+            .times(1)
+            .returning(|| {
+                Ok(AuthTestResponse {
+                    ok: true,
+                    url: "https://test.slack.com/".to_string(),
+                    team: "Test Team".to_string(),
+                    user: "testbot".to_string(),
+                    user_id: "U123456".to_string(),
+                    team_id: "T123456".to_string(),
+                    is_enterprise_install: false,
+                })
+            });
+
         Arc::new(mock_slack_client)
     }
 }

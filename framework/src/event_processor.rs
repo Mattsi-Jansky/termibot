@@ -46,7 +46,7 @@ impl EventProcessor {
                 args,
                 raw_args,
                 channel,
-                user
+                user,
             }))
         }
     }
@@ -83,8 +83,8 @@ impl EventProcessor {
 
 #[cfg(test)]
 mod tests {
-    use client::models::message_id::MessageId;
     use super::*;
+    use client::models::message_id::MessageId;
 
     fn create_test_processor() -> EventProcessor {
         EventProcessor::new("testbot".to_string(), "U123456".to_string())
@@ -174,7 +174,10 @@ mod tests {
 
         if let Some(EnrichedEvent::Command(cmd)) = result {
             assert_eq!(cmd.command, "remind");
-            assert_eq!(cmd.args, vec!["me", "to", "check", "the", "logs", "tomorrow"]);
+            assert_eq!(
+                cmd.args,
+                vec!["me", "to", "check", "the", "logs", "tomorrow"]
+            );
             assert_eq!(cmd.raw_args, "me to check the logs tomorrow");
         } else {
             panic!("Expected Command variant");
