@@ -381,30 +381,6 @@ mod tests {
         bot.run().await.unwrap();
     }
 
-    struct TestEnrichedPlugin;
-
-    #[async_trait]
-    impl Plugin for TestEnrichedPlugin {
-        fn subscriptions(&self) -> Vec<Subscription> {
-            vec![Subscription::exact("test")]
-        }
-
-        async fn on_enriched_event(
-            &self,
-            event: &EnrichedEvent,
-            _dependencies: &Dependencies,
-        ) -> Vec<Action> {
-            if let EnrichedEvent::Command(cmd) = event {
-                vec![Action::MessageChannel {
-                    channel: cmd.channel.clone(),
-                    message: MessageBody::from_text("Handled enriched event"),
-                }]
-            } else {
-                vec![]
-            }
-        }
-    }
-
     fn mock_client() -> Arc<MockSlackClient> {
         let mut mock_slack_client = MockSlackClient::new();
 
