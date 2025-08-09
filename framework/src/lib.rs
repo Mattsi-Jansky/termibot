@@ -93,7 +93,7 @@ impl SlackBot {
 
         loop {
             let message = listener.next().await?;
-            let mut enriched_event = None;
+            let mut enriched_event;
             let mut future_actions = vec![];
             info!("Received message: {message:?}");
 
