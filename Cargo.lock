@@ -584,6 +584,7 @@ dependencies = [
  "futures",
  "futures-channel",
  "mockall",
+ "regex",
  "reqwest",
  "serde",
  "serde_json",
