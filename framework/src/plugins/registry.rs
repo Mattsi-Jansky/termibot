@@ -49,12 +49,12 @@ impl PluginRegistry {
     }
 
     /// Get all plugins
-    pub fn all(&self) -> impl Iterator<Item = &Box<dyn Plugin>> {
-        self.plugins.iter().map(|entry| &entry.plugin)
+    pub fn all(&self) -> impl Iterator<Item = &dyn Plugin> {
+        self.plugins.iter().map(|entry| entry.plugin.as_ref())
     }
 
     /// Find all plugins that have subscriptions matching the given enriched event
-    pub fn find_matching_plugins(&self, event: &EnrichedEvent) -> Vec<&Box<dyn Plugin>> {
+    pub fn find_matching_plugins(&self, event: &EnrichedEvent) -> Vec<&dyn Plugin> {
         let command = match event {
             EnrichedEvent::Command(cmd) => &cmd.command,
         };
@@ -88,7 +88,7 @@ impl PluginRegistry {
 
                 matches
             })
-            .map(|entry| &entry.plugin)
+            .map(|entry| entry.plugin.as_ref())
             .collect()
     }
 

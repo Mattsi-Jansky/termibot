@@ -191,14 +191,14 @@ impl SlackBot {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::actions::Action;
-    use crate::dependencies::Dependencies;
-    use crate::enriched_event::{EnrichedEvent};
+    
+    
+    
     use crate::plugins::Subscription;
     use actions::handler::MockActionHandler;
     use async_trait::async_trait;
     use client::models::auth_test_response::AuthTestResponse;
-    use client::models::message_body::MessageBody;
+    
     use client::models::message_id::MessageId;
     use client::models::socket_message::{
         Authorization, Event, MessageEvent, Payload, SocketMessage,
