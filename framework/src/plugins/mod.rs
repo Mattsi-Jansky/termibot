@@ -68,14 +68,14 @@ pub trait Plugin: Send + Sync {
     /// Called when an enriched event matches one of this plugin's subscriptions
     async fn on_enriched_event(
         &self,
-        event: &EnrichedEvent,
-        dependencies: &Dependencies,
+        _event: &EnrichedEvent,
+        _dependencies: &Dependencies,
     ) -> Vec<Action> {
         vec![]
     }
 
     /// Handle a raw event yourself, and produce actions to perform as a result
-    async fn on_event(&self, event: &Event, dependencies: &Dependencies) -> Vec<Action> {
+    async fn on_event(&self, _event: &Event, _dependencies: &Dependencies) -> Vec<Action> {
         vec![]
     }
 }
@@ -98,8 +98,8 @@ macro_rules! subscriptions {
 mod tests {
     use super::*;
     use crate::enriched_event::{CommandData, EnrichedEvent};
-    
-    
+
+
 
     #[test]
     fn should_match_exact_subscription() {
