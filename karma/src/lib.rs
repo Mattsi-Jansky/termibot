@@ -1,3 +1,5 @@
+use std::future::Future;
+use std::pin::Pin;
 use crate::change_request::ChangeRequest;
 use crate::services::karma_parser::{get_captures, KarmaCapture};
 use crate::services::karma_repository::KarmaRepository;
@@ -6,9 +8,11 @@ use client::models::message_body::MessageBody;
 use client::models::socket_message::{Event, MessageEvent};
 use framework::actions::Action;
 use framework::dependencies::Dependencies;
-use framework::plugins::Plugin;
+use framework::plugins::{Plugin, Subscription};
 
 use tracing::error;
+use framework::enriched_event::EnrichedEvent;
+use framework::subscriptions;
 
 mod change_request;
 pub mod entry;
@@ -106,6 +110,33 @@ impl Plugin for KarmaPlugin {
         }
 
         results
+    }
+
+    async fn on_enriched_event(& self, event: &EnrichedEvent, dependencies: &Dependencies) -> Vec<Action>
+    {
+        match event {
+            EnrichedEvent::Command(cmd) => {
+                match cmd.command.as_str() {
+                    "karma" => {
+                        if cmd.args.get(0).is_some_and(|arg| arg == "list") {
+                            vec![
+                                Action::MessageChannel {
+                                    channel: cmd.channel.clone(),
+                                    message: MessageBody::from_text("thing: -1"),
+                                }
+                            ]
+                        } else {
+                            vec![]
+                        }
+                    }
+                    _ => { error!("Encountered a command I could not handle - mis-match between subscriptions and event handling?"); vec![] }
+                }
+            }
+        }
+    }
+
+    fn subscriptions(&self) -> Vec<Subscription> {
+        subscriptions!("list")
     }
 }
 
