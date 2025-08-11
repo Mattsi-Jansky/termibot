@@ -113,17 +113,30 @@ impl Plugin for KarmaPlugin {
     async fn on_enriched_event(
         &self,
         event: &EnrichedEvent,
-        _dependencies: &Dependencies,
+        dependencies: &Dependencies,
     ) -> Vec<Action> {
         match event {
             EnrichedEvent::Command(cmd) => {
                 let sub_command = cmd.args.first().map(|s| s.as_str());
                 match sub_command {
                     Some("list") => {
-                        vec![Action::MessageChannel {
-                            channel: cmd.channel.clone(),
-                            message: MessageBody::from_text("thing: -1"),
-                        }]
+                        if let Some(binding) =
+                            dependencies.get_dyn::<dyn KarmaRepository + Send + Sync>()
+                        {
+                            let repo = binding.read().await;
+                            let list = repo.get_top(10).await;
+                            list.iter()
+                                .map(|entry| Action::MessageChannel {
+                                    channel: cmd.channel.clone(),
+                                    message: MessageBody::from_text(
+                                        format!("{}: {}", entry.display_name, entry.karma).as_str(),
+                                    ),
+                                })
+                                .collect()
+                        } else {
+                            error!("Error getting KarmaRepository. Did you forget to add it? Check the README");
+                            vec![]
+                        }
                     }
                     _ => {
                         error!("Karma plugin: Unknown subcommand");
