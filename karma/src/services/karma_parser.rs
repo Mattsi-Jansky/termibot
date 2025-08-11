@@ -100,21 +100,21 @@ mod tests {
 
     parse_tests! {
         (given_no_captures_should_return_empty, "words words words", Vec::<KarmaCapture>::new()),
-        (should_trim_spaces_and_pluses, " sunnydays++ ", vec![ KarmaCapture::new("sunnydays".to_string(), true, None)]),
-        (should_trim_spaces_and_minuses, " rainydays-- ", vec![ KarmaCapture::new("rainydays".to_string(), false, None)]),
-        (should_maintain_capitalisation, " RainyDays-- ", vec![ KarmaCapture::new("RainyDays".to_string(), false, None)]),
-        (should_parse_emoji, ":smile:++", vec![ KarmaCapture::new(":smile:".to_string(), true, None)]),
-        (should_isolate_name_after_errata, "I like to play chess++", vec![ KarmaCapture::new("chess".to_string(), true, None)]),
-        (should_isolate_name_before_errata, "chess-- is really difficult", vec![ KarmaCapture::new("chess".to_string(), false, None)]),
-        (should_isolate_name_surrounded_by_errata, "I like rainydays++ they are very cosy", vec![ KarmaCapture::new("rainydays".to_string(), true, None)]),
-        (should_isolate_emoji_after_errata, ":smile:++ and errata", vec![ KarmaCapture::new(":smile:".to_string(), true, None)]),
-        (should_isolate_emoji_before_errata, "errata and :smile:--", vec![ KarmaCapture::new(":smile:".to_string(), false, None)]),
-        (should_isolate_name_with_too_many_pluses, "sunnydays+++", vec![ KarmaCapture::new("sunnydays".to_string(), true, None)]),
-        (should_isolate_name_with_too_many_minuses, "rainydays---", vec![ KarmaCapture::new("rainydays".to_string(), false, None)]),
-        (should_isolate_multiline_before, "rainydays\nsunnydays++", vec![ KarmaCapture::new("sunnydays".to_string(), true, None)]),
-        (should_isolate_multiline_after, "rainydays--\nsunnydays", vec![ KarmaCapture::new("rainydays".to_string(), false, None)]),
-        (should_isolate_at_start_of_string, "this++ is a matching phrase", vec![ KarmaCapture::new("this".to_string(), true, None)]),
-        (should_isolate_at_end_of_string, "this is a matching phrase++", vec![ KarmaCapture::new("phrase".to_string(), true, None)]),
+        (should_trim_spaces_and_pluses, " sunnydays++ ", [KarmaCapture::new("sunnydays".to_string(), true, None)]),
+        (should_trim_spaces_and_minuses, " rainydays-- ", [KarmaCapture::new("rainydays".to_string(), false, None)]),
+        (should_maintain_capitalisation, " RainyDays-- ", [KarmaCapture::new("RainyDays".to_string(), false, None)]),
+        (should_parse_emoji, ":smile:++", [KarmaCapture::new(":smile:".to_string(), true, None)]),
+        (should_isolate_name_after_errata, "I like to play chess++", [KarmaCapture::new("chess".to_string(), true, None)]),
+        (should_isolate_name_before_errata, "chess-- is really difficult", [KarmaCapture::new("chess".to_string(), false, None)]),
+        (should_isolate_name_surrounded_by_errata, "I like rainydays++ they are very cosy", [KarmaCapture::new("rainydays".to_string(), true, None)]),
+        (should_isolate_emoji_after_errata, ":smile:++ and errata", [KarmaCapture::new(":smile:".to_string(), true, None)]),
+        (should_isolate_emoji_before_errata, "errata and :smile:--", [KarmaCapture::new(":smile:".to_string(), false, None)]),
+        (should_isolate_name_with_too_many_pluses, "sunnydays+++", [KarmaCapture::new("sunnydays".to_string(), true, None)]),
+        (should_isolate_name_with_too_many_minuses, "rainydays---", [KarmaCapture::new("rainydays".to_string(), false, None)]),
+        (should_isolate_multiline_before, "rainydays\nsunnydays++", [KarmaCapture::new("sunnydays".to_string(), true, None)]),
+        (should_isolate_multiline_after, "rainydays--\nsunnydays", [KarmaCapture::new("rainydays".to_string(), false, None)]),
+        (should_isolate_at_start_of_string, "this++ is a matching phrase", [KarmaCapture::new("this".to_string(), true, None)]),
+        (should_isolate_at_end_of_string, "this is a matching phrase++", [KarmaCapture::new("phrase".to_string(), true, None)]),
         (given_no_chars_before_pluses_should_return_empty, "++", Vec::<KarmaCapture>::new()),
         (given_no_chars_before_minuses_should_return_empty, "--", Vec::<KarmaCapture>::new()),
         (given_newline_before_pluses_should_return_empty, "hello\n++", Vec::<KarmaCapture>::new()),
@@ -128,9 +128,9 @@ mod tests {
         (given_preformatted_text_should_return_empty_3, "`preformatte`d++ to the max", Vec::<KarmaCapture>::new()),
         (given_preformatted_multiline_text_should_return_empty, "```\nlet var = 0\nvar++\n```", Vec::<KarmaCapture>::new()),
         (given_space_before_should_return_empty, "sunnydays ++", Vec::<KarmaCapture>::new()),
-        (given_reason_should_capture_reason, "sunnydays++ for being so pretty", vec![ KarmaCapture::new("sunnydays".to_string(), true, Some("for being so pretty".to_string()))]),
-        (given_reason_with_because_should_capture_reason, "sunnydays++ because they are so warm", vec![ KarmaCapture::new("sunnydays".to_string(), true, Some("because they are so warm".to_string()))]),
-        (given_reason_with_due_to_should_capture_reason, "sunnydays++ due to warmth", vec![ KarmaCapture::new("sunnydays".to_string(), true, Some("due to warmth".to_string()))]),
+        (given_reason_should_capture_reason, "sunnydays++ for being so pretty", [KarmaCapture::new("sunnydays".to_string(), true, Some("for being so pretty".to_string()))]),
+        (given_reason_with_because_should_capture_reason, "sunnydays++ because they are so warm", [KarmaCapture::new("sunnydays".to_string(), true, Some("because they are so warm".to_string()))]),
+        (given_reason_with_due_to_should_capture_reason, "sunnydays++ due to warmth", [KarmaCapture::new("sunnydays".to_string(), true, Some("due to warmth".to_string()))]),
         (given_multiple_karma_changes_should_capture_all, "sunnydays++ for warmth\nrainydays-- foggydays--\nrust++ for strong type systems",
             vec![
                 KarmaCapture::new("rainydays".to_string(), false, None),
@@ -140,16 +140,14 @@ mod tests {
             ]
         ),
         (given_multiple_karma_changes_in_same_line_should_capture_all, "sunnydays++ for warmth rainydays-- foggydays--",
-            vec![
-                KarmaCapture::new("rainydays".to_string(), false, None),
+            [KarmaCapture::new("rainydays".to_string(), false, None),
                 KarmaCapture::new("foggydays".to_string(), false, None),
-                KarmaCapture::new("sunnydays".to_string(), true, Some("for warmth".to_string()))
-            ]
+                KarmaCapture::new("sunnydays".to_string(), true, Some("for warmth".to_string()))]
         ),
-        (given_dash_in_name_should_parse, ":mild-panic:++", vec![ KarmaCapture::new(":mild-panic:".to_string(), true, None)]),
-        (given_plus_in_name_should_parse, ":big+:++", vec![ KarmaCapture::new(":big+:".to_string(), true, None)]),
-        (should_support_three_letter_words, "sam++", vec![ KarmaCapture::new("sam".to_string(), true, None)]),
+        (given_dash_in_name_should_parse, ":mild-panic:++", [KarmaCapture::new(":mild-panic:".to_string(), true, None)]),
+        (given_plus_in_name_should_parse, ":big+:++", [KarmaCapture::new(":big+:".to_string(), true, None)]),
+        (should_support_three_letter_words, "sam++", [KarmaCapture::new("sam".to_string(), true, None)]),
         //iOS auto-replaces two dashes (--) with an em dash (—). So, we treat it as -- to make iOS interaction easier.
-        (should_see_em_dash_as_three_dashes, "apple—", vec![ KarmaCapture::new("apple".to_string(), false, None)])
+        (should_see_em_dash_as_three_dashes, "apple—", [KarmaCapture::new("apple".to_string(), false, None)])
     }
 }

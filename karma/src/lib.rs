@@ -7,8 +7,6 @@ use client::models::socket_message::{Event, MessageEvent};
 use framework::actions::Action;
 use framework::dependencies::Dependencies;
 use framework::plugins::{Plugin, Subscription};
-use std::future::Future;
-use std::pin::Pin;
 
 use framework::enriched_event::EnrichedEvent;
 use framework::subscriptions;
@@ -115,12 +113,12 @@ impl Plugin for KarmaPlugin {
     async fn on_enriched_event(
         &self,
         event: &EnrichedEvent,
-        dependencies: &Dependencies,
+        _dependencies: &Dependencies,
     ) -> Vec<Action> {
         match event {
             EnrichedEvent::Command(cmd) => match cmd.command.as_str() {
                 "karma" => {
-                    if cmd.args.get(0).is_some_and(|arg| arg == "list") {
+                    if cmd.args.first().is_some_and(|arg| arg == "list") {
                         vec![Action::MessageChannel {
                             channel: cmd.channel.clone(),
                             message: MessageBody::from_text("thing: -1"),
@@ -221,7 +219,7 @@ mod tests {
                 channel: "".to_string(),
                 message: MessageBody::from_text(":upboat: sunnydays: 1"),
             },
-            result.get(0).unwrap()
+            result.first().unwrap()
         );
     }
 
@@ -241,7 +239,7 @@ mod tests {
                 channel: "".to_string(),
                 message: MessageBody::from_text(":up_custom: sunnydays: 1"),
             },
-            result.get(0).unwrap()
+            result.first().unwrap()
         );
     }
 
@@ -259,7 +257,7 @@ mod tests {
                 channel: "".to_string(),
                 message: MessageBody::from_text(":downboat: rainydays: -1"),
             },
-            result.get(0).unwrap()
+            result.first().unwrap()
         );
     }
 
@@ -279,7 +277,7 @@ mod tests {
                 channel: "".to_string(),
                 message: MessageBody::from_text(":down_custom: rainydays: -1"),
             },
-            result.get(0).unwrap()
+            result.first().unwrap()
         );
     }
 
@@ -334,7 +332,7 @@ mod tests {
                 channel: "".to_string(),
                 message: MessageBody::from_text(":upboat: sunnydays: 1"),
             },
-            result.get(0).unwrap()
+            result.first().unwrap()
         );
     }
 }

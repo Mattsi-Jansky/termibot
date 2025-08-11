@@ -131,7 +131,7 @@ mod tests {
     use client::models::socket_message::Event;
 
     struct TestPlugin {
-        name: String,
+        _name: String,
         subscriptions: Vec<Subscription>,
     }
 
@@ -158,7 +158,7 @@ mod tests {
     fn should_register_plugin() {
         let mut registry = PluginRegistry::new();
         let plugin = Box::new(TestPlugin {
-            name: "test".to_string(),
+            _name: "test".to_string(),
             subscriptions: vec![Subscription::exact("help")],
         });
 
@@ -171,11 +171,11 @@ mod tests {
     fn should_match_plugins_exact_match() {
         let mut registry = PluginRegistry::new();
         registry.register(Box::new(TestPlugin {
-            name: "help_plugin".to_string(),
+            _name: "help_plugin".to_string(),
             subscriptions: vec![Subscription::exact("help")],
         }));
         registry.register(Box::new(TestPlugin {
-            name: "status_plugin".to_string(),
+            _name: "status_plugin".to_string(),
             subscriptions: vec![Subscription::exact("status")],
         }));
         let event = EnrichedEvent::Command(CommandData {
@@ -195,7 +195,7 @@ mod tests {
     fn should_match_plugins_pattern_match() {
         let mut registry = PluginRegistry::new();
         registry.register(Box::new(TestPlugin {
-            name: "deploy_plugin".to_string(),
+            _name: "deploy_plugin".to_string(),
             subscriptions: vec![Subscription::pattern(r"^deploy-(prod|staging|dev)$").unwrap()],
         }));
         let event = EnrichedEvent::Command(CommandData {
@@ -215,7 +215,7 @@ mod tests {
     fn given_no_matching_subscriptions_should_return_empty_vec() {
         let mut registry = PluginRegistry::new();
         registry.register(Box::new(TestPlugin {
-            name: "help_plugin".to_string(),
+            _name: "help_plugin".to_string(),
             subscriptions: vec![Subscription::exact("help")],
         }));
         let event = EnrichedEvent::Command(CommandData {
@@ -235,7 +235,7 @@ mod tests {
     fn given_no_subscriptions_should_return_empty_vec() {
         let mut registry = PluginRegistry::new();
         registry.register(Box::new(TestPlugin {
-            name: "raw_only".to_string(),
+            _name: "raw_only".to_string(),
             subscriptions: vec![],
         }));
         let event = EnrichedEvent::Command(CommandData {
@@ -255,11 +255,11 @@ mod tests {
     fn given_two_plugins_matching_command_should_return_both() {
         let mut registry = PluginRegistry::new();
         registry.register(Box::new(TestPlugin {
-            name: "general_help".to_string(),
+            _name: "general_help".to_string(),
             subscriptions: vec![Subscription::exact("help")],
         }));
         registry.register(Box::new(TestPlugin {
-            name: "detailed_help".to_string(),
+            _name: "detailed_help".to_string(),
             subscriptions: vec![Subscription::exact("help")],
         }));
         let event = EnrichedEvent::Command(CommandData {
@@ -279,7 +279,7 @@ mod tests {
     fn should_get_subscription_information() {
         let mut registry = PluginRegistry::new();
         registry.register(Box::new(TestPlugin {
-            name: "multi_command".to_string(),
+            _name: "multi_command".to_string(),
             subscriptions: vec![
                 Subscription::exact("help").with_description("Show help"),
                 Subscription::exact("status").with_description("Show status"),

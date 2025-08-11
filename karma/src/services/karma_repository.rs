@@ -243,7 +243,7 @@ mod tests {
                 display_name: "sunnydays".to_string(),
                 karma: 1
             },
-            result.get(0).unwrap()
+            result.first().unwrap()
         );
         fs::remove_file(DATABASE_FILENAME).unwrap_or(());
     }
@@ -313,7 +313,7 @@ mod tests {
         let results = repo.get_reasons("rainydays").await;
 
         assert_eq!(1, results.len());
-        assert_eq!("for being warm", results.get(0).unwrap().value);
+        assert_eq!("for being warm", results.first().unwrap().value);
         fs::remove_file(DATABASE_FILENAME).unwrap_or(());
     }
 
