@@ -136,7 +136,7 @@ impl Plugin for KarmaPlugin {
     }
 
     fn subscriptions(&self) -> Vec<Subscription> {
-        subscriptions!("list")
+        subscriptions!("karma")
     }
 }
 
