@@ -116,22 +116,21 @@ impl Plugin for KarmaPlugin {
         _dependencies: &Dependencies,
     ) -> Vec<Action> {
         match event {
-            EnrichedEvent::Command(cmd) => match cmd.command.as_str() {
-                "karma" => {
-                    if cmd.args.first().is_some_and(|arg| arg == "list") {
+            EnrichedEvent::Command(cmd) => {
+                let sub_command = cmd.args.first().map(|s| s.as_str());
+                match sub_command {
+                    Some("list") => {
                         vec![Action::MessageChannel {
                             channel: cmd.channel.clone(),
                             message: MessageBody::from_text("thing: -1"),
                         }]
-                    } else {
+                    }
+                    _ => {
+                        error!("Karma plugin: Unknown subcommand");
                         vec![]
                     }
                 }
-                _ => {
-                    error!("Encountered a command I could not handle - mis-match between subscriptions and event handling?");
-                    vec![]
-                }
-            },
+            }
         }
     }
 
