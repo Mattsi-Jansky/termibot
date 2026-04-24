@@ -7,6 +7,7 @@ lazy_static! {
     static ref KARMA_REASON_MATCHER: Regex =
         Regex::new(r"([^\s`]{2,}[^\+\-\s`])(--|\+\+)\s((for|because|due to).*)($|\n)").unwrap();
     static ref PREFORMATTED_BLOCK_MATCHER: Regex = Regex::new(r"\`[^\`]*\`").unwrap();
+    static ref URL_MATCHER: Regex = Regex::new(r"https?://\S+").unwrap();
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -18,11 +19,15 @@ pub struct KarmaCapture {
 
 pub fn get_captures(text: &str) -> Vec<KarmaCapture> {
     let mut result = vec![];
-    let preformatted_blocks = PREFORMATTED_BLOCK_MATCHER
+    let excluded_ranges = PREFORMATTED_BLOCK_MATCHER
         .captures_iter(text)
+        .chain(URL_MATCHER.captures_iter(text))
         .map(|block| block.get(0).unwrap())
         .collect::<Vec<Match>>();
-    let reason_captures: Vec<Captures> = KARMA_REASON_MATCHER.captures_iter(text).collect();
+    let reason_captures: Vec<Captures> = KARMA_REASON_MATCHER
+        .captures_iter(text)
+        .filter(|capture| !is_in_excluded_range(&excluded_ranges, capture))
+        .collect();
     let karma_captures: Vec<Captures> = KARMA_MATCHER
         .captures_iter(text)
         .filter(|capture| {
@@ -33,7 +38,7 @@ pub fn get_captures(text: &str) -> Vec<KarmaCapture> {
         .collect();
 
     for capture in karma_captures.iter() {
-        if !is_in_preformatted_block(&preformatted_blocks, capture) {
+        if !is_in_excluded_range(&excluded_ranges, capture) {
             let name = capture.get(1).unwrap().as_str().trim();
             result.push(KarmaCapture {
                 name: name.to_string(),
@@ -66,17 +71,12 @@ pub fn get_captures(text: &str) -> Vec<KarmaCapture> {
     result
 }
 
-fn is_in_preformatted_block(preformatted_blocks: &Vec<Match>, capture: &Captures) -> bool {
-    let mut result = false;
+fn is_in_excluded_range(excluded_ranges: &Vec<Match>, capture: &Captures) -> bool {
     let capture = capture.get(0).unwrap();
 
-    for block in preformatted_blocks {
-        if capture.start() > block.start() && capture.end() < block.end() {
-            result = true;
-        }
-    }
-
-    result
+    excluded_ranges
+        .iter()
+        .any(|block| capture.start() >= block.start() && capture.end() <= block.end())
 }
 
 #[cfg(test)]
@@ -148,6 +148,8 @@ mod tests {
         (given_plus_in_name_should_parse, ":big+:++", [KarmaCapture::new(":big+:".to_string(), true, None)]),
         (should_support_three_letter_words, "sam++", [KarmaCapture::new("sam".to_string(), true, None)]),
         //iOS auto-replaces two dashes (--) with an em dash (—). So, we treat it as -- to make iOS interaction easier.
-        (should_see_em_dash_as_three_dashes, "apple—", [KarmaCapture::new("apple".to_string(), false, None)])
+        (should_see_em_dash_as_three_dashes, "apple—", [KarmaCapture::new("apple".to_string(), false, None)]),
+        (given_url_with_trailing_dashes_should_return_empty, "https://doublepulsar.com/dragonforce-ransomware-cartel-attacks-on-uk-high-street-retailers-walking-in-the-front-door-52ed8ba68534?source=rss----8343faddf0ec---4", Vec::<KarmaCapture>::new()),
+        (given_text_with_url_containing_dashes_should_return_empty, "Oh this is way worse than I thought https://doublepulsar.com/microsoft-vibing-capturing-screenshots-and-voice-samples-without-governance-6973c48f03a7?source=rss----8343faddf0ec---4", Vec::<KarmaCapture>::new())
     }
 }
