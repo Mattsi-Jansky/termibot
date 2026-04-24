@@ -7,7 +7,7 @@ lazy_static! {
     static ref KARMA_REASON_MATCHER: Regex =
         Regex::new(r"([^\s`]{2,}[^\+\-\s`])(--|\+\+)\s((for|because|due to).*)($|\n)").unwrap();
     static ref PREFORMATTED_BLOCK_MATCHER: Regex = Regex::new(r"\`[^\`]*\`").unwrap();
-    static ref URL_MATCHER: Regex = Regex::new(r"https?://\S+").unwrap();
+    static ref URL_MATCHER: Regex = Regex::new(r"<?https?://\S+").unwrap();
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -150,6 +150,8 @@ mod tests {
         //iOS auto-replaces two dashes (--) with an em dash (—). So, we treat it as -- to make iOS interaction easier.
         (should_see_em_dash_as_three_dashes, "apple—", [KarmaCapture::new("apple".to_string(), false, None)]),
         (given_url_with_trailing_dashes_should_return_empty, "https://doublepulsar.com/dragonforce-ransomware-cartel-attacks-on-uk-high-street-retailers-walking-in-the-front-door-52ed8ba68534?source=rss----8343faddf0ec---4", Vec::<KarmaCapture>::new()),
-        (given_text_with_url_containing_dashes_should_return_empty, "Oh this is way worse than I thought https://doublepulsar.com/microsoft-vibing-capturing-screenshots-and-voice-samples-without-governance-6973c48f03a7?source=rss----8343faddf0ec---4", Vec::<KarmaCapture>::new())
+        (given_text_with_url_containing_dashes_should_return_empty, "Oh this is way worse than I thought https://doublepulsar.com/microsoft-vibing-capturing-screenshots-and-voice-samples-without-governance-6973c48f03a7?source=rss----8343faddf0ec---4", Vec::<KarmaCapture>::new()),
+        (given_slack_wrapped_url_with_dashes_should_return_empty, "<https://doublepulsar.com/dragonforce-ransomware-cartel-attacks-on-uk-high-street-retailers-walking-in-the-front-door-52ed8ba68534?source=rss----8343faddf0ec---4>", Vec::<KarmaCapture>::new()),
+        (given_slack_wrapped_url_with_display_label_should_return_empty, "Oh this is way worse than I thought <https://doublepulsar.com/microsoft-vibing-capturing-screenshots-and-voice-samples-without-governance-6973c48f03a7?source=rss----8343faddf0ec---4|doublepulsar.com>", Vec::<KarmaCapture>::new())
     }
 }
