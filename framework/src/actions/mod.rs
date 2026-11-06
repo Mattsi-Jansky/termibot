@@ -14,4 +14,6 @@ pub enum Action {
         thread_id: MessageId,
         message: MessageBody,
     },
+    /// Tries each action in turn, stopping at the first one that succeeds
+    FirstSuccessful(Vec<Action>),
 }
