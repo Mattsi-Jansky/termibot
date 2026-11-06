@@ -61,7 +61,7 @@ impl SlackBot {
     pub async fn run(self) -> Result<(), SlackClientError> {
         let identity = self.client.get_identity().await?;
 
-        let mut listener = match self.listener {
+        let listener = match self.listener {
             None => Box::new(
                 match TungsteniteSocketModeListener::new(self.client.clone()).await {
                     Ok(listener) => listener,
@@ -73,22 +73,7 @@ impl SlackBot {
             Some(listener) => listener,
         };
         info!("Slack bot starting");
-
-        let registry_info = self.plugin_registry.get_registry_info();
-        info!("Registered {} plugins", registry_info.len());
-        for (i, plugin_info) in registry_info.iter().enumerate() {
-            debug!(
-                "Plugin {}: {} subscriptions",
-                i + 1,
-                plugin_info.subscriptions.len()
-            );
-            for sub in &plugin_info.subscriptions {
-                debug!(
-                    "  - Pattern: {}, Description: {:?}",
-                    sub.pattern, sub.description
-                );
-            }
-        }
+        log_registered_plugins(&self.plugin_registry);
 
         let dispatcher = Arc::new(EventDispatcher {
             bot_user_id: identity.user_id.clone(),
@@ -98,47 +83,7 @@ impl SlackBot {
             client: self.client,
             dependencies: self.dependencies_builder.build(),
         });
-        // Each event is handled in its own task, so a slow plugin doesn't hold up the events
-        // that arrive after it.
-        let mut in_flight = JoinSet::new();
-
-        let result = loop {
-            let message = match listener.next().await {
-                Ok(message) => message,
-                Err(err) => break Err(SlackClientError::from(err)),
-            };
-            info!("Received message: {message:?}");
-
-            // Collect finished tasks, so the set doesn't grow for as long as the bot runs
-            while let Some(finished) = in_flight.try_join_next() {
-                propagate_panic(finished);
-            }
-
-            match message {
-                SocketMessage::Event { payload, .. } => {
-                    let dispatcher = dispatcher.clone();
-                    in_flight.spawn(async move { dispatcher.dispatch(payload.event).await });
-                }
-                SocketMessage::Interactive { .. } => {
-                    warn!("Received an interactive message but cannot handle interactive events yet, not implemented.")
-                }
-                SocketMessage::SlashCommand { .. } => {
-                    warn!("Received a slash command message but cannot handle slash commands yet, not implemented.")
-                }
-                SocketMessage::Hello { .. } => { /* Nothing to do */ }
-                SocketMessage::Disconnect { .. } => {
-                    info!("Disconnect message received");
-                    break Ok(());
-                }
-            }
-        };
-
-        if !in_flight.is_empty() {
-            info!("Waiting for {} event(s) to finish", in_flight.len());
-        }
-        while let Some(finished) = in_flight.join_next().await {
-            propagate_panic(finished);
-        }
+        let result = run_event_loop(listener, dispatcher).await;
 
         info!("Slack bot finishing");
         result
@@ -158,6 +103,74 @@ impl SlackBot {
         self.dependencies_builder.add_dyn(service);
         self
     }
+}
+
+fn log_registered_plugins(plugin_registry: &PluginRegistry) {
+    let registry_info = plugin_registry.get_registry_info();
+    info!("Registered {} plugins", registry_info.len());
+    for (i, plugin_info) in registry_info.iter().enumerate() {
+        debug!(
+            "Plugin {}: {} subscriptions",
+            i + 1,
+            plugin_info.subscriptions.len()
+        );
+        for sub in &plugin_info.subscriptions {
+            debug!(
+                "  - Pattern: {}, Description: {:?}",
+                sub.pattern, sub.description
+            );
+        }
+    }
+}
+
+/// Receives messages from Slack until it disconnects or the connection fails. Each event is
+/// handled in its own task, so a slow plugin doesn't hold up the events that arrive after it.
+/// Before returning, waits for events still in progress, so their replies aren't dropped.
+async fn run_event_loop(
+    mut listener: Box<dyn SocketModeListener + Send + Sync>,
+    dispatcher: Arc<EventDispatcher>,
+) -> Result<(), SlackClientError> {
+    let mut in_flight = JoinSet::new();
+
+    let result = loop {
+        let message = match listener.next().await {
+            Ok(message) => message,
+            Err(err) => break Err(SlackClientError::from(err)),
+        };
+        info!("Received message: {message:?}");
+
+        // Collect finished tasks, so the set doesn't grow for as long as the bot runs
+        while let Some(finished) = in_flight.try_join_next() {
+            propagate_panic(finished);
+        }
+
+        match message {
+            SocketMessage::Event { payload, .. } => {
+                let dispatcher = dispatcher.clone();
+                in_flight.spawn(async move { dispatcher.dispatch(payload.event).await });
+            }
+            SocketMessage::Interactive { .. } => {
+                warn!("Received an interactive message but cannot handle interactive events yet, not implemented.")
+            }
+            SocketMessage::SlashCommand { .. } => {
+                warn!("Received a slash command message but cannot handle slash commands yet, not implemented.")
+            }
+            SocketMessage::Hello { .. } => { /* Nothing to do */ }
+            SocketMessage::Disconnect { .. } => {
+                info!("Disconnect message received");
+                break Ok(());
+            }
+        }
+    };
+
+    if !in_flight.is_empty() {
+        info!("Waiting for {} event(s) to finish", in_flight.len());
+    }
+    while let Some(finished) = in_flight.join_next().await {
+        propagate_panic(finished);
+    }
+
+    result
 }
 
 /// Routes an event to the plugins and carries out the actions they return. Shared by the tasks
