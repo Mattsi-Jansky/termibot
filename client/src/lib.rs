@@ -1,6 +1,8 @@
 use crate::models::auth_test_response::AuthTestResponse;
+use crate::models::file_upload::FileUpload;
 use crate::models::message_body::MessageBody;
 use crate::models::message_id::MessageId;
+use crate::models::upload_url_response::UploadUrlResponse;
 use crate::models::websocket_url_message::WebsocketUrlMessage;
 use crate::rate_limiter::RateLimitingMiddleware;
 use async_trait::async_trait;
@@ -45,6 +47,9 @@ pub trait SlackClient {
 
     /// Get a URL for opening a new Websocket connection
     async fn get_websocket_url(&self) -> Result<Url, SlackClientError>;
+
+    /// Upload a file without sharing it to any channel, returning its file ID
+    async fn upload_file(&self, file: FileUpload) -> Result<String, SlackClientError>;
 }
 
 /// A client for talking to the Slack API
@@ -113,6 +118,51 @@ impl ReqwestSlackClient {
             .map_err(SlackClientError::from);
 
         Self::ensure_correct_result_type_because_slack_stupidly_uses_200_status_for_errors(result)
+    }
+
+    async fn request_upload_destination(
+        &self,
+        file: &FileUpload,
+    ) -> Result<UploadDestination, SlackClientError> {
+        let length = file.content.len().to_string();
+        let mut form = vec![
+            ("filename", file.filename.as_str()),
+            ("length", length.as_str()),
+        ];
+        if let Some(alt_text) = &file.alt_text {
+            form.push(("alt_txt", alt_text.as_str()));
+        }
+
+        let response = self
+            .api_request("files.getUploadURLExternal")
+            .form(&form)
+            .send()
+            .await?
+            .json::<UploadUrlResponse>()
+            .await?;
+
+        match (response.ok, response.upload_url, response.file_id) {
+            (true, Some(url), Some(file_id)) => Ok(UploadDestination { url, file_id }),
+            _ => Err(SlackClientError(format!(
+                "Slack didn't provide an upload URL: {}",
+                response.error.unwrap_or_default()
+            ))),
+        }
+    }
+
+    async fn complete_upload(&self, file_id: &str) -> Result<(), SlackClientError> {
+        let files = json!([{ "id": file_id }]).to_string();
+        let result = self
+            .api_request("files.completeUploadExternal")
+            .form(&[("files", files)])
+            .send()
+            .await?
+            .json::<HttpApiResponse>()
+            .await
+            .map_err(SlackClientError::from);
+
+        Self::ensure_correct_result_type_because_slack_stupidly_uses_200_status_for_errors(result)
+            .map(|_| ())
     }
 
     fn ensure_correct_result_type_because_slack_stupidly_uses_200_status_for_errors(
@@ -208,4 +258,23 @@ impl SlackClient for ReqwestSlackClient {
 
         Url::parse(response.url.as_str()).map_err(SlackClientError::from)
     }
+
+    async fn upload_file(&self, file: FileUpload) -> Result<String, SlackClientError> {
+        info!("Uploading {:?}", file);
+        let destination = self.request_upload_destination(&file).await?;
+        self.http
+            .post(destination.url)
+            .body(file.content)
+            .send()
+            .await?
+            .error_for_status()?;
+        self.complete_upload(&destination.file_id).await?;
+
+        Ok(destination.file_id)
+    }
+}
+
+struct UploadDestination {
+    url: String,
+    file_id: String,
 }

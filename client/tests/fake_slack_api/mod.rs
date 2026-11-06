@@ -2,7 +2,7 @@ use client::ReqwestSlackClient;
 use reqwest::{Request, Response};
 use reqwest_middleware::{ClientBuilder, Middleware, Next};
 use serde_json::Value;
-use std::collections::VecDeque;
+use std::collections::{HashMap, VecDeque};
 use std::sync::{Arc, Mutex, MutexGuard};
 use task_local_extensions::Extensions;
 
@@ -14,6 +14,12 @@ pub struct RecordedRequest {
 impl RecordedRequest {
     pub fn json(&self) -> Value {
         serde_json::from_slice(&self.body).expect("request body should be JSON")
+    }
+
+    pub fn form(&self) -> HashMap<String, String> {
+        url::form_urlencoded::parse(&self.body)
+            .into_owned()
+            .collect()
     }
 }
 
