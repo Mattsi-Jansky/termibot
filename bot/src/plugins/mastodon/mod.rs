@@ -49,21 +49,37 @@ async fn preview_replies(
         }
     };
     let preview = Preview::new(&post, link);
-    let channel = message.channel.clone().unwrap_or_default();
+    let linked_images = preview.images();
+    let uploadable_images = download(linked_images.clone(), api).await;
 
-    vec![Action::FirstSuccessful(vec![
-        Action::ReplyToThreadWithImages {
-            channel: channel.clone(),
-            thread_id: message.id.clone(),
-            message: preview.message(),
-            images: download(preview.images(), api).await,
-        },
-        Action::ReplyToThread {
-            channel,
-            thread_id: message.id.clone(),
-            message: preview.text_only_message(),
-        },
-    ])]
+    let mut alternatives = vec![];
+    if uploadable_images
+        .iter()
+        .any(|image| image.content.is_some())
+    {
+        alternatives.push(reply_with_images(message, &preview, uploadable_images));
+    }
+    alternatives.push(reply_with_images(message, &preview, linked_images));
+    alternatives.push(text_only_reply(message, &preview));
+
+    vec![Action::FirstSuccessful(alternatives)]
+}
+
+fn reply_with_images(message: &MessageEvent, preview: &Preview, images: Vec<Image>) -> Action {
+    Action::ReplyToThreadWithImages {
+        channel: message.channel.clone().unwrap_or_default(),
+        thread_id: message.id.clone(),
+        message: preview.message(),
+        images,
+    }
+}
+
+fn text_only_reply(message: &MessageEvent, preview: &Preview) -> Action {
+    Action::ReplyToThread {
+        channel: message.channel.clone().unwrap_or_default(),
+        thread_id: message.id.clone(),
+        message: preview.text_only_message(),
+    }
 }
 
 async fn download(images: Vec<Image>, api: &dyn MastodonApi) -> Vec<Image> {
@@ -126,7 +142,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn links_to_posts_get_a_preview_with_a_text_only_fallback() {
+    async fn links_to_posts_get_a_preview_falling_back_to_linked_images_then_text_only() {
         let mut api = MockMastodonApi::new();
         api.expect_fetch_post()
             .withf(|link| link.api_url() == "https://mastodon.social/api/v1/statuses/111")
@@ -142,21 +158,32 @@ mod tests {
         assert_eq!(
             actions,
             vec![Action::FirstSuccessful(vec![
-                Action::ReplyToThreadWithImages {
-                    channel: "C1".to_string(),
-                    thread_id: event.id.clone(),
-                    message: preview.message(),
-                    images: vec![
-                        Image::new(IMAGE_URL, "A cat").with_content(b"cat pixels".to_vec())
-                    ],
-                },
-                Action::ReplyToThread {
-                    channel: "C1".to_string(),
-                    thread_id: event.id.clone(),
-                    message: preview.text_only_message(),
-                },
+                reply_with_images(
+                    &event,
+                    &preview,
+                    vec![Image::new(IMAGE_URL, "A cat").with_content(b"cat pixels".to_vec())]
+                ),
+                reply_with_images(&event, &preview, vec![Image::new(IMAGE_URL, "A cat")]),
+                text_only_reply(&event, &preview),
             ])]
         );
+    }
+
+    #[test]
+    fn replies_go_in_a_thread_on_the_message_with_the_link() {
+        let event = message_event("look <https://mastodon.social/@sam/111>");
+        let preview = Preview::new(&post(post_with_image()), &link());
+
+        assert!(matches!(
+            reply_with_images(&event, &preview, vec![]),
+            Action::ReplyToThreadWithImages { channel, thread_id, .. }
+                if channel == "C1" && thread_id == event.id
+        ));
+        assert!(matches!(
+            text_only_reply(&event, &preview),
+            Action::ReplyToThread { channel, thread_id, .. }
+                if channel == "C1" && thread_id == event.id
+        ));
     }
 
     #[tokio::test]
@@ -171,24 +198,24 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn images_that_cannot_be_downloaded_are_linked_instead() {
+    async fn when_no_images_can_be_downloaded_the_preview_starts_with_linked_images() {
         let mut api = MockMastodonApi::new();
         api.expect_fetch_post()
             .returning(|_| Ok(post(post_with_image())));
         api.expect_download_image()
             .returning(|_| Err(FetchError("Response is too large".to_string())));
+        let event = message_event("ignored");
 
-        let actions = preview_replies(&message_event("ignored"), &link(), &api).await;
+        let actions = preview_replies(&event, &link(), &api).await;
 
-        match &actions[..] {
-            [Action::FirstSuccessful(alternatives)] => match &alternatives[0] {
-                Action::ReplyToThreadWithImages { images, .. } => {
-                    assert_eq!(images, &vec![Image::new(IMAGE_URL, "A cat")])
-                }
-                other => panic!("Expected a reply with images, got {other:?}"),
-            },
-            other => panic!("Expected alternative replies, got {other:?}"),
-        }
+        let preview = Preview::new(&post(post_with_image()), &link());
+        assert_eq!(
+            actions,
+            vec![Action::FirstSuccessful(vec![
+                reply_with_images(&event, &preview, vec![Image::new(IMAGE_URL, "A cat")]),
+                text_only_reply(&event, &preview),
+            ])]
+        );
     }
 
     #[tokio::test]
@@ -204,7 +231,7 @@ mod tests {
         let actions = preview_replies(&message_event("ignored"), &link(), &api).await;
 
         match &actions[..] {
-            [Action::FirstSuccessful(alternatives)] => match &alternatives[1] {
+            [Action::FirstSuccessful(alternatives)] => match alternatives.last().unwrap() {
                 Action::ReplyToThread { message, .. } => {
                     assert_eq!(
                         message.get_text(),
