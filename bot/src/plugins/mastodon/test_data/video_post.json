@@ -1,0 +1,105 @@
+{
+  "id": "116645868006890634",
+  "created_at": "2026-05-27T09:38:11.000Z",
+  "in_reply_to_id": null,
+  "in_reply_to_account_id": null,
+  "sensitive": false,
+  "spoiler_text": "",
+  "visibility": "public",
+  "language": "en",
+  "uri": "https://mastodon.social/users/jaffathecake/statuses/116645867765357032",
+  "url": "https://mastodon.social/@jaffathecake/116645867765357032",
+  "replies_count": 8,
+  "reblogs_count": 41,
+  "favourites_count": 60,
+  "quotes_count": 2,
+  "edited_at": null,
+  "content": "<p>Watch out! Chrome has a huge bug with &lt;input type=\"number\"&gt; which causes values to change unexpectedly.</p><p>It's fixed in Chrome 150, but that won't land until the end of June.</p>",
+  "reblog": null,
+  "account": {
+    "id": "109291185870841917",
+    "username": "jaffathecake",
+    "acct": "jaffathecake@mastodon.social",
+    "display_name": "Jake Archibald",
+    "locked": false,
+    "bot": false,
+    "discoverable": true,
+    "indexable": false,
+    "group": false,
+    "created_at": "2016-11-01T00:00:00.000Z",
+    "note": "<p>Developer of sorts at Firefox, but this is my personal account. No thought goes unpublished. He/him.</p>",
+    "url": "https://mastodon.social/@jaffathecake",
+    "uri": "https://mastodon.social/users/jaffathecake",
+    "avatar": "https://cdn.masto.host/frontendsocial/cache/accounts/avatars/109/291/185/870/841/917/original/360e86ec12900e53.jpg",
+    "avatar_static": "https://cdn.masto.host/frontendsocial/cache/accounts/avatars/109/291/185/870/841/917/original/360e86ec12900e53.jpg",
+    "avatar_description": "",
+    "header": "https://cdn.masto.host/frontendsocial/cache/accounts/headers/109/291/185/870/841/917/original/b1c02ea803a7a6ce.jpeg",
+    "header_static": "https://cdn.masto.host/frontendsocial/cache/accounts/headers/109/291/185/870/841/917/original/b1c02ea803a7a6ce.jpeg",
+    "header_description": "",
+    "followers_count": 8049,
+    "following_count": 347,
+    "statuses_count": 1558,
+    "last_status_at": "2026-11-03",
+    "hide_collections": false,
+    "show_media": true,
+    "show_media_replies": true,
+    "show_featured": true,
+    "feature_approval": {
+      "automatic": [
+        "public"
+      ],
+      "manual": [],
+      "current_user": "denied"
+    },
+    "emojis": [],
+    "fields": [
+      {
+        "name": "GitHub",
+        "value": "<a href=\"https://github.com/jakearchibald\" target=\"_blank\" rel=\"nofollow noopener\" translate=\"no\"><span class=\"invisible\">https://</span><span class=\"\">github.com/jakearchibald</span><span class=\"invisible\"></span></a>",
+        "verified_at": "2026-11-02T16:17:05.466+00:00"
+      }
+    ]
+  },
+  "media_attachments": [
+    {
+      "id": "116645867820386059",
+      "type": "video",
+      "url": "https://cdn.masto.host/frontendsocial/cache/media_attachments/files/116/645/867/820/386/059/original/bc40b1a74d593ed8.mp4",
+      "preview_url": "https://cdn.masto.host/frontendsocial/cache/media_attachments/files/116/645/867/820/386/059/small/bc40b1a74d593ed8.png",
+      "remote_url": "https://files.mastodon.social/media_attachments/files/116/645/867/330/327/451/original/a33e3944f60ff985.mp4",
+      "preview_remote_url": null,
+      "text_url": null,
+      "meta": {
+        "original": {
+          "width": 1128,
+          "height": 748,
+          "frame_rate": "60/1",
+          "duration": 80.662,
+          "bitrate": 376404
+        },
+        "small": {
+          "width": 640,
+          "height": 424,
+          "size": "640x424",
+          "aspect": 1.509433962264151
+        }
+      },
+      "description": null,
+      "blurhash": "U26kVAoc4TjEv_xt%MoIR2j=%Mxas6WAjsxt"
+    }
+  ],
+  "mentions": [],
+  "tags": [],
+  "emojis": [],
+  "tagged_collections": [],
+  "quote": null,
+  "card": null,
+  "poll": null,
+  "quote_approval": {
+    "automatic": [
+      "public"
+    ],
+    "manual": [],
+    "current_user": "denied"
+  }
+}

@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use serde_json::Value;
 
 #[derive(Debug, Deserialize)]
 pub struct Post {
@@ -38,6 +39,13 @@ pub struct MediaAttachment {
     pub url: Option<String>,
     pub preview_url: Option<String>,
     pub description: Option<String>,
+    pub meta: Option<Value>,
+}
+
+impl MediaAttachment {
+    pub fn duration_in_seconds(&self) -> Option<f64> {
+        self.meta.as_ref()?.pointer("/original/duration")?.as_f64()
+    }
 }
 
 #[derive(Debug, Deserialize, PartialEq)]
@@ -58,6 +66,10 @@ pub mod test_data {
 
     pub fn real_post() -> Post {
         serde_json::from_str(include_str!("test_data/post.json")).unwrap()
+    }
+
+    pub fn real_video_post() -> Post {
+        serde_json::from_str(include_str!("test_data/video_post.json")).unwrap()
     }
 
     pub fn post_json() -> Value {
@@ -103,6 +115,31 @@ mod tests {
             .as_deref()
             .unwrap()
             .starts_with("The Mastodon profile page for Sage"));
+    }
+
+    #[test]
+    fn should_read_the_length_of_a_real_video() {
+        let post = real_video_post();
+
+        assert_eq!(post.media_attachments[0].kind, MediaKind::Video);
+        assert_eq!(
+            post.media_attachments[0].duration_in_seconds(),
+            Some(80.662)
+        );
+    }
+
+    #[test]
+    fn media_without_a_length_has_no_duration() {
+        let mut json = post_json();
+        json["media_attachments"] = json!([
+            {"type": "image", "url": "https://example.com/cat.png", "meta": {"original": {"width": 640}}},
+            {"type": "video", "url": "https://example.com/cat.mp4", "meta": {"original": {"duration": "unknown"}}}
+        ]);
+
+        let post = post(json);
+
+        assert_eq!(post.media_attachments[0].duration_in_seconds(), None);
+        assert_eq!(post.media_attachments[1].duration_in_seconds(), None);
     }
 
     #[test]

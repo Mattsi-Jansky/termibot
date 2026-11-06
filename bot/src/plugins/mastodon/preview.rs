@@ -1,7 +1,11 @@
 use crate::plugins::mastodon::link::PostLink;
 use crate::plugins::mastodon::mrkdwn;
 use crate::plugins::mastodon::post::{MediaAttachment, MediaKind, Post};
+use client::models::blocks::card::CardBlock;
 use client::models::blocks::context::{ContextBlock, ContextElement};
+use client::models::blocks::elements::button::{ButtonElement, ButtonStyle};
+use client::models::blocks::elements::image::ImageElement;
+use client::models::blocks::objects::text::Text;
 use client::models::blocks::section::SectionBlock;
 use client::models::blocks::text::HeaderBlock;
 use client::models::blocks::Block;
@@ -10,8 +14,10 @@ use framework::actions::Image;
 
 const SECTION_TEXT_LIMIT: usize = 3000;
 const HEADER_TEXT_LIMIT: usize = 150;
+const CARD_BODY_LIMIT: usize = 200;
 const ALT_TEXT_LIMIT: usize = 2000;
 const MAX_IMAGES: usize = 4;
+const MAX_VIDEOS: usize = 4;
 const SUPPORTED_IMAGE_EXTENSIONS: [&str; 4] = [".png", ".jpg", ".jpeg", ".gif"];
 
 pub struct Preview {
@@ -22,8 +28,23 @@ pub struct Preview {
     content_warning: Option<String>,
     text: String,
     images: Vec<Image>,
+    videos: Vec<VideoCard>,
     sensitive: bool,
     unshowable_attachments: usize,
+}
+
+struct VideoCard {
+    label: &'static str,
+    watch_url: String,
+    thumbnail_url: Option<String>,
+    alt_text: String,
+    description: Option<String>,
+    duration: Option<String>,
+}
+
+enum Content {
+    WithMedia,
+    TextOnly,
 }
 
 impl Preview {
@@ -44,11 +65,20 @@ impl Preview {
             name => format!("*{}* {profile_link}", mrkdwn::escape(name)),
         };
 
+        let post_url = post.url.clone().unwrap_or_else(|| link.url.clone());
+
         let mut images = vec![];
+        let mut videos = vec![];
         let mut unshowable_attachments = 0;
         for attachment in &post.media_attachments {
-            match image_for(attachment) {
-                Some(image) if images.len() < MAX_IMAGES => images.push(image),
+            match attachment.kind {
+                MediaKind::Image => match image_for(attachment) {
+                    Some(image) if images.len() < MAX_IMAGES => images.push(image),
+                    _ => unshowable_attachments += 1,
+                },
+                MediaKind::Video | MediaKind::Gifv if videos.len() < MAX_VIDEOS => {
+                    videos.push(VideoCard::new(attachment, &post_url))
+                }
                 _ => unshowable_attachments += 1,
             }
         }
@@ -60,24 +90,24 @@ impl Preview {
                 .avatar_static
                 .clone()
                 .filter(|url| is_supported_image(url)),
-            post_url: post.url.clone().unwrap_or_else(|| link.url.clone()),
+            post_url,
             content_warning: Some(post.spoiler_text.trim())
                 .filter(|warning| !warning.is_empty())
                 .map(str::to_string),
             text: mrkdwn::truncate(&mrkdwn::from_html(&post.content), SECTION_TEXT_LIMIT),
             images,
+            videos,
             sensitive: post.sensitive,
             unshowable_attachments,
         }
     }
 
     pub fn message(&self) -> MessageBody {
-        let hidden_images = if self.sensitive { self.images.len() } else { 0 };
-        self.build_message(true, self.unshowable_attachments + hidden_images)
+        self.build_message(Content::WithMedia)
     }
 
     pub fn text_only_message(&self) -> MessageBody {
-        self.build_message(false, self.unshowable_attachments + self.images.len())
+        self.build_message(Content::TextOnly)
     }
 
     pub fn images(&self) -> Vec<Image> {
@@ -88,8 +118,11 @@ impl Preview {
         }
     }
 
-    fn build_message(&self, with_avatar: bool, hidden_attachments: usize) -> MessageBody {
-        let mut blocks = vec![self.author_block(with_avatar)];
+    fn build_message(&self, content: Content) -> MessageBody {
+        let with_media = matches!(content, Content::WithMedia);
+        let shows_media = with_media && !self.sensitive;
+
+        let mut blocks = vec![self.author_block(with_media)];
         if let Some(warning) = &self.content_warning {
             blocks.push(HeaderBlock::new(&truncate_plain(
                 &format!("CW: {warning}"),
@@ -99,6 +132,15 @@ impl Preview {
         if !self.text.is_empty() {
             blocks.push(SectionBlock::new_markdown(&self.text));
         }
+        if shows_media {
+            blocks.extend(self.videos.iter().map(VideoCard::block));
+        }
+        let hidden_media = if shows_media {
+            0
+        } else {
+            self.images.len() + self.videos.len()
+        };
+        let hidden_attachments = self.unshowable_attachments + hidden_media;
         if hidden_attachments > 0 {
             blocks.push(self.hidden_attachments_note(hidden_attachments));
         }
@@ -139,29 +181,75 @@ impl Preview {
     }
 }
 
+impl VideoCard {
+    fn new(attachment: &MediaAttachment, post_url: &str) -> Self {
+        let description = description_of(attachment);
+        Self {
+            label: if attachment.kind == MediaKind::Gifv {
+                "GIF"
+            } else {
+                "Video"
+            },
+            watch_url: attachment
+                .url
+                .clone()
+                .unwrap_or_else(|| post_url.to_string()),
+            thumbnail_url: attachment
+                .preview_url
+                .clone()
+                .filter(|url| is_supported_image(url)),
+            alt_text: alt_text(description, "Video thumbnail"),
+            description: description
+                .map(|description| truncate_plain(description, CARD_BODY_LIMIT)),
+            duration: attachment.duration_in_seconds().map(format_duration),
+        }
+    }
+
+    fn block(&self) -> Block {
+        let mut card = CardBlock::default()
+            .with_title(Text::plain(self.label))
+            .with_actions(vec![
+                ButtonElement::link("▶ Watch", &self.watch_url).with_style(ButtonStyle::Primary)
+            ]);
+        if let Some(url) = &self.thumbnail_url {
+            card = card.with_hero_image(ImageElement::from_url(url, &self.alt_text));
+        }
+        if let Some(duration) = &self.duration {
+            card = card.with_subtitle(Text::plain(duration));
+        }
+        if let Some(description) = &self.description {
+            card = card.with_body(Text::plain(description));
+        }
+        card.into()
+    }
+}
+
 fn image_for(attachment: &MediaAttachment) -> Option<Image> {
-    let description = attachment
+    let url = [&attachment.url, &attachment.preview_url]
+        .into_iter()
+        .flatten()
+        .find(|url| is_supported_image(url))?;
+    Some(Image::new(
+        url,
+        &alt_text(description_of(attachment), "Image"),
+    ))
+}
+
+fn description_of(attachment: &MediaAttachment) -> Option<&str> {
+    attachment
         .description
         .as_deref()
         .map(str::trim)
-        .filter(|description| !description.is_empty());
+        .filter(|description| !description.is_empty())
+}
 
-    match attachment.kind {
-        MediaKind::Image => {
-            let url = [&attachment.url, &attachment.preview_url]
-                .into_iter()
-                .flatten()
-                .find(|url| is_supported_image(url))?;
-            Some(Image::new(url, &alt_text(description, "Image")))
-        }
-        MediaKind::Video | MediaKind::Gifv => {
-            let url = attachment
-                .preview_url
-                .as_deref()
-                .filter(|url| is_supported_image(url))?;
-            Some(Image::new(url, &alt_text(description, "Video thumbnail")).with_title("Video"))
-        }
-        MediaKind::Audio | MediaKind::Unknown => None,
+fn format_duration(seconds: f64) -> String {
+    let total = seconds.round() as u64;
+    let (hours, minutes, seconds) = (total / 3600, total % 3600 / 60, total % 60);
+    if hours > 0 {
+        format!("{hours}:{minutes:02}:{seconds:02}")
+    } else {
+        format!("{minutes}:{seconds:02}")
     }
 }
 
@@ -192,12 +280,28 @@ fn truncate_plain(text: &str, max_chars: usize) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::plugins::mastodon::post::test_data::{post, post_json, real_post};
-    use client::models::blocks::objects::text::{Text, TextBody};
+    use crate::plugins::mastodon::post::test_data::{post, post_json, real_post, real_video_post};
+    use client::models::blocks::objects::text::TextBody;
     use serde_json::{json, Value};
 
     const AVATAR_URL: &str = "https://files.mastodon.social/avatars/sam.png";
     const IMAGE_URL: &str = "https://files.mastodon.social/media/cat.png";
+    const VIDEO_URL: &str = "https://files.mastodon.social/media/cat.mp4";
+    const THUMBNAIL_URL: &str = "https://files.mastodon.social/media/cat-thumbnail.jpg";
+
+    fn video(kind: &str) -> Value {
+        json!({
+            "type": kind,
+            "url": VIDEO_URL,
+            "preview_url": THUMBNAIL_URL,
+            "description": "A cat jumping",
+            "meta": {"original": {"duration": 80.662}}
+        })
+    }
+
+    fn watch_button(url: &str) -> Vec<ButtonElement> {
+        vec![ButtonElement::link("▶ Watch", url).with_style(ButtonStyle::Primary)]
+    }
 
     fn preview(json: Value) -> Preview {
         Preview::new(
@@ -362,21 +466,138 @@ mod tests {
     }
 
     #[test]
-    fn videos_are_shown_as_thumbnails() {
+    fn videos_are_shown_as_cards_with_a_watch_button() {
+        let preview = preview(with_attachments(json!([video("video")])));
+
+        assert!(preview.images().is_empty());
+        assert_eq!(
+            preview.message().get_blocks().last().unwrap(),
+            &CardBlock::default()
+                .with_hero_image(ImageElement::from_url(THUMBNAIL_URL, "A cat jumping"))
+                .with_title(Text::plain("Video"))
+                .with_subtitle(Text::plain("1:21"))
+                .with_body(Text::plain("A cat jumping"))
+                .with_actions(watch_button(VIDEO_URL))
+                .into()
+        );
+    }
+
+    #[test]
+    fn gifs_are_labelled_as_gifs() {
+        let message = preview(with_attachments(json!([video("gifv")]))).message();
+
+        assert!(matches!(
+            message.get_blocks().last().unwrap(),
+            Block::Card(card) if card.title == Some(Text::plain("GIF"))
+        ));
+    }
+
+    #[test]
+    fn video_cards_leave_out_what_the_post_does_not_have() {
         let preview = preview(with_attachments(json!([{
             "type": "video",
-            "url": "https://files.mastodon.social/media/cat.mp4",
-            "preview_url": "https://files.mastodon.social/media/cat-thumbnail.jpg",
-            "description": "A cat jumping"
+            "url": VIDEO_URL,
+            "preview_url": "https://files.mastodon.social/media/cat-thumbnail.webp"
         }])));
 
         assert_eq!(
-            preview.images(),
-            vec![Image::new(
-                "https://files.mastodon.social/media/cat-thumbnail.jpg",
-                "A cat jumping"
+            preview.message().get_blocks().last().unwrap(),
+            &CardBlock::default()
+                .with_title(Text::plain("Video"))
+                .with_actions(watch_button(VIDEO_URL))
+                .into()
+        );
+    }
+
+    #[test]
+    fn videos_without_their_own_url_are_watched_on_the_post() {
+        let message = preview(with_attachments(json!([{"type": "video", "url": null}]))).message();
+
+        assert!(matches!(
+            message.get_blocks().last().unwrap(),
+            Block::Card(card) if card.actions == Some(watch_button("https://mastodon.social/@sam/111"))
+        ));
+    }
+
+    #[test]
+    fn long_video_descriptions_are_cut_short_to_fit_in_the_card() {
+        let mut video = video("video");
+        video["description"] = json!("a".repeat(300));
+
+        let message = preview(with_attachments(json!([video]))).message();
+
+        match message.get_blocks().last().unwrap() {
+            Block::Card(card) => match &card.body {
+                Some(Text::PlainText(TextBody { text })) => {
+                    assert_eq!(text.chars().count(), CARD_BODY_LIMIT)
+                }
+                other => panic!("Expected the video's description, got {other:?}"),
+            },
+            other => panic!("Expected a video card, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn sensitive_videos_are_noted_instead_of_shown() {
+        let mut json = with_attachments(json!([video("video")]));
+        json["sensitive"] = json!(true);
+
+        let message = preview(json).message();
+
+        assert!(!message
+            .get_blocks()
+            .iter()
+            .any(|block| matches!(block, Block::Card(_))));
+        assert_eq!(
+            message.get_blocks().last().unwrap(),
+            &note("1 attachment marked sensitive, <https://mastodon.social/@sam/111|view on Mastodon>")
+        );
+    }
+
+    #[test]
+    fn text_only_message_notes_videos_instead_of_showing_them() {
+        let message = preview(with_attachments(json!([video("video")]))).text_only_message();
+
+        assert!(!message
+            .get_blocks()
+            .iter()
+            .any(|block| matches!(block, Block::Card(_))));
+        assert_eq!(
+            message.get_blocks().last().unwrap(),
+            &note("1 attachment not shown, <https://mastodon.social/@sam/111|view on Mastodon>")
+        );
+    }
+
+    #[test]
+    fn video_lengths_are_shown_in_minutes_and_seconds() {
+        assert_eq!(format_duration(5.2), "0:05");
+        assert_eq!(format_duration(80.662), "1:21");
+        assert_eq!(format_duration(3725.0), "1:02:05");
+    }
+
+    #[test]
+    fn real_video_post_is_previewed_as_a_card() {
+        let preview = Preview::new(
+            &real_video_post(),
+            &PostLink::find_in(
+                "https://front-end.social/@jaffathecake@mastodon.social/116645868006890634",
             )
-            .with_title("Video")]
+            .unwrap(),
+        );
+
+        assert_eq!(
+            preview.message().get_blocks().last().unwrap(),
+            &CardBlock::default()
+                .with_hero_image(ImageElement::from_url(
+                    "https://cdn.masto.host/frontendsocial/cache/media_attachments/files/116/645/867/820/386/059/small/bc40b1a74d593ed8.png",
+                    "Video thumbnail"
+                ))
+                .with_title(Text::plain("Video"))
+                .with_subtitle(Text::plain("1:21"))
+                .with_actions(watch_button(
+                    "https://cdn.masto.host/frontendsocial/cache/media_attachments/files/116/645/867/820/386/059/original/bc40b1a74d593ed8.mp4"
+                ))
+                .into()
         );
     }
 
