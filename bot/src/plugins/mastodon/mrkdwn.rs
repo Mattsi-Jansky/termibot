@@ -16,6 +16,14 @@ pub fn escape(text: &str) -> String {
         .replace('>', "&gt;")
 }
 
+pub fn quote(mrkdwn: &str) -> String {
+    mrkdwn
+        .lines()
+        .map(|line| format!("> {line}").trim_end().to_string())
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
 /// Cuts the text short without leaving half of a link or an escaped character behind
 pub fn truncate(mrkdwn: &str, max_chars: usize) -> String {
     if mrkdwn.chars().count() <= max_chars {
@@ -197,6 +205,14 @@ mod tests {
     #[test]
     fn should_leave_short_text_alone() {
         assert_eq!(truncate("hello", 5), "hello");
+    }
+
+    #[test]
+    fn should_quote_every_line_including_blank_ones() {
+        assert_eq!(
+            quote("First\nsecond\n\nNext"),
+            "> First\n> second\n>\n> Next"
+        );
     }
 
     #[test]

@@ -94,7 +94,7 @@ impl Preview {
             content_warning: Some(post.spoiler_text.trim())
                 .filter(|warning| !warning.is_empty())
                 .map(str::to_string),
-            text: mrkdwn::truncate(&mrkdwn::from_html(&post.content), SECTION_TEXT_LIMIT),
+            text: quoted_text(&post.content),
             images,
             videos,
             sensitive: post.sensitive,
@@ -222,6 +222,16 @@ impl VideoCard {
         }
         card.into()
     }
+}
+
+fn quoted_text(html: &str) -> String {
+    let text = mrkdwn::from_html(html);
+    let room_for_quote_marks = 2 * text.lines().count();
+    let cut_short = mrkdwn::truncate(
+        &text,
+        SECTION_TEXT_LIMIT.saturating_sub(room_for_quote_marks),
+    );
+    mrkdwn::quote(&cut_short)
 }
 
 fn image_for(attachment: &MediaAttachment) -> Option<Image> {
@@ -358,7 +368,7 @@ mod tests {
                     ),
                 ])
                 .into(),
-                SectionBlock::new_markdown("Hello"),
+                SectionBlock::new_markdown("> Hello"),
             ]
         );
     }
@@ -419,7 +429,7 @@ mod tests {
             &message.get_blocks()[1..],
             &[
                 HeaderBlock::new("CW: Spoilers for the finale"),
-                SectionBlock::new_markdown("Hello"),
+                SectionBlock::new_markdown("> Hello"),
             ]
         );
     }
@@ -433,6 +443,17 @@ mod tests {
 
         assert_eq!(text.chars().count(), SECTION_TEXT_LIMIT);
         assert!(text.ends_with('…'));
+    }
+
+    #[test]
+    fn long_text_with_many_paragraphs_is_quoted_and_still_fits_in_slack() {
+        let mut json = post_json();
+        json["content"] = json!(format!("<p>{}</p>", "a".repeat(40)).repeat(100));
+
+        let text = section_text(&preview(json).message()).to_string();
+
+        assert!(text.chars().count() <= SECTION_TEXT_LIMIT);
+        assert!(text.lines().all(|line| line.starts_with('>')), "{text}");
     }
 
     #[test]
@@ -656,7 +677,7 @@ mod tests {
                     "*Sam* <https://mastodon.social/@sam|@sam@mastodon.social>"
                 )])
                 .into(),
-                SectionBlock::new_markdown("Hello"),
+                SectionBlock::new_markdown("> Hello"),
                 note("1 attachment not shown, <https://mastodon.social/@sam/111|view on Mastodon>"),
             ]
         );
@@ -676,7 +697,7 @@ mod tests {
             "*Mastodon* <https://mastodon.social/@Mastodon|@Mastodon@mastodon.social>"
         );
         assert!(text.starts_with(
-            "New in Mastodon 4.6: Newsletters 📬\n\nMastodon servers now support email newsletters"
+            "> New in Mastodon 4.6: Newsletters 📬\n>\n> Mastodon servers now support email newsletters"
         ));
         assert!(text.contains("We're building Mastodon"));
         assert!(text.ends_with(
