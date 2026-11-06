@@ -2,7 +2,7 @@ use crate::models::auth_test_response::AuthTestResponse;
 use crate::models::file_upload::FileUpload;
 use crate::models::message_body::MessageBody;
 use crate::models::message_id::MessageId;
-use crate::models::upload_url_response::UploadUrlResponse;
+use crate::models::upload_url_response::{UploadDestination, UploadUrlResponse};
 use crate::models::websocket_url_message::WebsocketUrlMessage;
 use crate::rate_limiter::RateLimitingMiddleware;
 use async_trait::async_trait;
@@ -133,21 +133,13 @@ impl ReqwestSlackClient {
             form.push(("alt_txt", alt_text.as_str()));
         }
 
-        let response = self
-            .api_request("files.getUploadURLExternal")
+        self.api_request("files.getUploadURLExternal")
             .form(&form)
             .send()
             .await?
             .json::<UploadUrlResponse>()
-            .await?;
-
-        match (response.ok, response.upload_url, response.file_id) {
-            (true, Some(url), Some(file_id)) => Ok(UploadDestination { url, file_id }),
-            _ => Err(SlackClientError(format!(
-                "Slack didn't provide an upload URL: {}",
-                response.error.unwrap_or_default()
-            ))),
-        }
+            .await?
+            .into_destination()
     }
 
     async fn complete_upload(&self, file_id: &str) -> Result<(), SlackClientError> {
@@ -274,7 +266,33 @@ impl SlackClient for ReqwestSlackClient {
     }
 }
 
-struct UploadDestination {
-    url: String,
-    file_id: String,
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn check(json: &str) -> Result<HttpApiResponse, SlackClientError> {
+        ReqwestSlackClient::ensure_correct_result_type_because_slack_stupidly_uses_200_status_for_errors(
+            Ok(serde_json::from_str(json).unwrap()),
+        )
+    }
+
+    #[test]
+    fn ok_response_is_a_success() {
+        assert!(check(r#"{"ok": true}"#).is_ok());
+    }
+
+    #[test]
+    fn not_ok_response_is_an_error_with_slacks_reasons() {
+        let error = check(
+            r#"{"ok": false, "error": "invalid_blocks", "errors": ["downloading image failed"]}"#,
+        )
+        .unwrap_err();
+
+        assert_eq!(error.0, "invalid_blocks: [downloading image failed]");
+    }
+
+    #[test]
+    fn not_ok_response_without_reasons_is_still_an_error() {
+        assert!(check(r#"{"ok": false}"#).is_err());
+    }
 }

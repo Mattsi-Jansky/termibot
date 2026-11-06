@@ -270,7 +270,6 @@ dependencies = [
  "futures-util",
  "glob",
  "governor",
- "http 0.2.12",
  "lazy_static",
  "mockall",
  "nonzero",
