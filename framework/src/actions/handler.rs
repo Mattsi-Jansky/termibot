@@ -96,7 +96,7 @@ impl DefaultActionHandler {
 }
 
 async fn image_block(image: Image, client: &(dyn SlackClient + Send + Sync)) -> Block {
-    let block = match image.content {
+    match image.content {
         Some(content) => {
             let upload = FileUpload::new(filename_from_url(&image.url), content)
                 .with_alt_text(&image.alt_text);
@@ -112,12 +112,8 @@ async fn image_block(image: Image, client: &(dyn SlackClient + Send + Sync)) -> 
             }
         }
         None => ImageBlock::from_url(&image.url, &image.alt_text),
-    };
-
-    match image.title {
-        Some(title) => block.with_title(&title).into(),
-        None => block.into(),
     }
+    .into()
 }
 
 async fn reply_once_uploads_are_processed(
@@ -349,15 +345,13 @@ mod tests {
             &mut mock_client,
             vec![
                 SectionBlock::new_markdown("Look"),
-                ImageBlock::from_url(CAT_URL, "A cat")
-                    .with_title("Video")
-                    .into(),
+                ImageBlock::from_url(CAT_URL, "A cat").into(),
             ],
         );
 
         DefaultActionHandler::default()
             .handle(
-                reply_with_images(vec![Image::new(CAT_URL, "A cat").with_title("Video")]),
+                reply_with_images(vec![Image::new(CAT_URL, "A cat")]),
                 Arc::new(mock_client),
             )
             .await
