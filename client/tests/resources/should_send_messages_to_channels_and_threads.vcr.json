@@ -218,7 +218,7 @@
         "uri": "https://slack.com/api/chat.postMessage",
         "body": {
           "encoding": null,
-          "string": "{\"channel\":\"#bots\",\"text\":\"replying to foobar\",\"thread_ts\":\"1687437685.224449\"}"
+          "string": "{\"blocks\":[],\"channel\":\"#bots\",\"text\":\"replying to foobar\",\"thread_ts\":\"1687437685.224449\"}"
         },
         "method": "post",
         "headers": {

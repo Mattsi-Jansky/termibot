@@ -8,8 +8,9 @@ use error::SlackClientError;
 use mockall::automock;
 use models::http_response::HttpApiResponse;
 use reqwest::Client;
-use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
+use reqwest_middleware::{ClientBuilder, ClientWithMiddleware, RequestBuilder};
 use secrecy::{ExposeSecret, Secret};
+use serde_json::{json, Value};
 use tracing::info;
 use url::Url;
 
@@ -77,6 +78,38 @@ impl ReqwestSlackClient {
         }
     }
 
+    fn api_request(&self, method: &str) -> RequestBuilder {
+        self.http
+            .post(format!("https://slack.com/api/{method}"))
+            .header(
+                "Authorization",
+                format!("Bearer {}", self.bot_token.expose_secret()),
+            )
+            .header("User-Agent", "slackbot-client")
+            .header("Accept", "application/json")
+    }
+
+    fn message_json(channel: &str, message: &MessageBody) -> Value {
+        json!({
+            "channel": channel,
+            "text": message.get_text(),
+            "blocks": message.get_blocks()
+        })
+    }
+
+    async fn post_message(&self, body: &Value) -> Result<HttpApiResponse, SlackClientError> {
+        let result = self
+            .api_request("chat.postMessage")
+            .json(body)
+            .send()
+            .await?
+            .json::<HttpApiResponse>()
+            .await
+            .map_err(SlackClientError::from);
+
+        Self::ensure_correct_result_type_because_slack_stupidly_uses_200_status_for_errors(result)
+    }
+
     fn ensure_correct_result_type_because_slack_stupidly_uses_200_status_for_errors(
         result: Result<HttpApiResponse, SlackClientError>,
     ) -> Result<HttpApiResponse, SlackClientError> {
@@ -110,14 +143,7 @@ impl ReqwestSlackClient {
 #[async_trait]
 impl SlackClient for ReqwestSlackClient {
     async fn get_identity(&self) -> Result<AuthTestResponse, SlackClientError> {
-        self.http
-            .post("https://slack.com/api/auth.test")
-            .header(
-                "Authorization",
-                format!("Bearer {}", self.bot_token.expose_secret()),
-            )
-            .header("User-Agent", "slackbot-client")
-            .header("Accept", "application/json")
+        self.api_request("auth.test")
             .send()
             .await?
             .json::<AuthTestResponse>()
@@ -131,30 +157,10 @@ impl SlackClient for ReqwestSlackClient {
         channel: &str,
         body: &MessageBody,
     ) -> Result<HttpApiResponse, SlackClientError> {
-        let body = serde_json::json!({
-            "channel": channel,
-            "text": body.get_text(),
-            "blocks": body.get_blocks()
-        });
+        let body = Self::message_json(channel, body);
         info!("Messaging channel {} with {:?}", channel, body);
 
-        let result = self
-            .http
-            .post("https://slack.com/api/chat.postMessage")
-            .header(
-                "Authorization",
-                format!("Bearer {}", self.bot_token.expose_secret()),
-            )
-            .header("User-Agent", "slackbot-client")
-            .header("Accept", "application/json")
-            .json(&body)
-            .send()
-            .await?
-            .json::<HttpApiResponse>()
-            .await
-            .map_err(SlackClientError::from);
-
-        Self::ensure_correct_result_type_because_slack_stupidly_uses_200_status_for_errors(result)
+        self.post_message(&body).await
     }
 
     /// Send a reply to a thread.
@@ -171,27 +177,10 @@ impl SlackClient for ReqwestSlackClient {
             "Messaging channel {}, thread {:?} with {:?}",
             channel, parent, body
         );
-        let result = self
-            .http
-            .post("https://slack.com/api/chat.postMessage")
-            .header(
-                "Authorization",
-                format!("Bearer {}", self.bot_token.expose_secret()),
-            )
-            .header("User-Agent", "slackbot-client")
-            .header("Accept", "application/json")
-            .json(&serde_json::json!({
-                "channel": channel,
-                "thread_ts": parent,
-                "text": body.get_text()
-            }))
-            .send()
-            .await?
-            .json::<HttpApiResponse>()
-            .await
-            .map_err(SlackClientError::from);
+        let mut body = Self::message_json(channel, body);
+        body["thread_ts"] = json!(parent);
 
-        Self::ensure_correct_result_type_because_slack_stupidly_uses_200_status_for_errors(result)
+        self.post_message(&body).await
     }
 
     #[tracing::instrument]
