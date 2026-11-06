@@ -39,6 +39,10 @@ impl MessageBody {
         self.unfurl
     }
 
+    pub fn append_blocks(&mut self, blocks: Vec<Block>) {
+        self.blocks.extend(blocks);
+    }
+
     pub fn get_text(&self) -> String {
         self.text.clone().unwrap_or_default()
     }

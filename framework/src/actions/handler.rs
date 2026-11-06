@@ -1,6 +1,9 @@
-use crate::actions::Action;
+use crate::actions::{Action, Image};
 use async_trait::async_trait;
 use client::error::SlackClientError;
+use client::models::blocks::image::ImageBlock;
+use client::models::blocks::Block;
+use client::models::file_upload::FileUpload;
 use client::SlackClient;
 use mockall::automock;
 use std::sync::Arc;
@@ -39,6 +42,22 @@ impl ActionHandler for DefaultActionHandler {
                 .message_thread(&channel, &thread_id, &message)
                 .await
                 .map(|_| ())?,
+            Action::ReplyToThreadWithImages {
+                channel,
+                thread_id,
+                mut message,
+                images,
+            } => {
+                let mut image_blocks = Vec::with_capacity(images.len());
+                for image in images {
+                    image_blocks.push(image_block(image, client.as_ref()).await);
+                }
+                message.append_blocks(image_blocks);
+                client
+                    .message_thread(&channel, &thread_id, &message)
+                    .await
+                    .map(|_| ())?
+            }
             Action::FirstSuccessful(actions) => {
                 self.handle_first_successful(actions, client).await?
             }
@@ -69,9 +88,43 @@ impl DefaultActionHandler {
     }
 }
 
+async fn image_block(image: Image, client: &(dyn SlackClient + Send + Sync)) -> Block {
+    let block = match image.content {
+        Some(content) => {
+            let upload = FileUpload::new(filename_from_url(&image.url), content)
+                .with_alt_text(&image.alt_text);
+            match client.upload_file(upload).await {
+                Ok(file_id) => ImageBlock::from_slack_file(&file_id, &image.alt_text),
+                Err(err) => {
+                    warn!(
+                        "Couldn't upload {}, linking to it instead: {:?}",
+                        image.url, err
+                    );
+                    ImageBlock::from_url(&image.url, &image.alt_text)
+                }
+            }
+        }
+        None => ImageBlock::from_url(&image.url, &image.alt_text),
+    };
+
+    match image.title {
+        Some(title) => block.with_title(&title).into(),
+        None => block.into(),
+    }
+}
+
+fn filename_from_url(url: &str) -> &str {
+    let path = url.split(['?', '#']).next().unwrap_or(url);
+    path.rsplit('/')
+        .next()
+        .filter(|name| !name.is_empty())
+        .unwrap_or("image")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use client::models::blocks::section::SectionBlock;
     use client::models::http_response::HttpApiResponse;
     use client::models::http_response::Message;
     use client::models::message_body::MessageBody;
@@ -197,6 +250,122 @@ mod tests {
             .await;
 
         assert_eq!(result.unwrap_err().0, "second failed");
+    }
+
+    #[tokio::test]
+    async fn images_with_content_are_uploaded_and_shown_from_slack() {
+        let mut mock_client = MockSlackClient::new();
+        mock_client
+            .expect_upload_file()
+            .withf(|upload| {
+                upload == &FileUpload::new("cat.png", b"cat pixels".to_vec()).with_alt_text("A cat")
+            })
+            .times(1)
+            .returning(|_| Ok("F123".to_string()));
+        expect_thread_reply_with_blocks(
+            &mut mock_client,
+            vec![
+                SectionBlock::new_markdown("Look"),
+                ImageBlock::from_slack_file("F123", "A cat").into(),
+            ],
+        );
+
+        DefaultActionHandler::default()
+            .handle(
+                reply_with_images(vec![
+                    Image::new(CAT_URL, "A cat").with_content(b"cat pixels".to_vec())
+                ]),
+                Arc::new(mock_client),
+            )
+            .await
+            .unwrap();
+    }
+
+    #[tokio::test]
+    async fn images_are_linked_when_their_upload_fails() {
+        let mut mock_client = MockSlackClient::new();
+        mock_client
+            .expect_upload_file()
+            .times(1)
+            .returning(|_| Err(failure("upload failed")));
+        expect_thread_reply_with_blocks(
+            &mut mock_client,
+            vec![
+                SectionBlock::new_markdown("Look"),
+                ImageBlock::from_url(CAT_URL, "A cat").into(),
+            ],
+        );
+
+        DefaultActionHandler::default()
+            .handle(
+                reply_with_images(vec![
+                    Image::new(CAT_URL, "A cat").with_content(b"cat pixels".to_vec())
+                ]),
+                Arc::new(mock_client),
+            )
+            .await
+            .unwrap();
+    }
+
+    #[tokio::test]
+    async fn images_without_content_are_linked_without_uploading() {
+        let mut mock_client = MockSlackClient::new();
+        mock_client.expect_upload_file().times(0);
+        expect_thread_reply_with_blocks(
+            &mut mock_client,
+            vec![
+                SectionBlock::new_markdown("Look"),
+                ImageBlock::from_url(CAT_URL, "A cat")
+                    .with_title("Video")
+                    .into(),
+            ],
+        );
+
+        DefaultActionHandler::default()
+            .handle(
+                reply_with_images(vec![Image::new(CAT_URL, "A cat").with_title("Video")]),
+                Arc::new(mock_client),
+            )
+            .await
+            .unwrap();
+    }
+
+    #[test]
+    fn filename_is_the_last_part_of_the_url_path() {
+        assert_eq!(
+            filename_from_url("https://example.com/a/cat.png?v=1#top"),
+            "cat.png"
+        );
+        assert_eq!(filename_from_url("https://example.com/"), "image");
+    }
+
+    #[test]
+    fn image_debug_output_shows_size_of_content_instead_of_bytes() {
+        let image = Image::new(CAT_URL, "A cat").with_content(vec![7; 1024]);
+
+        let debug = format!("{image:?}");
+
+        assert!(debug.contains("1024 bytes"), "{debug}");
+        assert!(!debug.contains("7, 7"), "{debug}");
+    }
+
+    const CAT_URL: &str = "https://files.example.com/media/cat.png?v=1";
+
+    fn reply_with_images(images: Vec<Image>) -> Action {
+        Action::ReplyToThreadWithImages {
+            channel: String::from("#bots"),
+            thread_id: "thread-id".to_string().into(),
+            message: MessageBody::new(vec![SectionBlock::new_markdown("Look")], None).unwrap(),
+            images,
+        }
+    }
+
+    fn expect_thread_reply_with_blocks(mock_client: &mut MockSlackClient, blocks: Vec<Block>) {
+        mock_client
+            .expect_message_thread()
+            .withf(move |_, _, message| message.get_blocks() == &blocks)
+            .times(1)
+            .returning(|_, _, _| Ok(sent()));
     }
 
     fn channel_message(text: &str) -> Action {
