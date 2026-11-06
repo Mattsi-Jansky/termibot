@@ -90,11 +90,16 @@ impl ReqwestSlackClient {
     }
 
     fn message_json(channel: &str, message: &MessageBody) -> Value {
-        json!({
+        let mut body = json!({
             "channel": channel,
             "text": message.get_text(),
             "blocks": message.get_blocks()
-        })
+        });
+        if !message.unfurls() {
+            body["unfurl_links"] = json!(false);
+            body["unfurl_media"] = json!(false);
+        }
+        body
     }
 
     async fn post_message(&self, body: &Value) -> Result<HttpApiResponse, SlackClientError> {

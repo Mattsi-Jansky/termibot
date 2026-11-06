@@ -5,6 +5,7 @@ use crate::models::blocks::Block;
 pub struct MessageBody {
     text: Option<String>,
     blocks: Vec<Block>, //attachments
+    unfurl: bool,
 }
 
 impl MessageBody {
@@ -12,7 +13,11 @@ impl MessageBody {
         if blocks.is_empty() && text.is_none() {
             Err(SlackClientError("Must have..".to_string()))
         } else {
-            Ok(Self { blocks, text })
+            Ok(Self {
+                blocks,
+                text,
+                unfurl: true,
+            })
         }
     }
 
@@ -20,7 +25,18 @@ impl MessageBody {
         Self {
             text: Some(text.to_string()),
             blocks: vec![],
+            unfurl: true,
         }
+    }
+
+    /// Stops Slack adding previews of the links in this message
+    pub fn without_unfurling(mut self) -> Self {
+        self.unfurl = false;
+        self
+    }
+
+    pub fn unfurls(&self) -> bool {
+        self.unfurl
     }
 
     pub fn get_text(&self) -> String {
