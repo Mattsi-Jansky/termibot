@@ -21,6 +21,7 @@ const MAX_VIDEOS: usize = 4;
 const SUPPORTED_IMAGE_EXTENSIONS: [&str; 4] = [".png", ".jpg", ".jpeg", ".gif"];
 
 pub struct Preview {
+    kind: Kind,
     handle: String,
     author: String,
     avatar_url: Option<String>,
@@ -42,6 +43,12 @@ struct VideoCard {
     duration: Option<String>,
 }
 
+#[derive(Clone, Copy)]
+enum Kind {
+    Post,
+    QuotedPost,
+}
+
 enum Content {
     WithMedia,
     TextOnly,
@@ -49,6 +56,14 @@ enum Content {
 
 impl Preview {
     pub fn new(post: &Post, link: &PostLink) -> Self {
+        Self::build(post, link, Kind::Post)
+    }
+
+    pub fn for_quoted_post(post: &Post, link: &PostLink) -> Self {
+        Self::build(post, link, Kind::QuotedPost)
+    }
+
+    fn build(post: &Post, link: &PostLink, kind: Kind) -> Self {
         let account = &post.account;
         let handle = if account.acct.contains('@') {
             account.acct.clone()
@@ -84,6 +99,7 @@ impl Preview {
         }
 
         Self {
+            kind,
             handle,
             author,
             avatar_url: account
@@ -94,7 +110,7 @@ impl Preview {
             content_warning: Some(post.spoiler_text.trim())
                 .filter(|warning| !warning.is_empty())
                 .map(str::to_string),
-            text: quoted_text(&post.content),
+            text: preview_text(post),
             images,
             videos,
             sensitive: post.sensitive,
@@ -145,7 +161,11 @@ impl Preview {
             blocks.push(self.hidden_attachments_note(hidden_attachments));
         }
 
-        MessageBody::new(blocks, Some(format!("Mastodon post by @{}", self.handle)))
+        let summary = match self.kind {
+            Kind::Post => "Mastodon post by",
+            Kind::QuotedPost => "Quoted post by",
+        };
+        MessageBody::new(blocks, Some(format!("{summary} @{}", self.handle)))
             .expect("a preview always has blocks")
             .without_unfurling()
     }
@@ -156,9 +176,13 @@ impl Preview {
             .as_deref()
             .filter(|_| with_avatar)
             .map(|url| ContextElement::image(url, "Profile picture"));
+        let label = match self.kind {
+            Kind::Post => None,
+            Kind::QuotedPost => Some(ContextElement::markdown("↳ Quoted post by")),
+        };
         let author = ContextElement::markdown(&self.author);
 
-        ContextBlock::new(avatar.into_iter().chain([author]).collect()).into()
+        ContextBlock::new(label.into_iter().chain(avatar).chain([author]).collect()).into()
     }
 
     fn hidden_attachments_note(&self, count: usize) -> Block {
@@ -224,8 +248,12 @@ impl VideoCard {
     }
 }
 
-fn quoted_text(html: &str) -> String {
-    let text = mrkdwn::from_html(html);
+fn preview_text(post: &Post) -> String {
+    let text = if post.quoted_post().is_some() {
+        mrkdwn::from_html_without_quote_fallback(&post.content)
+    } else {
+        mrkdwn::from_html(&post.content)
+    };
     let room_for_quote_marks = 2 * text.lines().count();
     let cut_short = mrkdwn::truncate(
         &text,
@@ -290,7 +318,9 @@ fn truncate_plain(text: &str, max_chars: usize) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::plugins::mastodon::post::test_data::{post, post_json, real_post, real_video_post};
+    use crate::plugins::mastodon::post::test_data::{
+        post, post_json, post_quoting, quoted_post_json, real_post, real_video_post,
+    };
     use client::models::blocks::objects::text::TextBody;
     use serde_json::{json, Value};
 
@@ -352,6 +382,63 @@ mod tests {
 
     fn note(text: &str) -> Block {
         ContextBlock::new(vec![ContextElement::markdown(text)]).into()
+    }
+
+    #[test]
+    fn post_quoting_a_post_that_is_shown_leaves_out_the_quote_fallback() {
+        let preview = preview(post_quoting(
+            json!({"state": "accepted", "quoted_status": quoted_post_json()}),
+        ));
+
+        assert_eq!(section_text(&preview.message()), "> Look at this");
+    }
+
+    #[test]
+    fn post_quoting_a_post_that_cannot_be_shown_keeps_the_quote_fallback() {
+        let preview = preview(post_quoting(
+            json!({"state": "deleted", "quoted_status": null}),
+        ));
+
+        assert_eq!(
+            section_text(&preview.message()),
+            "> RE: <https://other.example/@alex/222|other.example/@alex/222>\n>\n> Look at this"
+        );
+    }
+
+    #[test]
+    fn quoted_post_preview_is_labelled_as_the_quoted_post() {
+        let quoted = post(quoted_post_json());
+        let preview = Preview::for_quoted_post(
+            &quoted,
+            &PostLink::find_in("https://mastodon.social/@sam/111").unwrap(),
+        );
+        let label = ContextElement::markdown("↳ Quoted post by");
+        let author =
+            ContextElement::markdown("*Alex* <https://other.example/@alex|@alex@other.example>");
+
+        assert_eq!(
+            preview.message().get_blocks()[0],
+            ContextBlock::new(vec![
+                label,
+                ContextElement::image(AVATAR_URL, "Profile picture"),
+                author,
+            ])
+            .into()
+        );
+        assert_eq!(
+            preview.text_only_message().get_blocks()[0],
+            ContextBlock::new(vec![
+                ContextElement::markdown("↳ Quoted post by"),
+                ContextElement::markdown(
+                    "*Alex* <https://other.example/@alex|@alex@other.example>"
+                ),
+            ])
+            .into()
+        );
+        assert_eq!(
+            preview.message().get_text(),
+            "Quoted post by @alex@other.example"
+        );
     }
 
     #[test]

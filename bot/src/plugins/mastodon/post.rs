@@ -13,6 +13,7 @@ pub struct Post {
     #[serde(default)]
     pub media_attachments: Vec<MediaAttachment>,
     pub reblog: Option<Box<Post>>,
+    pub quote: Option<Quote>,
 }
 
 impl Post {
@@ -22,6 +23,15 @@ impl Post {
             None => self,
         }
     }
+
+    pub fn quoted_post(&self) -> Option<&Post> {
+        self.quote.as_ref()?.quoted_status.as_deref()
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Quote {
+    pub quoted_status: Option<Box<Post>>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -89,6 +99,25 @@ pub mod test_data {
         })
     }
 
+    pub const QUOTE_FALLBACK: &str = r#"<p class="quote-inline">RE: <a href="https://other.example/@alex/222">other.example/@alex/222</a></p>"#;
+
+    pub fn quoted_post_json() -> Value {
+        let mut json = post_json();
+        json["url"] = json!("https://other.example/@alex/222");
+        json["content"] = json!("<p>The original</p>");
+        json["account"]["acct"] = json!("alex@other.example");
+        json["account"]["display_name"] = json!("Alex");
+        json["account"]["url"] = json!("https://other.example/@alex");
+        json
+    }
+
+    pub fn post_quoting(quote: Value) -> Value {
+        let mut json = post_json();
+        json["content"] = json!(format!("{QUOTE_FALLBACK}<p>Look at this</p>"));
+        json["quote"] = quote;
+        json
+    }
+
     pub fn post(json: Value) -> Post {
         serde_json::from_value(json).unwrap()
     }
@@ -140,6 +169,32 @@ mod tests {
 
         assert_eq!(post.media_attachments[0].duration_in_seconds(), None);
         assert_eq!(post.media_attachments[1].duration_in_seconds(), None);
+    }
+
+    #[test]
+    fn quoted_post_is_the_post_the_quote_includes() {
+        let post = post(post_quoting(
+            json!({"state": "accepted", "quoted_status": quoted_post_json()}),
+        ));
+
+        assert_eq!(
+            post.quoted_post().unwrap().account.acct,
+            "alex@other.example"
+        );
+    }
+
+    #[test]
+    fn quoted_post_is_unavailable_when_only_its_id_is_given() {
+        let post = post(post_quoting(
+            json!({"state": "accepted", "quoted_status_id": "222"}),
+        ));
+
+        assert!(post.quoted_post().is_none());
+    }
+
+    #[test]
+    fn posts_without_a_quote_have_no_quoted_post() {
+        assert!(post(post_json()).quoted_post().is_none());
     }
 
     #[test]

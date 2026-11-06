@@ -48,7 +48,19 @@ async fn preview_replies(
             return vec![];
         }
     };
-    let preview = Preview::new(&post, link);
+    let reply = preview_reply(message, &Preview::new(&post, link), api).await;
+
+    match post.quoted_post() {
+        Some(quoted) => {
+            let quoted_reply =
+                preview_reply(message, &Preview::for_quoted_post(quoted, link), api).await;
+            vec![Action::InOrder(vec![reply, quoted_reply])]
+        }
+        None => vec![reply],
+    }
+}
+
+async fn preview_reply(message: &MessageEvent, preview: &Preview, api: &dyn MastodonApi) -> Action {
     let linked_images = preview.images();
     let uploadable_images = download(linked_images.clone(), api).await;
 
@@ -57,12 +69,12 @@ async fn preview_replies(
         .iter()
         .any(|image| image.content.is_some())
     {
-        alternatives.push(reply_with_images(message, &preview, uploadable_images));
+        alternatives.push(reply_with_images(message, preview, uploadable_images));
     }
-    alternatives.push(reply_with_images(message, &preview, linked_images));
-    alternatives.push(text_only_reply(message, &preview));
+    alternatives.push(reply_with_images(message, preview, linked_images));
+    alternatives.push(text_only_reply(message, preview));
 
-    vec![Action::FirstSuccessful(alternatives)]
+    Action::FirstSuccessful(alternatives)
 }
 
 fn reply_with_images(message: &MessageEvent, preview: &Preview, images: Vec<Image>) -> Action {
@@ -100,7 +112,9 @@ async fn download(images: Vec<Image>, api: &dyn MastodonApi) -> Vec<Image> {
 mod tests {
     use super::*;
     use crate::plugins::mastodon::api::{FetchError, MockMastodonApi};
-    use crate::plugins::mastodon::post::test_data::{post, post_json};
+    use crate::plugins::mastodon::post::test_data::{
+        post, post_json, post_quoting, quoted_post_json,
+    };
     use client::models::message_id::MessageId;
     use framework::dependencies::DependenciesBuilder;
     use serde_json::{json, Value};
@@ -184,6 +198,51 @@ mod tests {
             Action::ReplyToThread { channel, thread_id, .. }
                 if channel == "C1" && thread_id == event.id
         ));
+    }
+
+    #[tokio::test]
+    async fn posts_quoting_another_post_get_its_preview_as_a_second_reply() {
+        let quote_post = || {
+            post(post_quoting(
+                json!({"state": "accepted", "quoted_status": quoted_post_json()}),
+            ))
+        };
+        let mut api = MockMastodonApi::new();
+        api.expect_fetch_post().returning(move |_| Ok(quote_post()));
+        let event = message_event("look <https://mastodon.social/@sam/111>");
+
+        let actions = preview_replies(&event, &link(), &api).await;
+
+        let post = quote_post();
+        let preview = Preview::new(&post, &link());
+        let quoted_preview = Preview::for_quoted_post(post.quoted_post().unwrap(), &link());
+        assert_eq!(
+            actions,
+            vec![Action::InOrder(vec![
+                Action::FirstSuccessful(vec![
+                    reply_with_images(&event, &preview, vec![]),
+                    text_only_reply(&event, &preview),
+                ]),
+                Action::FirstSuccessful(vec![
+                    reply_with_images(&event, &quoted_preview, vec![]),
+                    text_only_reply(&event, &quoted_preview),
+                ]),
+            ])]
+        );
+    }
+
+    #[tokio::test]
+    async fn posts_quoting_a_post_that_cannot_be_shown_get_a_single_reply() {
+        let mut api = MockMastodonApi::new();
+        api.expect_fetch_post().returning(|_| {
+            Ok(post(post_quoting(
+                json!({"state": "pending", "quoted_status": null}),
+            )))
+        });
+
+        let actions = preview_replies(&message_event("ignored"), &link(), &api).await;
+
+        assert!(matches!(&actions[..], [Action::FirstSuccessful(_)]));
     }
 
     #[tokio::test]

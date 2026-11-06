@@ -2,10 +2,19 @@ use html_escape::decode_html_entities;
 use tl::{HTMLTag, Node, NodeHandle, Parser, ParserOptions};
 
 pub fn from_html(html: &str) -> String {
+    convert(html, false)
+}
+
+/// Mastodon starts the text of a quote post with a "RE: link" line for apps that can't show quotes
+pub fn from_html_without_quote_fallback(html: &str) -> String {
+    convert(html, true)
+}
+
+fn convert(html: &str, hides_quote_fallback: bool) -> String {
     let Ok(dom) = tl::parse(html, ParserOptions::default()) else {
         return escape(html);
     };
-    let mut writer = MrkdwnWriter::new(dom.parser());
+    let mut writer = MrkdwnWriter::new(dom.parser(), hides_quote_fallback);
     writer.write_nodes(dom.children());
     writer.output.trim().to_string()
 }
@@ -45,13 +54,15 @@ pub fn truncate(mrkdwn: &str, max_chars: usize) -> String {
 
 struct MrkdwnWriter<'p, 'buf> {
     parser: &'p Parser<'buf>,
+    hides_quote_fallback: bool,
     output: String,
 }
 
 impl<'p, 'buf> MrkdwnWriter<'p, 'buf> {
-    fn new(parser: &'p Parser<'buf>) -> Self {
+    fn new(parser: &'p Parser<'buf>, hides_quote_fallback: bool) -> Self {
         Self {
             parser,
+            hides_quote_fallback,
             output: String::new(),
         }
     }
@@ -73,6 +84,9 @@ impl<'p, 'buf> MrkdwnWriter<'p, 'buf> {
     }
 
     fn write_tag(&mut self, tag: &HTMLTag) {
+        if self.hides_quote_fallback && has_class(tag, "quote-inline") {
+            return;
+        }
         match tag.name().as_utf8_str().to_ascii_lowercase().as_str() {
             "br" => self.output.push('\n'),
             "p" => {
@@ -111,7 +125,7 @@ impl<'p, 'buf> MrkdwnWriter<'p, 'buf> {
     }
 
     fn write_link(&mut self, tag: &HTMLTag) {
-        let mut label = MrkdwnWriter::new(self.parser);
+        let mut label = MrkdwnWriter::new(self.parser, self.hides_quote_fallback);
         label.write_children(tag);
 
         match attribute(tag, "href") {
@@ -200,6 +214,17 @@ mod tests {
             ),
             "Shopping:\n• *bread*\n• _milk_\n\nDone"
         );
+    }
+
+    #[test]
+    fn should_keep_mastodons_quote_fallback_unless_asked_not_to() {
+        let html = r#"<p class="quote-inline">RE: <a href="https://mas.to/@sam/1">mas.to/@sam/1</a></p><p>Look at this</p>"#;
+
+        assert_eq!(
+            from_html(html),
+            "RE: <https://mas.to/@sam/1|mas.to/@sam/1>\n\nLook at this"
+        );
+        assert_eq!(from_html_without_quote_fallback(html), "Look at this");
     }
 
     #[test]
