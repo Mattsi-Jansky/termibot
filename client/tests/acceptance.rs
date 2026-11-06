@@ -1,7 +1,10 @@
 mod test_client_builder;
 
 use crate::test_client_builder::TestClientBuilder;
+use client::models::blocks::card::CardBlock;
 use client::models::blocks::context::{ContextBlock, ContextElement};
+use client::models::blocks::elements::button::{ButtonElement, ButtonStyle};
+use client::models::blocks::elements::image::ImageElement;
 use client::models::blocks::image::ImageBlock;
 use client::models::blocks::objects::text::{Text, TextBody};
 use client::models::blocks::section::SectionBlock;
@@ -137,6 +140,32 @@ async fn should_send_context_and_linked_image_blocks_without_unfurling() {
     )
     .unwrap()
     .without_unfurling();
+
+    let result = client.message_channel("#bots", &message).await;
+
+    assert!(result.is_ok(), "{result:?}");
+}
+
+#[tokio::test]
+async fn should_send_a_card_with_an_image_and_a_link_button() {
+    let builder = TestClientBuilder::new("should_send_a_card_with_an_image_and_a_link_button");
+    let client = builder.new_client();
+    let card = CardBlock::default()
+        .with_hero_image(ImageElement::from_url(
+            PUBLIC_IMAGE_URL,
+            "Mastodon's profile page",
+        ))
+        .with_title(Text::plain("Video"))
+        .with_subtitle(Text::plain("1:21"))
+        .with_body(Text::plain(
+            "A card like the ones Mastodon previews use for videos",
+        ))
+        .with_actions(vec![ButtonElement::link(
+            "▶ Watch",
+            "https://joinmastodon.org",
+        )
+        .with_style(ButtonStyle::Primary)]);
+    let message = MessageBody::new(vec![card.into()], Some("Card".to_string())).unwrap();
 
     let result = client.message_channel("#bots", &message).await;
 

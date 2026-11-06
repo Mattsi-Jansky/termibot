@@ -1,3 +1,4 @@
+pub mod card;
 pub mod context;
 pub mod elements;
 pub mod image;
@@ -5,6 +6,7 @@ pub mod objects;
 pub mod section;
 pub mod text;
 
+use crate::models::blocks::card::CardBlock;
 use crate::models::blocks::context::ContextBlock;
 use crate::models::blocks::image::ImageBlock;
 use crate::models::blocks::section::SectionBlock;
@@ -20,6 +22,7 @@ pub enum Block {
     Header(HeaderBlock),
     Image(ImageBlock),
     Context(ContextBlock),
+    Card(Box<CardBlock>),
 }
 
 #[cfg(test)]

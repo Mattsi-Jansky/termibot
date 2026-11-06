@@ -5,7 +5,9 @@ use crate::models::blocks::objects::text::TextBody;
 use serde::{Deserialize, Serialize};
 use text::RichTextSectionElement;
 
+pub mod button;
 pub mod emoji;
+pub mod image;
 pub mod text;
 pub mod user;
 

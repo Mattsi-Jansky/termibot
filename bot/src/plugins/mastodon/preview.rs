@@ -215,7 +215,7 @@ mod tests {
     fn author_markdown(message: &MessageBody) -> &str {
         match &message.get_blocks()[0] {
             Block::Context(ContextBlock { elements }) => match elements.last() {
-                Some(ContextElement::Markdown(TextBody { text })) => text,
+                Some(ContextElement::Text(Text::Markdown(TextBody { text }))) => text,
                 other => panic!("Expected the author's name, got {other:?}"),
             },
             other => panic!("Expected the author line, got {other:?}"),

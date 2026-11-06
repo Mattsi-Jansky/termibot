@@ -1,0 +1,127 @@
+{
+  "http_interactions": [
+    {
+      "response": {
+        "body": {
+          "encoding": null,
+          "string": "{\"ok\":true,\"channel\":\"C2J0AD99Q\",\"ts\":\"1793982135.287909\",\"message\":{\"user\":\"UE02Q1FTK\",\"type\":\"message\",\"ts\":\"1793982135.287909\",\"bot_id\":\"BE0LGNB1Q\",\"app_id\":\"AE0L6R0BU\",\"text\":\"Card\",\"team\":\"T0G5PM4NR\",\"bot_profile\":{\"id\":\"BE0LGNB1Q\",\"deleted\":false,\"name\":\"termibot\",\"updated\":1686039611,\"app_id\":\"AE0L6R0BU\",\"user_id\":\"UE02Q1FTK\",\"icons\":{\"image_36\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_36.png\",\"image_48\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_48.png\",\"image_72\":\"https:\\/\\/avatars.slack-edge.com\\/2018-11-10\\/476709239394_3edf1b8fed9000ec2203_72.png\"},\"team_id\":\"T0G5PM4NR\"},\"blocks\":[{\"type\":\"card\",\"block_id\":\"cnmJA\",\"hero_image\":{\"type\":\"image\",\"image_url\":\"https:\\/\\/files.mastodon.social\\/media_attachments\\/files\\/116\\/929\\/144\\/353\\/146\\/667\\/original\\/4541caf1a6f64af8.png\",\"alt_text\":\"Mastodon's profile page\"},\"title\":{\"type\":\"plain_text\",\"text\":\"Video\",\"emoji\":true},\"subtitle\":{\"type\":\"plain_text\",\"text\":\"1:21\",\"emoji\":true},\"body\":{\"type\":\"plain_text\",\"text\":\"A card like the ones Mastodon previews use for videos\",\"emoji\":true},\"actions\":[{\"type\":\"button\",\"style\":\"primary\",\"text\":{\"type\":\"plain_text\",\"text\":\":arrow_forward: Watch\",\"emoji\":true},\"action_id\":\"7tGaF\",\"url\":\"https:\\/\\/joinmastodon.org\"}]}]},\"warning\":\"missing_charset\",\"response_metadata\":{\"warnings\":[\"missing_charset\"]}}"
+        },
+        "http_version": "1.1",
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "headers": {
+          "x-slack-unique-id": [
+            "ac5e1859-7f88-4370-a542-25b551d7a228"
+          ],
+          "content-length": [
+            "1396"
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "x-server": [
+            "slack-www-hhvm-api-iad-kp9bjkuak31r"
+          ],
+          "x-edge-backend": [
+            "envoy-www"
+          ],
+          "alt-svc": [
+            "h3=\":443\"; ma=2592000, h3-29=\":443\"; ma=2592000, quic=\":443\"; ma=2592000"
+          ],
+          "x-accepted-oauth-scopes": [
+            "chat:write"
+          ],
+          "via": [
+            "1.1 slack-prod.tinyspeck.com, ingress-www-iad-external-prod-0b58cec66aef2dcae,ingress-edge-lhr-prod-0c417f5551fb05dee"
+          ],
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "x-envoy-upstream-service-time": [
+            "119"
+          ],
+          "access-control-allow-headers": [
+            "slack-route, x-slack-version-ts, x-b3-traceid, x-b3-spanid, x-b3-parentspanid, x-b3-sampled, x-b3-flags, x-background"
+          ],
+          "x-slack-shared-secret-outcome": [
+            "no-match"
+          ],
+          "referrer-policy": [
+            "no-referrer"
+          ],
+          "x-backend": [
+            "api_normal"
+          ],
+          "timing-allow-origin": [
+            "*"
+          ],
+          "vary": [
+            "Accept-Encoding"
+          ],
+          "pragma": [
+            "no-cache"
+          ],
+          "access-control-expose-headers": [
+            "x-slack-req-id, retry-after"
+          ],
+          "server": [
+            "Apache"
+          ],
+          "x-oauth-scopes": [
+            "app_mentions:read,bookmarks:read,bookmarks:write,calls:read,calls:write,channels:history,channels:join,channels:manage,channels:read,chat:write,chat:write.customize,chat:write.public,commands,conversations.connect:manage,conversations.connect:read,conversations.connect:write,dnd:read,emoji:read,files:read,files:write,groups:history,groups:read,groups:write,im:history,im:read,im:write,incoming-webhook,links.embed:write,links:read,links:write,metadata.message:read,mpim:history,mpim:read,mpim:write,pins:read,pins:write,reactions:read,reactions:write,reminders:read,reminders:write,remote_files:read,remote_files:share,remote_files:write,team.billing:read,team.preferences:read,team:read,usergroups:read,usergroups:write,users.profile:read,users:read,users:read.email,users:write,workflow.steps:execute"
+          ],
+          "x-slack-edge-shared-secret-outcome": [
+            "no-match"
+          ],
+          "date": [
+            "Fri, 06 Nov 2026 16:22:15 GMT"
+          ],
+          "x-xss-protection": [
+            "0"
+          ],
+          "cache-control": [
+            "private, no-cache, no-store, must-revalidate"
+          ],
+          "expires": [
+            "Sat, 26 Jul 1997 05:00:00 GMT"
+          ],
+          "content-type": [
+            "application/json; charset=utf-8"
+          ],
+          "x-slack-req-id": [
+            "3f6110ffa4d7383f936371f1a4f7c766"
+          ],
+          "strict-transport-security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ]
+        }
+      },
+      "request": {
+        "uri": "https://slack.com/api/chat.postMessage",
+        "body": {
+          "encoding": null,
+          "string": "{\"blocks\":[{\"actions\":[{\"style\":\"primary\",\"text\":{\"text\":\"▶ Watch\",\"type\":\"plain_text\"},\"type\":\"button\",\"url\":\"https://joinmastodon.org\"}],\"body\":{\"text\":\"A card like the ones Mastodon previews use for videos\",\"type\":\"plain_text\"},\"hero_image\":{\"alt_text\":\"Mastodon's profile page\",\"image_url\":\"https://files.mastodon.social/media_attachments/files/116/929/144/353/146/667/original/4541caf1a6f64af8.png\",\"type\":\"image\"},\"subtitle\":{\"text\":\"1:21\",\"type\":\"plain_text\"},\"title\":{\"text\":\"Video\",\"type\":\"plain_text\"},\"type\":\"card\"}],\"channel\":\"#bots\",\"text\":\"Card\"}"
+        },
+        "method": "post",
+        "headers": {
+          "authorization": [
+            "Bearer xoxn-not-a-real-token"
+          ],
+          "accept": [
+            "application/json"
+          ],
+          "user-agent": [
+            "slackbot-client"
+          ],
+          "content-type": [
+            "application/json"
+          ]
+        }
+      },
+      "recorded_at": "Fri, 6 Nov 2026 16:22:15 +0000"
+    }
+  ],
+  "recorded_with": "rVCR 0.1.5"
+}
