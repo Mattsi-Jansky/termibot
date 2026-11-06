@@ -4,10 +4,19 @@ use client::error::SlackClientError;
 use client::models::blocks::image::ImageBlock;
 use client::models::blocks::Block;
 use client::models::file_upload::FileUpload;
+use client::models::message_body::MessageBody;
+use client::models::message_id::MessageId;
 use client::SlackClient;
 use mockall::automock;
 use std::sync::Arc;
-use tracing::warn;
+use std::time::Duration;
+use tracing::{info, warn};
+
+const UPLOAD_PROCESSING_RETRY_DELAYS: [Duration; 3] = [
+    Duration::from_secs(1),
+    Duration::from_secs(2),
+    Duration::from_secs(3),
+];
 
 #[async_trait]
 #[automock]
@@ -53,10 +62,8 @@ impl ActionHandler for DefaultActionHandler {
                     image_blocks.push(image_block(image, client.as_ref()).await);
                 }
                 message.append_blocks(image_blocks);
-                client
-                    .message_thread(&channel, &thread_id, &message)
-                    .await
-                    .map(|_| ())?
+                reply_once_uploads_are_processed(client.as_ref(), &channel, &thread_id, &message)
+                    .await?
             }
             Action::FirstSuccessful(actions) => {
                 self.handle_first_successful(actions, client).await?
@@ -113,6 +120,32 @@ async fn image_block(image: Image, client: &(dyn SlackClient + Send + Sync)) -> 
     }
 }
 
+async fn reply_once_uploads_are_processed(
+    client: &(dyn SlackClient + Send + Sync),
+    channel: &str,
+    thread_id: &MessageId,
+    message: &MessageBody,
+) -> Result<(), SlackClientError> {
+    let mut result = client.message_thread(channel, thread_id, message).await;
+    for delay in UPLOAD_PROCESSING_RETRY_DELAYS {
+        match &result {
+            Err(err) if is_upload_still_processing(err) => {
+                info!("Slack is still processing an uploaded image, trying again in {delay:?}");
+                tokio::time::sleep(delay).await;
+                result = client.message_thread(channel, thread_id, message).await;
+            }
+            _ => break,
+        }
+    }
+
+    result.map(|_| ())
+}
+
+/// Slack calls a freshly uploaded file invalid until it has finished processing it
+fn is_upload_still_processing(error: &SlackClientError) -> bool {
+    error.0.contains("invalid slack file")
+}
+
 fn filename_from_url(url: &str) -> &str {
     let path = url.split(['?', '#']).next().unwrap_or(url);
     path.rsplit('/')
@@ -130,6 +163,7 @@ mod tests {
     use client::models::message_body::MessageBody;
     use client::models::message_id::MessageId;
     use client::MockSlackClient;
+    use mockall::Sequence;
 
     #[tokio::test]
     async fn given_channel_message_action_should_send_message_to_channel() {
@@ -349,7 +383,80 @@ mod tests {
         assert!(!debug.contains("7, 7"), "{debug}");
     }
 
+    #[tokio::test(start_paused = true)]
+    async fn replies_with_uploaded_images_are_retried_while_slack_processes_the_upload() {
+        let mut mock_client = MockSlackClient::new();
+        mock_client
+            .expect_upload_file()
+            .returning(|_| Ok("F123".to_string()));
+        let mut sequence = Sequence::new();
+        mock_client
+            .expect_message_thread()
+            .times(1)
+            .in_sequence(&mut sequence)
+            .returning(|_, _, _| Err(failure(UPLOAD_STILL_PROCESSING)));
+        mock_client
+            .expect_message_thread()
+            .times(1)
+            .in_sequence(&mut sequence)
+            .returning(|_, _, _| Ok(sent()));
+
+        let result = DefaultActionHandler::default()
+            .handle(
+                reply_with_images(vec![cat_with_content()]),
+                Arc::new(mock_client),
+            )
+            .await;
+
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn replies_with_uploaded_images_give_up_if_slack_never_finishes_processing() {
+        let mut mock_client = MockSlackClient::new();
+        mock_client
+            .expect_upload_file()
+            .returning(|_| Ok("F123".to_string()));
+        mock_client
+            .expect_message_thread()
+            .times(UPLOAD_PROCESSING_RETRY_DELAYS.len() + 1)
+            .returning(|_, _, _| Err(failure(UPLOAD_STILL_PROCESSING)));
+
+        let result = DefaultActionHandler::default()
+            .handle(
+                reply_with_images(vec![cat_with_content()]),
+                Arc::new(mock_client),
+            )
+            .await;
+
+        assert_eq!(result.unwrap_err().0, UPLOAD_STILL_PROCESSING);
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn replies_with_images_are_not_retried_for_other_errors() {
+        let mut mock_client = MockSlackClient::new();
+        mock_client
+            .expect_message_thread()
+            .times(1)
+            .returning(|_, _, _| Err(failure("invalid_blocks: [downloading image failed]")));
+
+        let result = DefaultActionHandler::default()
+            .handle(
+                reply_with_images(vec![Image::new(CAT_URL, "A cat")]),
+                Arc::new(mock_client),
+            )
+            .await;
+
+        assert!(result.is_err());
+    }
+
     const CAT_URL: &str = "https://files.example.com/media/cat.png?v=1";
+    const UPLOAD_STILL_PROCESSING: &str =
+        "invalid_blocks: [invalid slack file [json-pointer:/blocks/1/slack_file.id/slack_file]]";
+
+    fn cat_with_content() -> Image {
+        Image::new(CAT_URL, "A cat").with_content(b"cat pixels".to_vec())
+    }
 
     fn reply_with_images(images: Vec<Image>) -> Action {
         Action::ReplyToThreadWithImages {
