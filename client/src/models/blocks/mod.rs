@@ -1,8 +1,12 @@
+pub mod context;
 pub mod elements;
+pub mod image;
 pub mod objects;
 pub mod section;
 pub mod text;
 
+use crate::models::blocks::context::ContextBlock;
+use crate::models::blocks::image::ImageBlock;
 use crate::models::blocks::section::SectionBlock;
 use crate::models::blocks::text::{HeaderBlock, RichTextBlock};
 use serde::{Deserialize, Serialize};
@@ -14,6 +18,8 @@ pub enum Block {
     Divider,
     Section(SectionBlock),
     Header(HeaderBlock),
+    Image(ImageBlock),
+    Context(ContextBlock),
 }
 
 #[cfg(test)]
