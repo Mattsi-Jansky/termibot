@@ -24,6 +24,8 @@ pub enum Action {
     },
     /// Tries each action in turn, stopping at the first one that succeeds
     FirstSuccessful(Vec<Action>),
+    /// Runs each action once the one before it has finished, carrying on if one fails
+    InOrder(Vec<Action>),
 }
 
 #[derive(Clone, PartialEq)]

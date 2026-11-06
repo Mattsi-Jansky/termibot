@@ -591,6 +591,7 @@ dependencies = [
  "tokio",
  "tokio-test",
  "tracing",
+ "url",
 ]
 
 [[package]]

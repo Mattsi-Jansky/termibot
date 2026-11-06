@@ -68,6 +68,7 @@ impl ActionHandler for DefaultActionHandler {
             Action::FirstSuccessful(actions) => {
                 self.handle_first_successful(actions, client).await?
             }
+            Action::InOrder(actions) => self.handle_in_order(actions, client).await?,
         }
 
         Ok(())
@@ -92,6 +93,22 @@ impl DefaultActionHandler {
         }
 
         Err(last_error)
+    }
+
+    async fn handle_in_order(
+        &self,
+        actions: Vec<Action>,
+        client: Arc<dyn SlackClient + Send + Sync>,
+    ) -> Result<(), SlackClientError> {
+        let mut result = Ok(());
+        for action in actions {
+            if let Err(err) = self.handle(action, client.clone()).await {
+                warn!("Action failed, carrying on with the next one: {:?}", err);
+                result = Err(err);
+            }
+        }
+
+        result
     }
 }
 
@@ -153,6 +170,7 @@ fn filename_from_url(url: &str) -> &str {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use client::models::auth_test_response::AuthTestResponse;
     use client::models::blocks::section::SectionBlock;
     use client::models::http_response::HttpApiResponse;
     use client::models::http_response::Message;
@@ -467,6 +485,90 @@ mod tests {
             .withf(move |_, _, message| message.get_blocks() == &blocks)
             .times(1)
             .returning(|_, _, _| Ok(sent()));
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn in_order_runs_each_action_once_the_one_before_has_finished() {
+        let client = Arc::new(SlowFirstMessageClient::default());
+
+        DefaultActionHandler::default()
+            .handle(
+                Action::InOrder(vec![channel_message("first"), channel_message("second")]),
+                client.clone(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(
+            *client.events.lock().unwrap(),
+            [
+                "started first",
+                "finished first",
+                "started second",
+                "finished second"
+            ]
+        );
+    }
+
+    #[derive(Default)]
+    struct SlowFirstMessageClient {
+        events: std::sync::Mutex<Vec<String>>,
+    }
+
+    #[async_trait]
+    impl SlackClient for SlowFirstMessageClient {
+        async fn message_channel(
+            &self,
+            _channel: &str,
+            message: &MessageBody,
+        ) -> Result<HttpApiResponse, SlackClientError> {
+            let text = message.get_text();
+            self.events.lock().unwrap().push(format!("started {text}"));
+            if text == "first" {
+                tokio::time::sleep(Duration::from_secs(1)).await;
+            }
+            self.events.lock().unwrap().push(format!("finished {text}"));
+            Ok(sent())
+        }
+
+        async fn get_identity(&self) -> Result<AuthTestResponse, SlackClientError> {
+            unimplemented!()
+        }
+
+        async fn message_thread(
+            &self,
+            _channel: &str,
+            _parent: &MessageId,
+            _message: &MessageBody,
+        ) -> Result<HttpApiResponse, SlackClientError> {
+            unimplemented!()
+        }
+
+        async fn get_websocket_url(&self) -> Result<url::Url, SlackClientError> {
+            unimplemented!()
+        }
+
+        async fn upload_file(&self, _file: FileUpload) -> Result<String, SlackClientError> {
+            unimplemented!()
+        }
+    }
+
+    #[tokio::test]
+    async fn in_order_carries_on_after_a_failure_and_reports_it() {
+        let mut mock_client = MockSlackClient::new();
+        expect_channel_message(&mut mock_client, "first", 1, || {
+            Err(failure("first failed"))
+        });
+        expect_channel_message(&mut mock_client, "second", 1, || Ok(sent()));
+
+        let result = DefaultActionHandler::default()
+            .handle(
+                Action::InOrder(vec![channel_message("first"), channel_message("second")]),
+                Arc::new(mock_client),
+            )
+            .await;
+
+        assert_eq!(result.unwrap_err().0, "first failed");
     }
 
     fn channel_message(text: &str) -> Action {
