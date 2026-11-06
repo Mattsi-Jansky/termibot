@@ -2,7 +2,7 @@ extern crate core;
 
 use crate::actions::handler::{ActionHandler, DefaultActionHandler};
 use client::error::SlackClientError;
-use client::models::socket_message::SocketMessage;
+use client::models::socket_message::{Event, SocketMessage};
 use client::{ReqwestSlackClient, SlackClient};
 use futures::future::join_all;
 use plugins::Plugin;
@@ -59,6 +59,7 @@ impl SlackBot {
 
     pub async fn run(self) -> Result<(), SlackClientError> {
         let identity = self.client.get_identity().await?;
+        let bot_user_id = identity.user_id.clone();
         let event_processor = EventProcessor::new(identity.user, identity.user_id);
 
         let mut listener = match self.listener {
@@ -102,6 +103,11 @@ impl SlackBot {
                     envelope_id: _,
                     payload,
                 } => {
+                    if is_own_message(&payload.event, &bot_user_id) {
+                        debug!("Ignoring message sent by the bot itself");
+                        continue;
+                    }
+
                     enriched_event = event_processor.process(&payload.event);
 
                     if let Some(ref enriched) = &enriched_event {
@@ -187,6 +193,12 @@ impl SlackBot {
     }
 }
 
+/// Whether the event is a message the bot posted itself. Plugins never see these, so a reply
+/// that happens to match a plugin's trigger can't set off another reply.
+fn is_own_message(event: &Event, bot_user_id: &str) -> bool {
+    matches!(event, Event::Message(message) if message.user.as_deref() == Some(bot_user_id))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -205,15 +217,23 @@ mod tests {
     use plugins::MockPlugin;
     use std::future;
 
+    const BOT_USER_ID: &str = "U123456";
+
     #[derive(Default)]
     struct TestSocketModeListener {
         call_count: usize,
         include_bot_mention: bool,
+        sent_by_bot: bool,
     }
 
     impl TestSocketModeListener {
         fn with_bot_mention(mut self) -> Self {
             self.include_bot_mention = true;
+            self
+        }
+
+        fn sent_by_bot(mut self) -> Self {
+            self.sent_by_bot = true;
             self
         }
     }
@@ -238,7 +258,14 @@ mod tests {
                         event: Event::Message(MessageEvent {
                             id: MessageId("fake-id".to_string()),
                             text,
-                            user: Some("U789".to_string()),
+                            user: Some(
+                                if self.sent_by_bot {
+                                    BOT_USER_ID
+                                } else {
+                                    "U789"
+                                }
+                                .to_string(),
+                            ),
                             blocks: Some(vec![]),
                             channel: Some("#general".to_string()),
                             channel_type: Some("channel".to_string()),
@@ -380,6 +407,29 @@ mod tests {
         bot.run().await.unwrap();
     }
 
+    #[tokio::test]
+    async fn messages_sent_by_the_bot_itself_are_not_passed_to_plugins() {
+        let mut mock_plugin = Box::new(MockPlugin::new());
+        mock_plugin
+            .expect_subscriptions()
+            .returning(|| vec![Subscription::exact("hello")]);
+        mock_plugin.expect_on_enriched_event().times(0);
+        mock_plugin.expect_on_event().times(0);
+
+        let bot = SlackBot::from(
+            mock_client(),
+            Box::new(MockActionHandler::new()),
+            Box::new(
+                TestSocketModeListener::default()
+                    .with_bot_mention()
+                    .sent_by_bot(),
+            ),
+        )
+        .with_plugin(mock_plugin);
+
+        bot.run().await.unwrap();
+    }
+
     fn mock_client() -> Arc<MockSlackClient> {
         let mut mock_slack_client = MockSlackClient::new();
 
@@ -392,7 +442,7 @@ mod tests {
                     url: "https://test.slack.com/".to_string(),
                     team: "Test Team".to_string(),
                     user: "testbot".to_string(),
-                    user_id: "U123456".to_string(),
+                    user_id: BOT_USER_ID.to_string(),
                     team_id: "T123456".to_string(),
                     is_enterprise_install: false,
                 })
