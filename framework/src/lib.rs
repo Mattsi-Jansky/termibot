@@ -141,7 +141,7 @@ async fn run_event_loop(
 
         // Collect finished tasks, so the set doesn't grow for as long as the bot runs
         while let Some(finished) = in_flight.try_join_next() {
-            propagate_panic(finished);
+            log_task_failure(finished);
         }
 
         match message {
@@ -167,7 +167,7 @@ async fn run_event_loop(
         info!("Waiting for {} event(s) to finish", in_flight.len());
     }
     while let Some(finished) = in_flight.join_next().await {
-        propagate_panic(finished);
+        log_task_failure(finished);
     }
 
     result
@@ -250,14 +250,9 @@ fn is_own_message(event: &Event, bot_user_id: &str) -> bool {
     matches!(event, Event::Message(message) if message.user.as_deref() == Some(bot_user_id))
 }
 
-/// Re-raises a panic from an event's task, so a panicking plugin still stops the bot, as it did
-/// when events were handled one at a time.
-fn propagate_panic(finished: Result<(), JoinError>) {
+fn log_task_failure(finished: Result<(), JoinError>) {
     if let Err(err) = finished {
-        if err.is_panic() {
-            std::panic::resume_unwind(err.into_panic());
-        }
-        error!("Event handling task was cancelled: {err}");
+        error!("Event handling task failed: {err}");
     }
 }
 
@@ -279,6 +274,7 @@ mod tests {
     use plugins::MockPlugin;
     use std::collections::VecDeque;
     use std::future;
+    use std::sync::atomic::{AtomicUsize, Ordering};
     use std::time::Duration;
     use tokio::sync::Notify;
 
@@ -517,6 +513,26 @@ mod tests {
         );
     }
 
+    #[tokio::test]
+    async fn plugin_panic_does_not_stop_later_events_being_handled() {
+        let handled = Arc::new(AtomicUsize::new(0));
+        let bot = SlackBot::from(
+            mock_client(),
+            Box::new(MockActionHandler::new()),
+            Box::new(ScriptedSocketModeListener::new(vec![
+                message_event("boom"),
+                message_event("hello"),
+            ])),
+        )
+        .with_plugin(Box::new(PanicOnBoomPlugin {
+            handled: handled.clone(),
+        }));
+
+        bot.run().await.unwrap();
+
+        assert_eq!(handled.load(Ordering::SeqCst), 1);
+    }
+
     /// Sends the given messages in order, then disconnects.
     struct ScriptedSocketModeListener {
         messages: VecDeque<SocketMessage>,
@@ -574,6 +590,23 @@ mod tests {
                     Some("release") => self.release.notify_one(),
                     _ => {}
                 }
+            }
+            vec![]
+        }
+    }
+
+    struct PanicOnBoomPlugin {
+        handled: Arc<AtomicUsize>,
+    }
+
+    #[async_trait]
+    impl Plugin for PanicOnBoomPlugin {
+        async fn on_event(&self, event: &Event, _dependencies: &Dependencies) -> Vec<Action> {
+            if let Event::Message(message) = event {
+                if message.text.as_deref() == Some("boom") {
+                    panic!("plugin failed");
+                }
+                self.handled.fetch_add(1, Ordering::SeqCst);
             }
             vec![]
         }
