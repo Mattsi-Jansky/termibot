@@ -123,9 +123,6 @@ fn log_registered_plugins(plugin_registry: &PluginRegistry) {
     }
 }
 
-/// Receives messages from Slack until it disconnects or the connection fails. Each event is
-/// handled in its own task, so a slow plugin doesn't hold up the events that arrive after it.
-/// Before returning, waits for events still in progress, so their replies aren't dropped.
 async fn run_event_loop(
     mut listener: Box<dyn SocketModeListener + Send + Sync>,
     dispatcher: Arc<EventDispatcher>,
@@ -139,7 +136,7 @@ async fn run_event_loop(
         };
         info!("Received message: {message:?}");
 
-        // Collect finished tasks, so the set doesn't grow for as long as the bot runs
+        // Otherwise finished tasks pile up in the set
         while let Some(finished) = in_flight.try_join_next() {
             log_task_failure(finished);
         }
@@ -173,8 +170,6 @@ async fn run_event_loop(
     result
 }
 
-/// Routes an event to the plugins and carries out the actions they return. Shared by the tasks
-/// handling events.
 struct EventDispatcher {
     bot_user_id: String,
     event_processor: EventProcessor,
@@ -244,8 +239,6 @@ impl EventDispatcher {
     }
 }
 
-/// Whether the event is a message the bot posted itself. Plugins never see these, so a reply
-/// that happens to match a plugin's trigger can't set off another reply.
 fn is_own_message(event: &Event, bot_user_id: &str) -> bool {
     matches!(event, Event::Message(message) if message.user.as_deref() == Some(bot_user_id))
 }
@@ -533,7 +526,6 @@ mod tests {
         assert_eq!(handled.load(Ordering::SeqCst), 1);
     }
 
-    /// Sends the given messages in order, then disconnects.
     struct ScriptedSocketModeListener {
         messages: VecDeque<SocketMessage>,
     }
@@ -575,8 +567,6 @@ mod tests {
         }
     }
 
-    /// Doesn't finish handling a "wait" message until a "release" message arrives, so it only
-    /// finishes at all if events are handled concurrently.
     struct WaitForReleasePlugin {
         release: Notify,
     }

@@ -5,10 +5,7 @@ use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::RwLock;
 
-/// Maximum time the shared HTTP client waits to establish a connection.
 const HTTP_CONNECT_TIMEOUT: Duration = Duration::from_secs(5);
-/// Maximum time the shared HTTP client spends on a whole request, including reading the body.
-/// Without it, a server that accepts a connection but never responds hangs the caller forever.
 const HTTP_REQUEST_TIMEOUT: Duration = Duration::from_secs(10);
 
 pub struct DependenciesBuilder {
