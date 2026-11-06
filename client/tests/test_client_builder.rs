@@ -25,7 +25,8 @@ lazy_static! {
         });
     pub static ref TOKEN_REGEX: Regex =
         Regex::new(r"(xoxb|xapp-1|xoxp|xoxa-2|xoxr)-([a-zA-Z0-9]+-?){3}").unwrap();
-    pub static ref WSS_URL_REGEX: Regex = Regex::new("\\\\\"url\\\\\":\\\\\".*?\\\\\"").unwrap();
+    pub static ref WSS_URL_REGEX: Regex =
+        Regex::new("\\\\\"url\\\\\":\\\\\"wss://.*?\\\\\"").unwrap();
 }
 const FAKE_TOKEN: &str = "xoxn-not-a-real-token";
 const FAKE_WSS_URL: &str = "\\\"url\\\":\\\"ws://localhost:12345/\\\"";
