@@ -10,10 +10,11 @@ use plugins::Plugin;
 use std::sync::Arc;
 
 use crate::actions::Action;
-use crate::dependencies::DependenciesBuilder;
+use crate::dependencies::{Dependencies, DependenciesBuilder};
 use crate::event_processor::EventProcessor;
 use crate::plugins::registry::PluginRegistry;
 use client::socket_listener::{SocketModeListener, TungsteniteSocketModeListener};
+use tokio::task::{JoinError, JoinSet};
 use tracing::log::warn;
 use tracing::{debug, error, info};
 
@@ -26,7 +27,7 @@ pub mod plugins;
 pub struct SlackBot {
     client: Arc<dyn SlackClient + Send + Sync>,
     plugin_registry: PluginRegistry,
-    action_handler: Box<dyn ActionHandler>,
+    action_handler: Box<dyn ActionHandler + Send + Sync>,
     dependencies_builder: DependenciesBuilder,
     listener: Option<Box<dyn SocketModeListener + Send + Sync>>,
 }
@@ -45,7 +46,7 @@ impl SlackBot {
 
     pub fn from(
         client: Arc<dyn SlackClient + Send + Sync>,
-        handler: Box<dyn ActionHandler>,
+        handler: Box<dyn ActionHandler + Send + Sync>,
         listener: Box<dyn SocketModeListener + Send + Sync>,
     ) -> SlackBot {
         SlackBot {
@@ -59,8 +60,6 @@ impl SlackBot {
 
     pub async fn run(self) -> Result<(), SlackClientError> {
         let identity = self.client.get_identity().await?;
-        let bot_user_id = identity.user_id.clone();
-        let event_processor = EventProcessor::new(identity.user, identity.user_id);
 
         let mut listener = match self.listener {
             None => Box::new(
@@ -73,7 +72,6 @@ impl SlackBot {
             ),
             Some(listener) => listener,
         };
-        let dependencies = self.dependencies_builder.build();
         info!("Slack bot starting");
 
         let registry_info = self.plugin_registry.get_registry_info();
@@ -92,50 +90,34 @@ impl SlackBot {
             }
         }
 
-        loop {
-            let message = listener.next().await?;
-            let enriched_event;
-            let mut future_actions = vec![];
+        let dispatcher = Arc::new(EventDispatcher {
+            bot_user_id: identity.user_id.clone(),
+            event_processor: EventProcessor::new(identity.user, identity.user_id),
+            plugin_registry: self.plugin_registry,
+            action_handler: self.action_handler,
+            client: self.client,
+            dependencies: self.dependencies_builder.build(),
+        });
+        // Each event is handled in its own task, so a slow plugin doesn't hold up the events
+        // that arrive after it.
+        let mut in_flight = JoinSet::new();
+
+        let result = loop {
+            let message = match listener.next().await {
+                Ok(message) => message,
+                Err(err) => break Err(SlackClientError::from(err)),
+            };
             info!("Received message: {message:?}");
 
-            match &message {
-                SocketMessage::Event {
-                    envelope_id: _,
-                    payload,
-                } => {
-                    if is_own_message(&payload.event, &bot_user_id) {
-                        debug!("Ignoring message sent by the bot itself");
-                        continue;
-                    }
+            // Collect finished tasks, so the set doesn't grow for as long as the bot runs
+            while let Some(finished) = in_flight.try_join_next() {
+                propagate_panic(finished);
+            }
 
-                    enriched_event = event_processor.process(&payload.event);
-
-                    if let Some(ref enriched) = &enriched_event {
-                        debug!("Successfully enriched event: {:?}", enriched);
-                        let matching_plugins = self.plugin_registry.find_matching_plugins(enriched);
-
-                        if !matching_plugins.is_empty() {
-                            info!(
-                                "Found {} plugin(s) matching enriched event",
-                                matching_plugins.len()
-                            );
-
-                            for plugin in matching_plugins {
-                                let action_future =
-                                    plugin.on_enriched_event(enriched, &dependencies);
-                                future_actions.push(action_future);
-                            }
-                        } else {
-                            debug!("No plugins subscribed to this enriched event");
-                        }
-                    } else {
-                        debug!("Event was not enriched (bot not addressed or not a message)");
-                    }
-
-                    for plugin in self.plugin_registry.all() {
-                        let action_future = plugin.on_event(&payload.event, &dependencies);
-                        future_actions.push(action_future);
-                    }
+            match message {
+                SocketMessage::Event { payload, .. } => {
+                    let dispatcher = dispatcher.clone();
+                    in_flight.spawn(async move { dispatcher.dispatch(payload.event).await });
                 }
                 SocketMessage::Interactive { .. } => {
                     warn!("Received an interactive message but cannot handle interactive events yet, not implemented.")
@@ -146,35 +128,20 @@ impl SlackBot {
                 SocketMessage::Hello { .. } => { /* Nothing to do */ }
                 SocketMessage::Disconnect { .. } => {
                     info!("Disconnect message received");
-                    break;
+                    break Ok(());
                 }
             }
+        };
 
-            let actions: Vec<Action> = join_all(future_actions)
-                .await
-                .into_iter()
-                .flatten()
-                .collect();
-            if !actions.is_empty() {
-                debug!("Executing {} action(s)", actions.len());
-            }
-
-            let results = join_all(
-                actions
-                    .into_iter()
-                    .map(|action| self.action_handler.handle(action, self.client.clone())),
-            )
-            .await;
-
-            for result in results {
-                if let Err(err) = result {
-                    error!("Error occurred when trying to execute action: {:?}", err);
-                }
-            }
+        if !in_flight.is_empty() {
+            info!("Waiting for {} event(s) to finish", in_flight.len());
+        }
+        while let Some(finished) = in_flight.join_next().await {
+            propagate_panic(finished);
         }
 
         info!("Slack bot finishing");
-        Ok(())
+        result
     }
 
     pub fn with_plugin(mut self, plugin: Box<dyn Plugin>) -> Self {
@@ -193,10 +160,92 @@ impl SlackBot {
     }
 }
 
+/// Routes an event to the plugins and carries out the actions they return. Shared by the tasks
+/// handling events.
+struct EventDispatcher {
+    bot_user_id: String,
+    event_processor: EventProcessor,
+    plugin_registry: PluginRegistry,
+    action_handler: Box<dyn ActionHandler + Send + Sync>,
+    client: Arc<dyn SlackClient + Send + Sync>,
+    dependencies: Dependencies,
+}
+
+impl EventDispatcher {
+    async fn dispatch(&self, event: Event) {
+        if is_own_message(&event, &self.bot_user_id) {
+            debug!("Ignoring message sent by the bot itself");
+            return;
+        }
+
+        let enriched_event = self.event_processor.process(&event);
+        let mut future_actions = vec![];
+
+        if let Some(ref enriched) = &enriched_event {
+            debug!("Successfully enriched event: {:?}", enriched);
+            let matching_plugins = self.plugin_registry.find_matching_plugins(enriched);
+
+            if !matching_plugins.is_empty() {
+                info!(
+                    "Found {} plugin(s) matching enriched event",
+                    matching_plugins.len()
+                );
+
+                for plugin in matching_plugins {
+                    let action_future = plugin.on_enriched_event(enriched, &self.dependencies);
+                    future_actions.push(action_future);
+                }
+            } else {
+                debug!("No plugins subscribed to this enriched event");
+            }
+        } else {
+            debug!("Event was not enriched (bot not addressed or not a message)");
+        }
+
+        for plugin in self.plugin_registry.all() {
+            let action_future = plugin.on_event(&event, &self.dependencies);
+            future_actions.push(action_future);
+        }
+
+        let actions: Vec<Action> = join_all(future_actions)
+            .await
+            .into_iter()
+            .flatten()
+            .collect();
+        if !actions.is_empty() {
+            debug!("Executing {} action(s)", actions.len());
+        }
+
+        let results = join_all(
+            actions
+                .into_iter()
+                .map(|action| self.action_handler.handle(action, self.client.clone())),
+        )
+        .await;
+
+        for result in results {
+            if let Err(err) = result {
+                error!("Error occurred when trying to execute action: {:?}", err);
+            }
+        }
+    }
+}
+
 /// Whether the event is a message the bot posted itself. Plugins never see these, so a reply
 /// that happens to match a plugin's trigger can't set off another reply.
 fn is_own_message(event: &Event, bot_user_id: &str) -> bool {
     matches!(event, Event::Message(message) if message.user.as_deref() == Some(bot_user_id))
+}
+
+/// Re-raises a panic from an event's task, so a panicking plugin still stops the bot, as it did
+/// when events were handled one at a time.
+fn propagate_panic(finished: Result<(), JoinError>) {
+    if let Err(err) = finished {
+        if err.is_panic() {
+            std::panic::resume_unwind(err.into_panic());
+        }
+        error!("Event handling task was cancelled: {err}");
+    }
 }
 
 #[cfg(test)]
@@ -215,7 +264,10 @@ mod tests {
     use client::socket_listener::SocketModeListener;
     use client::MockSlackClient;
     use plugins::MockPlugin;
+    use std::collections::VecDeque;
     use std::future;
+    use std::time::Duration;
+    use tokio::sync::Notify;
 
     const BOT_USER_ID: &str = "U123456";
 
@@ -428,6 +480,90 @@ mod tests {
         .with_plugin(mock_plugin);
 
         bot.run().await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn slow_event_does_not_hold_up_later_events() {
+        let bot = SlackBot::from(
+            mock_client(),
+            Box::new(MockActionHandler::new()),
+            Box::new(ScriptedSocketModeListener::new(vec![
+                message_event("wait"),
+                message_event("release"),
+            ])),
+        )
+        .with_plugin(Box::new(WaitForReleasePlugin {
+            release: Notify::new(),
+        }));
+
+        let result = tokio::time::timeout(Duration::from_secs(5), bot.run()).await;
+
+        assert!(
+            result.is_ok(),
+            "the first event held up the second one, so neither finished"
+        );
+    }
+
+    /// Sends the given messages in order, then disconnects.
+    struct ScriptedSocketModeListener {
+        messages: VecDeque<SocketMessage>,
+    }
+
+    impl ScriptedSocketModeListener {
+        fn new(messages: Vec<SocketMessage>) -> Self {
+            Self {
+                messages: messages.into(),
+            }
+        }
+    }
+
+    #[async_trait]
+    impl SocketModeListener for ScriptedSocketModeListener {
+        async fn next(&mut self) -> serde_json::error::Result<SocketMessage> {
+            Ok(self
+                .messages
+                .pop_front()
+                .unwrap_or(SocketMessage::Disconnect {}))
+        }
+    }
+
+    fn message_event(text: &str) -> SocketMessage {
+        SocketMessage::Event {
+            envelope_id: "fake-envelope-id".to_string(),
+            payload: Payload {
+                event: Event::Message(MessageEvent {
+                    id: MessageId(format!("fake-id-{text}")),
+                    text: Some(text.to_string()),
+                    user: Some("U789".to_string()),
+                    blocks: Some(vec![]),
+                    channel: Some("#general".to_string()),
+                    channel_type: Some("channel".to_string()),
+                }),
+                authorizations: vec![Authorization {
+                    user_id: "F4K3U53R1D".to_string(),
+                }],
+            },
+        }
+    }
+
+    /// Doesn't finish handling a "wait" message until a "release" message arrives, so it only
+    /// finishes at all if events are handled concurrently.
+    struct WaitForReleasePlugin {
+        release: Notify,
+    }
+
+    #[async_trait]
+    impl Plugin for WaitForReleasePlugin {
+        async fn on_event(&self, event: &Event, _dependencies: &Dependencies) -> Vec<Action> {
+            if let Event::Message(message) = event {
+                match message.text.as_deref() {
+                    Some("wait") => self.release.notified().await,
+                    Some("release") => self.release.notify_one(),
+                    _ => {}
+                }
+            }
+            vec![]
+        }
     }
 
     fn mock_client() -> Arc<MockSlackClient> {
