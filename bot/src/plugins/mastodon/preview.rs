@@ -1,6 +1,6 @@
-use crate::plugins::mastodon::link::StatusLink;
+use crate::plugins::mastodon::link::PostLink;
 use crate::plugins::mastodon::mrkdwn;
-use crate::plugins::mastodon::status::{MediaAttachment, MediaKind, Status};
+use crate::plugins::mastodon::post::{MediaAttachment, MediaKind, Post};
 use client::models::blocks::context::{ContextBlock, ContextElement};
 use client::models::blocks::section::SectionBlock;
 use client::models::blocks::text::HeaderBlock;
@@ -27,8 +27,8 @@ pub struct Preview {
 }
 
 impl Preview {
-    pub fn new(status: &Status, link: &StatusLink) -> Self {
-        let account = &status.account;
+    pub fn new(post: &Post, link: &PostLink) -> Self {
+        let account = &post.account;
         let handle = if account.acct.contains('@') {
             account.acct.clone()
         } else {
@@ -46,7 +46,7 @@ impl Preview {
 
         let mut images = vec![];
         let mut unshowable_attachments = 0;
-        for attachment in &status.media_attachments {
+        for attachment in &post.media_attachments {
             match image_for(attachment) {
                 Some(image) if images.len() < MAX_IMAGES => images.push(image),
                 _ => unshowable_attachments += 1,
@@ -60,13 +60,13 @@ impl Preview {
                 .avatar_static
                 .clone()
                 .filter(|url| is_supported_image(url)),
-            post_url: status.url.clone().unwrap_or_else(|| link.url.clone()),
-            content_warning: Some(status.spoiler_text.trim())
+            post_url: post.url.clone().unwrap_or_else(|| link.url.clone()),
+            content_warning: Some(post.spoiler_text.trim())
                 .filter(|warning| !warning.is_empty())
                 .map(str::to_string),
-            text: mrkdwn::truncate(&mrkdwn::from_html(&status.content), SECTION_TEXT_LIMIT),
+            text: mrkdwn::truncate(&mrkdwn::from_html(&post.content), SECTION_TEXT_LIMIT),
             images,
-            sensitive: status.sensitive,
+            sensitive: post.sensitive,
             unshowable_attachments,
         }
     }
@@ -192,7 +192,7 @@ fn truncate_plain(text: &str, max_chars: usize) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::plugins::mastodon::status::test_data::{real_status, status, status_json};
+    use crate::plugins::mastodon::post::test_data::{post, post_json, real_post};
     use client::models::blocks::objects::text::{Text, TextBody};
     use serde_json::{json, Value};
 
@@ -201,13 +201,13 @@ mod tests {
 
     fn preview(json: Value) -> Preview {
         Preview::new(
-            &status(json),
-            &StatusLink::find_in("https://mastodon.social/@sam/111").unwrap(),
+            &post(json),
+            &PostLink::find_in("https://mastodon.social/@sam/111").unwrap(),
         )
     }
 
     fn with_attachments(attachments: Value) -> Value {
-        let mut json = status_json();
+        let mut json = post_json();
         json["media_attachments"] = attachments;
         json
     }
@@ -242,7 +242,7 @@ mod tests {
 
     #[test]
     fn message_shows_author_with_avatar_then_text() {
-        let message = preview(status_json()).message();
+        let message = preview(post_json()).message();
 
         assert_eq!(
             message.get_blocks(),
@@ -261,7 +261,7 @@ mod tests {
 
     #[test]
     fn messages_turn_off_unfurling_and_mention_the_author_in_their_notification_text() {
-        let preview = preview(status_json());
+        let preview = preview(post_json());
 
         for message in [preview.message(), preview.text_only_message()] {
             assert!(!message.unfurls());
@@ -271,7 +271,7 @@ mod tests {
 
     #[test]
     fn author_from_another_server_keeps_their_own_server_in_their_handle() {
-        let mut json = status_json();
+        let mut json = post_json();
         json["account"]["acct"] = json!("sam@other.example");
 
         assert_eq!(
@@ -282,7 +282,7 @@ mod tests {
 
     #[test]
     fn author_without_a_display_name_is_shown_by_handle() {
-        let mut json = status_json();
+        let mut json = post_json();
         json["account"]["display_name"] = json!("");
 
         assert_eq!(
@@ -293,7 +293,7 @@ mod tests {
 
     #[test]
     fn author_avatar_is_left_out_when_slack_cannot_show_it() {
-        let mut json = status_json();
+        let mut json = post_json();
         json["account"]["avatar_static"] = json!("https://files.mastodon.social/avatars/sam.webp");
 
         let message = preview(json).message();
@@ -306,7 +306,7 @@ mod tests {
 
     #[test]
     fn content_warning_is_shown_as_a_heading_before_the_text() {
-        let mut json = status_json();
+        let mut json = post_json();
         json["spoiler_text"] = json!("Spoilers for the finale");
 
         let message = preview(json).message();
@@ -322,7 +322,7 @@ mod tests {
 
     #[test]
     fn long_text_is_cut_short_to_fit_in_slack() {
-        let mut json = status_json();
+        let mut json = post_json();
         json["content"] = json!(format!("<p>{}</p>", "a".repeat(4000)));
 
         let text = section_text(&preview(json).message()).to_string();
@@ -444,8 +444,8 @@ mod tests {
     #[test]
     fn real_post_is_previewed_with_its_text_and_image() {
         let preview = Preview::new(
-            &real_status(),
-            &StatusLink::find_in("https://mastodon.social/@Mastodon/116929144390213579").unwrap(),
+            &real_post(),
+            &PostLink::find_in("https://mastodon.social/@Mastodon/116929144390213579").unwrap(),
         );
         let message = preview.message();
         let text = section_text(&message);

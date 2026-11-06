@@ -1,12 +1,12 @@
 mod api;
 mod link;
 mod mrkdwn;
+mod post;
 mod preview;
 mod public_address;
-mod status;
 
 use crate::plugins::mastodon::api::{HttpMastodonApi, MastodonApi};
-use crate::plugins::mastodon::link::StatusLink;
+use crate::plugins::mastodon::link::PostLink;
 use crate::plugins::mastodon::preview::Preview;
 use async_trait::async_trait;
 use client::models::socket_message::{Event, MessageEvent};
@@ -23,7 +23,7 @@ impl Plugin for MastodonPlugin {
         let Event::Message(message) = event else {
             return vec![];
         };
-        let Some(link) = message.text.as_deref().and_then(StatusLink::find_in) else {
+        let Some(link) = message.text.as_deref().and_then(PostLink::find_in) else {
             return vec![];
         };
         let Some(http) = dependencies.get_dyn::<reqwest::Client>() else {
@@ -38,17 +38,17 @@ impl Plugin for MastodonPlugin {
 
 async fn preview_replies(
     message: &MessageEvent,
-    link: &StatusLink,
+    link: &PostLink,
     api: &dyn MastodonApi,
 ) -> Vec<Action> {
-    let status = match api.fetch_status(link).await {
-        Ok(status) => status.into_original_post(),
+    let post = match api.fetch_post(link).await {
+        Ok(post) => post.into_original_post(),
         Err(err) => {
             debug!("Not previewing {}: {}", link.url, err);
             return vec![];
         }
     };
-    let preview = Preview::new(&status, link);
+    let preview = Preview::new(&post, link);
     let channel = message.channel.clone().unwrap_or_default();
 
     vec![Action::FirstSuccessful(vec![
@@ -84,7 +84,7 @@ async fn download(images: Vec<Image>, api: &dyn MastodonApi) -> Vec<Image> {
 mod tests {
     use super::*;
     use crate::plugins::mastodon::api::{FetchError, MockMastodonApi};
-    use crate::plugins::mastodon::status::test_data::{status, status_json};
+    use crate::plugins::mastodon::post::test_data::{post, post_json};
     use client::models::message_id::MessageId;
     use framework::dependencies::DependenciesBuilder;
     use serde_json::{json, Value};
@@ -102,15 +102,15 @@ mod tests {
         }
     }
 
-    fn status_with_image() -> Value {
-        let mut json = status_json();
+    fn post_with_image() -> Value {
+        let mut json = post_json();
         json["media_attachments"] =
             json!([{"type": "image", "url": IMAGE_URL, "description": "A cat"}]);
         json
     }
 
-    fn link() -> StatusLink {
-        StatusLink::find_in("https://mastodon.social/@sam/111").unwrap()
+    fn link() -> PostLink {
+        PostLink::find_in("https://mastodon.social/@sam/111").unwrap()
     }
 
     #[tokio::test]
@@ -128,9 +128,9 @@ mod tests {
     #[tokio::test]
     async fn links_to_posts_get_a_preview_with_a_text_only_fallback() {
         let mut api = MockMastodonApi::new();
-        api.expect_fetch_status()
+        api.expect_fetch_post()
             .withf(|link| link.api_url() == "https://mastodon.social/api/v1/statuses/111")
-            .returning(|_| Ok(status(status_with_image())));
+            .returning(|_| Ok(post(post_with_image())));
         api.expect_download_image()
             .withf(|url| url == IMAGE_URL)
             .returning(|_| Ok(b"cat pixels".to_vec()));
@@ -138,7 +138,7 @@ mod tests {
 
         let actions = preview_replies(&event, &link(), &api).await;
 
-        let preview = Preview::new(&status(status_with_image()), &link());
+        let preview = Preview::new(&post(post_with_image()), &link());
         assert_eq!(
             actions,
             vec![Action::FirstSuccessful(vec![
@@ -162,7 +162,7 @@ mod tests {
     #[tokio::test]
     async fn links_to_posts_that_cannot_be_fetched_get_no_reply() {
         let mut api = MockMastodonApi::new();
-        api.expect_fetch_status()
+        api.expect_fetch_post()
             .returning(|_| Err(FetchError("Not a Mastodon post".to_string())));
 
         let actions = preview_replies(&message_event("ignored"), &link(), &api).await;
@@ -173,8 +173,8 @@ mod tests {
     #[tokio::test]
     async fn images_that_cannot_be_downloaded_are_linked_instead() {
         let mut api = MockMastodonApi::new();
-        api.expect_fetch_status()
-            .returning(|_| Ok(status(status_with_image())));
+        api.expect_fetch_post()
+            .returning(|_| Ok(post(post_with_image())));
         api.expect_download_image()
             .returning(|_| Err(FetchError("Response is too large".to_string())));
 
@@ -193,13 +193,13 @@ mod tests {
 
     #[tokio::test]
     async fn boosts_are_previewed_as_the_boosted_post() {
-        let mut boosted = status_json();
+        let mut boosted = post_json();
         boosted["account"]["acct"] = json!("someone@other.example");
-        let mut boost = status_json();
+        let mut boost = post_json();
         boost["reblog"] = boosted;
         let mut api = MockMastodonApi::new();
-        api.expect_fetch_status()
-            .returning(move |_| Ok(status(boost.clone())));
+        api.expect_fetch_post()
+            .returning(move |_| Ok(post(boost.clone())));
 
         let actions = preview_replies(&message_event("ignored"), &link(), &api).await;
 

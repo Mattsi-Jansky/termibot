@@ -1,7 +1,7 @@
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
-pub struct Status {
+pub struct Post {
     pub url: Option<String>,
     pub content: String,
     #[serde(default)]
@@ -11,11 +11,11 @@ pub struct Status {
     pub account: Account,
     #[serde(default)]
     pub media_attachments: Vec<MediaAttachment>,
-    pub reblog: Option<Box<Status>>,
+    pub reblog: Option<Box<Post>>,
 }
 
-impl Status {
-    pub fn into_original_post(self) -> Status {
+impl Post {
+    pub fn into_original_post(self) -> Post {
         match self.reblog {
             Some(boosted) => *boosted,
             None => self,
@@ -53,14 +53,14 @@ pub enum MediaKind {
 
 #[cfg(test)]
 pub mod test_data {
-    use super::Status;
+    use super::Post;
     use serde_json::{json, Value};
 
-    pub fn real_status() -> Status {
-        serde_json::from_str(include_str!("test_data/status.json")).unwrap()
+    pub fn real_post() -> Post {
+        serde_json::from_str(include_str!("test_data/post.json")).unwrap()
     }
 
-    pub fn status_json() -> Value {
+    pub fn post_json() -> Value {
         json!({
             "url": "https://mastodon.social/@sam/111",
             "content": "<p>Hello</p>",
@@ -77,7 +77,7 @@ pub mod test_data {
         })
     }
 
-    pub fn status(json: Value) -> Status {
+    pub fn post(json: Value) -> Post {
         serde_json::from_value(json).unwrap()
     }
 }
@@ -89,16 +89,16 @@ mod tests {
     use serde_json::json;
 
     #[test]
-    fn should_parse_a_real_status() {
-        let status = real_status();
+    fn should_parse_a_real_post() {
+        let post = real_post();
 
         assert_eq!(
-            status.url.as_deref(),
+            post.url.as_deref(),
             Some("https://mastodon.social/@Mastodon/116929144390213579")
         );
-        assert_eq!(status.account.acct, "Mastodon");
-        assert_eq!(status.media_attachments[0].kind, MediaKind::Image);
-        assert!(status.media_attachments[0]
+        assert_eq!(post.account.acct, "Mastodon");
+        assert_eq!(post.media_attachments[0].kind, MediaKind::Image);
+        assert!(post.media_attachments[0]
             .description
             .as_deref()
             .unwrap()
@@ -107,29 +107,26 @@ mod tests {
 
     #[test]
     fn should_parse_unknown_media_types() {
-        let mut json = status_json();
+        let mut json = post_json();
         json["media_attachments"] = json!([{"type": "hologram", "url": null}]);
 
-        assert_eq!(status(json).media_attachments[0].kind, MediaKind::Unknown);
+        assert_eq!(post(json).media_attachments[0].kind, MediaKind::Unknown);
     }
 
     #[test]
     fn original_post_of_a_boost_is_the_boosted_post() {
-        let mut boosted = status_json();
+        let mut boosted = post_json();
         boosted["account"]["acct"] = json!("someone@other.example");
-        let mut boost = status_json();
+        let mut boost = post_json();
         boost["reblog"] = boosted;
 
-        let original = status(boost).into_original_post();
+        let original = post(boost).into_original_post();
 
         assert_eq!(original.account.acct, "someone@other.example");
     }
 
     #[test]
     fn original_post_of_a_regular_post_is_itself() {
-        assert_eq!(
-            status(status_json()).into_original_post().account.acct,
-            "sam"
-        );
+        assert_eq!(post(post_json()).into_original_post().account.acct, "sam");
     }
 }

@@ -2,23 +2,23 @@ use lazy_static::lazy_static;
 use regex::Regex;
 
 lazy_static! {
-    static ref STATUS_URL: Regex = Regex::new(
+    static ref POST_URL: Regex = Regex::new(
         r"https://([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+)/@[A-Za-z0-9_.-]+(?:@[A-Za-z0-9.-]+)?/(\d+)\b"
     )
     .unwrap();
 }
 
 #[derive(Debug, PartialEq)]
-pub struct StatusLink {
+pub struct PostLink {
     pub url: String,
     pub host: String,
     pub id: String,
 }
 
-impl StatusLink {
-    pub fn find_in(text: &str) -> Option<StatusLink> {
-        let captures = STATUS_URL.captures(text)?;
-        Some(StatusLink {
+impl PostLink {
+    pub fn find_in(text: &str) -> Option<PostLink> {
+        let captures = POST_URL.captures(text)?;
+        Some(PostLink {
             url: captures[0].to_string(),
             host: captures[1].to_string(),
             id: captures[2].to_string(),
@@ -35,7 +35,7 @@ mod tests {
     use super::*;
 
     fn host_and_id(text: &str) -> Option<(String, String)> {
-        StatusLink::find_in(text).map(|link| (link.host, link.id))
+        PostLink::find_in(text).map(|link| (link.host, link.id))
     }
 
     fn some(host: &str, id: &str) -> Option<(String, String)> {
@@ -68,14 +68,14 @@ mod tests {
 
     #[test]
     fn should_keep_the_whole_link() {
-        let link = StatusLink::find_in("see <https://mas.to/@sam/789>").unwrap();
+        let link = PostLink::find_in("see <https://mas.to/@sam/789>").unwrap();
 
         assert_eq!(link.url, "https://mas.to/@sam/789");
     }
 
     #[test]
     fn should_build_api_url_for_the_post() {
-        let link = StatusLink::find_in("https://mas.to/@sam/789").unwrap();
+        let link = PostLink::find_in("https://mas.to/@sam/789").unwrap();
 
         assert_eq!(link.api_url(), "https://mas.to/api/v1/statuses/789");
     }

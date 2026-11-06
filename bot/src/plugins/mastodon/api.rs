@@ -1,13 +1,13 @@
-use crate::plugins::mastodon::link::StatusLink;
+use crate::plugins::mastodon::link::PostLink;
+use crate::plugins::mastodon::post::Post;
 use crate::plugins::mastodon::public_address::ensure_public;
-use crate::plugins::mastodon::status::Status;
 use async_trait::async_trait;
 #[cfg(test)]
 use mockall::automock;
 use std::fmt;
 use url::Url;
 
-const MAX_STATUS_BYTES: usize = 1024 * 1024;
+const MAX_POST_BYTES: usize = 1024 * 1024;
 const MAX_IMAGE_BYTES: usize = 8 * 1024 * 1024;
 
 #[derive(Debug)]
@@ -46,7 +46,7 @@ impl From<url::ParseError> for FetchError {
 #[cfg_attr(test, automock)]
 #[async_trait]
 pub trait MastodonApi: Send + Sync {
-    async fn fetch_status(&self, link: &StatusLink) -> Result<Status, FetchError>;
+    async fn fetch_post(&self, link: &PostLink) -> Result<Post, FetchError>;
     async fn download_image(&self, url: &str) -> Result<Vec<u8>, FetchError>;
 }
 
@@ -78,8 +78,8 @@ impl HttpMastodonApi {
 
 #[async_trait]
 impl MastodonApi for HttpMastodonApi {
-    async fn fetch_status(&self, link: &StatusLink) -> Result<Status, FetchError> {
-        let body = self.get(&link.api_url(), MAX_STATUS_BYTES).await?;
+    async fn fetch_post(&self, link: &PostLink) -> Result<Post, FetchError> {
+        let body = self.get(&link.api_url(), MAX_POST_BYTES).await?;
         Ok(serde_json::from_slice(&body)?)
     }
 
