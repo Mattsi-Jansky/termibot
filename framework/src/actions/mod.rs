@@ -26,7 +26,7 @@ pub enum Action {
     FirstSuccessful(Vec<Action>),
 }
 
-#[derive(PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct Image {
     pub url: String,
     /// Uploaded to Slack when present. Otherwise, or if the upload fails, Slack loads `url` itself.

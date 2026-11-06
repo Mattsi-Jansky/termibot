@@ -17,6 +17,7 @@ A bot for a private Slack.
   * Enable socket mode
   * Enable events API and give it access to all the bot messing read/write events, reactions and threads
   * Enable OAuth2 and give it access to all the same bot events
+  * Also give it the `files:write` scope, so it can upload the images in Mastodon previews
   * Only needs "bot" events, not "user" events
 * Get the bot's "app token" from the "basic info" tab of the app's page, toward the bottom
 * Get the bot's "bot token" from the OAuth tab of the app's page
@@ -31,6 +32,3 @@ A bot for a private Slack.
   * A simple solution: Write it in JSON, use `format!` to inject values and `serde` to deserialise it?
 * Improve the Songlink plugin
   * Give output similar to Songlink app itself?
-* Generate previews for Mastodon
- * Currently Slack only shows first image of toots that have multiple images, would be great to be able to add the other images
- * Would require matching against a long list of Mastoon instance URLs, can never be comprehensive.

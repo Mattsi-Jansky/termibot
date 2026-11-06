@@ -1,6 +1,7 @@
 mod plugins;
 
 use crate::plugins::emoji_changelog::EmojiChangelogPlugin;
+use crate::plugins::mastodon::MastodonPlugin;
 use crate::plugins::songlink::SongLinkPlugin;
 use config_file::FromConfigFile;
 use framework::SlackBot;
@@ -14,6 +15,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     activate_logging().unwrap();
     SlackBot::new(&CONFIG.bot_token[..], &CONFIG.app_token[..])
         .with_plugin(Box::new(SongLinkPlugin {}))
+        .with_plugin(Box::new(MastodonPlugin))
         .with_plugin(Box::new(EmojiChangelogPlugin::new("#general".to_string())))
         .with_dyn_service::<dyn KarmaRepository + Send + Sync>(Box::new(
             SqliteKarmaRepository::default().await,
