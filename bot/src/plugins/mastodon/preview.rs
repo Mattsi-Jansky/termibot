@@ -110,7 +110,7 @@ impl Preview {
             content_warning: Some(post.spoiler_text.trim())
                 .filter(|warning| !warning.is_empty())
                 .map(str::to_string),
-            text: preview_text(post),
+            text: preview_text(post, kind),
             images,
             videos,
             sensitive: post.sensitive,
@@ -248,8 +248,9 @@ impl VideoCard {
     }
 }
 
-fn preview_text(post: &Post) -> String {
-    let text = if post.quoted_post().is_some() {
+fn preview_text(post: &Post, kind: Kind) -> String {
+    let shows_quoted_post = matches!(kind, Kind::Post) && post.quoted_post().is_some();
+    let text = if shows_quoted_post {
         mrkdwn::from_html_without_quote_fallback(&post.content)
     } else {
         mrkdwn::from_html(&post.content)
@@ -319,7 +320,7 @@ fn truncate_plain(text: &str, max_chars: usize) -> String {
 mod tests {
     use super::*;
     use crate::plugins::mastodon::post::test_data::{
-        post, post_json, post_quoting, quoted_post_json, real_post, real_video_post,
+        post, post_json, post_quoting, quoted_post_json, real_post, real_video_post, QUOTE_FALLBACK,
     };
     use client::models::blocks::objects::text::TextBody;
     use serde_json::{json, Value};
@@ -403,6 +404,19 @@ mod tests {
             section_text(&preview.message()),
             "> RE: <https://other.example/@alex/222|other.example/@alex/222>\n>\n> Look at this"
         );
+    }
+
+    #[test]
+    fn quoted_post_keeps_the_fallback_for_its_own_quote_which_is_not_shown() {
+        let mut quoted =
+            post_quoting(json!({"state": "accepted", "quoted_status": quoted_post_json()}));
+        quoted["content"] = json!(format!("{QUOTE_FALLBACK}<p>The original</p>"));
+        let preview = Preview::for_quoted_post(
+            &post(quoted),
+            &PostLink::find_in("https://mastodon.social/@sam/111").unwrap(),
+        );
+
+        assert!(section_text(&preview.message()).starts_with("> RE: "));
     }
 
     #[test]

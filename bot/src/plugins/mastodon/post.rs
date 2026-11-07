@@ -193,6 +193,18 @@ mod tests {
     }
 
     #[test]
+    fn posts_nested_too_deeply_are_refused_rather_than_parsed() {
+        let mut json = post_json();
+        for _ in 0..100 {
+            json = post_quoting(json!({"state": "accepted", "quoted_status": json}));
+        }
+
+        let result = serde_json::from_slice::<Post>(json.to_string().as_bytes());
+
+        assert!(result.unwrap_err().to_string().contains("recursion limit"));
+    }
+
+    #[test]
     fn posts_without_a_quote_have_no_quoted_post() {
         assert!(post(post_json()).quoted_post().is_none());
     }
