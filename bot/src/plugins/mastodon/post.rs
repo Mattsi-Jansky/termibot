@@ -1,9 +1,11 @@
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use serde_json::Value;
 
 #[derive(Debug, Deserialize)]
 pub struct Post {
     pub url: Option<String>,
+    pub created_at: DateTime<Utc>,
     pub content: String,
     #[serde(default)]
     pub spoiler_text: String,
@@ -85,6 +87,7 @@ pub mod test_data {
     pub fn post_json() -> Value {
         json!({
             "url": "https://mastodon.social/@sam/111",
+            "created_at": "2026-11-06T09:30:00.000Z",
             "content": "<p>Hello</p>",
             "spoiler_text": "",
             "sensitive": false,

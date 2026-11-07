@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use html_escape::decode_html_entities;
 use tl::{HTMLTag, Node, NodeHandle, Parser, ParserOptions};
 
@@ -23,6 +24,16 @@ pub fn escape(text: &str) -> String {
     text.replace('&', "&amp;")
         .replace('<', "&lt;")
         .replace('>', "&gt;")
+}
+
+/// Slack shows the date in each reader's own timezone, as "Today", "Yesterday" or a date
+pub fn date(when: &DateTime<Utc>, link: &str) -> String {
+    format!(
+        "<!date^{}^{{date_short_pretty}} at {{time}}^{}|{}>",
+        when.timestamp(),
+        escape(link),
+        when.format("%Y-%m-%d %H:%M UTC")
+    )
 }
 
 pub fn quote(mrkdwn: &str) -> String {
@@ -230,6 +241,18 @@ mod tests {
     #[test]
     fn should_leave_short_text_alone() {
         assert_eq!(truncate("hello", 5), "hello");
+    }
+
+    #[test]
+    fn should_format_dates_for_slack_linked_to_a_url() {
+        let when = DateTime::parse_from_rfc3339("2026-11-06T09:30:00.000Z")
+            .unwrap()
+            .to_utc();
+
+        assert_eq!(
+            date(&when, "https://mas.to/@sam/1?a=1&b=2"),
+            "<!date^1793957400^{date_short_pretty} at {time}^https://mas.to/@sam/1?a=1&amp;b=2|2026-11-06 09:30 UTC>"
+        );
     }
 
     #[test]

@@ -75,12 +75,12 @@ impl Preview {
             mrkdwn::escape(&account.url),
             mrkdwn::escape(&handle)
         );
-        let author = match account.display_name.trim() {
-            "" => profile_link,
-            name => format!("*{}* {profile_link}", mrkdwn::escape(name)),
-        };
-
         let post_url = post.url.clone().unwrap_or_else(|| link.url.clone());
+        let posted = mrkdwn::date(&post.created_at, &post_url);
+        let author = match account.display_name.trim() {
+            "" => format!("{profile_link} · {posted}"),
+            name => format!("*{}* {profile_link} · {posted}", mrkdwn::escape(name)),
+        };
 
         let mut images = vec![];
         let mut videos = vec![];
@@ -326,6 +326,9 @@ mod tests {
     use serde_json::{json, Value};
 
     const AVATAR_URL: &str = "https://files.mastodon.social/avatars/sam.png";
+    const POSTED: &str = "<!date^1793957400^{date_short_pretty} at {time}^https://mastodon.social/@sam/111|2026-11-06 09:30 UTC>";
+    const QUOTED_POSTED: &str = "<!date^1793957400^{date_short_pretty} at {time}^https://other.example/@alex/222|2026-11-06 09:30 UTC>";
+    const REAL_POSTED: &str = "<!date^1784197149^{date_short_pretty} at {time}^https://mastodon.social/@Mastodon/116929144390213579|2026-07-16 10:19 UTC>";
     const IMAGE_URL: &str = "https://files.mastodon.social/media/cat.png";
     const VIDEO_URL: &str = "https://files.mastodon.social/media/cat.mp4";
     const THUMBNAIL_URL: &str = "https://files.mastodon.social/media/cat-thumbnail.jpg";
@@ -427,8 +430,9 @@ mod tests {
             &PostLink::find_in("https://mastodon.social/@sam/111").unwrap(),
         );
         let label = ContextElement::markdown("↳ Quoted post by");
-        let author =
-            ContextElement::markdown("*Alex* <https://other.example/@alex|@alex@other.example>");
+        let author = ContextElement::markdown(&format!(
+            "*Alex* <https://other.example/@alex|@alex@other.example> · {QUOTED_POSTED}"
+        ));
 
         assert_eq!(
             preview.message().get_blocks()[0],
@@ -443,9 +447,9 @@ mod tests {
             preview.text_only_message().get_blocks()[0],
             ContextBlock::new(vec![
                 ContextElement::markdown("↳ Quoted post by"),
-                ContextElement::markdown(
-                    "*Alex* <https://other.example/@alex|@alex@other.example>"
-                ),
+                ContextElement::markdown(&format!(
+                    "*Alex* <https://other.example/@alex|@alex@other.example> · {QUOTED_POSTED}"
+                )),
             ])
             .into()
         );
@@ -464,9 +468,9 @@ mod tests {
             &vec![
                 ContextBlock::new(vec![
                     ContextElement::image(AVATAR_URL, "Profile picture"),
-                    ContextElement::markdown(
-                        "*Sam* <https://mastodon.social/@sam|@sam@mastodon.social>"
-                    ),
+                    ContextElement::markdown(&format!(
+                        "*Sam* <https://mastodon.social/@sam|@sam@mastodon.social> · {POSTED}"
+                    )),
                 ])
                 .into(),
                 SectionBlock::new_markdown("> Hello"),
@@ -491,7 +495,7 @@ mod tests {
 
         assert_eq!(
             author_markdown(&preview(json).message()),
-            "*Sam* <https://mastodon.social/@sam|@sam@other.example>"
+            format!("*Sam* <https://mastodon.social/@sam|@sam@other.example> · {POSTED}")
         );
     }
 
@@ -502,7 +506,7 @@ mod tests {
 
         assert_eq!(
             author_markdown(&preview(json).message()),
-            "<https://mastodon.social/@sam|@sam@mastodon.social>"
+            format!("<https://mastodon.social/@sam|@sam@mastodon.social> · {POSTED}")
         );
     }
 
@@ -774,9 +778,9 @@ mod tests {
         assert_eq!(
             message.get_blocks(),
             &vec![
-                ContextBlock::new(vec![ContextElement::markdown(
-                    "*Sam* <https://mastodon.social/@sam|@sam@mastodon.social>"
-                )])
+                ContextBlock::new(vec![ContextElement::markdown(&format!(
+                    "*Sam* <https://mastodon.social/@sam|@sam@mastodon.social> · {POSTED}"
+                ))])
                 .into(),
                 SectionBlock::new_markdown("> Hello"),
                 note("1 attachment not shown, <https://mastodon.social/@sam/111|view on Mastodon>"),
@@ -795,7 +799,7 @@ mod tests {
 
         assert_eq!(
             author_markdown(&message),
-            "*Mastodon* <https://mastodon.social/@Mastodon|@Mastodon@mastodon.social>"
+            format!("*Mastodon* <https://mastodon.social/@Mastodon|@Mastodon@mastodon.social> · {REAL_POSTED}")
         );
         assert!(text.starts_with(
             "> New in Mastodon 4.6: Newsletters 📬\n>\n> Mastodon servers now support email newsletters"
