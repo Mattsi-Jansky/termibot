@@ -78,9 +78,9 @@ async fn preview_reply(message: &MessageEvent, preview: &Preview, api: &dyn Mast
 }
 
 fn reply_with_images(message: &MessageEvent, preview: &Preview, images: Vec<Image>) -> Action {
-    Action::ReplyToThreadWithImages {
+    Action::MessageWithImages {
         channel: message.channel.clone().unwrap_or_default(),
-        thread_id: message.id.clone(),
+        thread_id: Some(message.id.clone()),
         message: preview.message(),
         images,
     }
@@ -191,7 +191,7 @@ mod tests {
 
         assert!(matches!(
             reply_with_images(&event, &preview, vec![]),
-            Action::ReplyToThreadWithImages { channel, thread_id, .. }
+            Action::MessageWithImages { channel, thread_id: Some(thread_id), .. }
                 if channel == "C1" && thread_id == event.id
         ));
         assert!(matches!(

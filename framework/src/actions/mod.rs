@@ -15,10 +15,11 @@ pub enum Action {
         thread_id: MessageId,
         message: MessageBody,
     },
-    /// Replies with the images shown after the message's own blocks
-    ReplyToThreadWithImages {
+    /// Posts to the channel, or to the thread if one is given, with the images shown after the
+    /// message's own blocks
+    MessageWithImages {
         channel: String,
-        thread_id: MessageId,
+        thread_id: Option<MessageId>,
         message: MessageBody,
         images: Vec<Image>,
     },
