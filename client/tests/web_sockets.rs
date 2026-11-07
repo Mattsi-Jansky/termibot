@@ -76,6 +76,7 @@ async fn should_initiate_socket_mode_connection() {
                     )]),
                     channel: Some("F4K3CH4NN3L1D".to_string()),
                     channel_type: Some("im".to_string()),
+                    thread_ts: None,
                 }),
                 authorizations: vec![Authorization {
                     user_id: "F4K3USER1D".to_string(),

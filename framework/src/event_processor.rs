@@ -98,6 +98,7 @@ mod tests {
             blocks: Some(vec![]),
             channel: Some("#general".to_string()),
             channel_type: Some("channel".to_string()),
+            thread_ts: None,
         }
     }
 

@@ -323,6 +323,7 @@ mod tests {
                             blocks: Some(vec![]),
                             channel: Some("#general".to_string()),
                             channel_type: Some("channel".to_string()),
+                            thread_ts: None,
                         }),
                         authorizations: vec![Authorization {
                             user_id: "F4K3U53R1D".to_string(),
@@ -559,6 +560,7 @@ mod tests {
                     blocks: Some(vec![]),
                     channel: Some("#general".to_string()),
                     channel_type: Some("channel".to_string()),
+                    thread_ts: None,
                 }),
                 authorizations: vec![Authorization {
                     user_id: "F4K3U53R1D".to_string(),

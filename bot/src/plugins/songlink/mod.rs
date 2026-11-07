@@ -62,6 +62,7 @@ mod tests {
             blocks: None,
             channel: None,
             channel_type: None,
+            thread_ts: None,
         });
 
         let result = SongLinkPlugin {}.on_event(&event, &dependencies).await;
@@ -79,6 +80,7 @@ mod tests {
             blocks: None,
             channel: None,
             channel_type: None,
+            thread_ts: None,
         });
 
         let mut result = SongLinkPlugin {}.on_event(&event, &dependencies).await;

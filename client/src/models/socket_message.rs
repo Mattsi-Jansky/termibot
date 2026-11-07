@@ -149,6 +149,7 @@ impl Event {
             blocks: None,
             channel: None,
             channel_type: None,
+            thread_ts: None,
         })
     }
 }
@@ -163,6 +164,7 @@ pub struct MessageEvent {
     pub blocks: Option<Vec<Block>>,
     pub channel: Option<String>,
     pub channel_type: Option<String>,
+    pub thread_ts: Option<MessageId>,
 }
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
@@ -199,7 +201,7 @@ pub struct RenameEmojiEvent {
 }
 
 pub enum MaybeRelevantSocketMessage {
-    Relevant(serde_json::error::Result<SocketMessage>),
+    Relevant(Box<serde_json::error::Result<SocketMessage>>),
     Irrelevant,
 }
 
@@ -239,6 +241,32 @@ mod tests {
             );
         } else {
             panic!("Wrong type of event")
+        }
+    }
+
+    #[test]
+    fn should_parse_which_thread_a_message_is_in() {
+        let reply = FAKE_NEW_MESSAGE_EVENT.replace(
+            "\"channel_type\": \"im\"",
+            "\"channel_type\": \"im\", \"thread_ts\": \"1687458800.000100\"",
+        );
+
+        match serde_json::from_str(&reply).unwrap() {
+            Event::Message(message) => {
+                assert_eq!(
+                    message.thread_ts,
+                    Some("1687458800.000100".to_string().into())
+                )
+            }
+            other => panic!("Wrong type of event: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn messages_outside_threads_have_no_thread() {
+        match serde_json::from_str(FAKE_NEW_MESSAGE_EVENT).unwrap() {
+            Event::Message(message) => assert_eq!(message.thread_ts, None),
+            other => panic!("Wrong type of event: {other:?}"),
         }
     }
 

@@ -35,7 +35,7 @@ impl SocketModeListener for TungsteniteSocketModeListener {
                 message = self.try_next() => {
                     match message {
                         Relevant(message) => {
-                            parsed_message = Some(message);
+                            parsed_message = Some(*message);
                             break;
                         },
                         Irrelevant => { continue; }
@@ -119,7 +119,7 @@ impl TungsteniteSocketModeListener {
                         SocketMessage::Hello { .. } => { /* Does not need to be ACK'd*/ }
                         SocketMessage::Disconnect { .. } => { /* Does not need to be ACK'd*/ }
                     }
-                    Relevant(result)
+                    Relevant(Box::new(result))
                 }
                 Err(err) => {
                     warn!("Could not parse previous message from Slack (socket mode), probably an unsupported type not yet implemented. Caused by: `{}`", err);

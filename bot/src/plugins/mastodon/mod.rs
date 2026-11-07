@@ -129,6 +129,7 @@ mod tests {
             blocks: None,
             channel: Some("C1".to_string()),
             channel_type: Some("channel".to_string()),
+            thread_ts: None,
         }
     }
 
